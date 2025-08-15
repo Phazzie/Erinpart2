@@ -1,40 +1,6 @@
 'use client'
 
-import { createBrowserClient } from '@supabase/auth-helpers-nextjs'
 import { mockSessions, mockTasks, mockVibes, mockUsers } from '@/lib/mock-data'
-
-// ============================================================================
-// REAL SUPABASE CLIENT
-// ============================================================================
-// To use a real Supabase backend, uncomment the following line and comment
-// out or remove the mock Supabase client below.
-//
-// You will also need to create a `.env.local` file in the root of your
-// project with the following variables:
-// NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-// NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-//
-// export const supabase = createBrowserClient(
-//   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-//   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-// )
-//
-// export const isSupabaseConfigured =
-//   process.env.NEXT_PUBLIC_SUPABASE_URL &&
-//   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-//
-// ============================================================================
-
-
-// ============================================================================
-// MOCK SUPABASE CLIENT
-// ============================================================================
-// This is a mock Supabase client for development and demonstration purposes.
-// It simulates the Supabase API and provides mock data without needing a
-// real Supabase backend.
-//
-// To switch to a real Supabase backend, comment out or remove this entire
-// block and uncomment the real Supabase client above.
 
 // Simulate network delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
@@ -378,7 +344,3 @@ export const supabase = {
 
 // Add realistic mock data
 export const isSupabaseConfigured = true
-
-// ============================================================================
-// END OF MOCK SUPABASE CLIENT
-// ============================================================================

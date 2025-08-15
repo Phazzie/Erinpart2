@@ -10,6 +10,7 @@
 - Toast notifications
 - Loading states
 - Secret Tasks with Reveal Voting
+- Dynamic Vibe Themes
 
 ## 🔄 Ready for V0 Integration:
 - Replace mock Supabase with real database

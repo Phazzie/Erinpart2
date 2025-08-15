@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { mockTasks, mockVibes, mockUsers } from '@/lib/mock-data'
 import DayToggle from '@/components/layout/day-toggle'
 import SessionHeader from './session-header'
@@ -30,6 +30,20 @@ export default function SessionBoard() {
   const [currentVibe, setCurrentVibe] = useState('chaos-gremlin')
   // State to track the currently selected task for viewing details.
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+
+  /**
+   * Effect hook to dynamically change the application's theme.
+   * It listens for changes in the `currentVibe` state and updates
+   * the `data-theme` attribute on the document's body element.
+   * The CSS file contains styles that apply different themes based on this attribute.
+   */
+  useEffect(() => {
+    document.body.dataset.theme = currentVibe;
+    // Cleanup function to remove the attribute when the component unmounts
+    return () => {
+      delete document.body.dataset.theme;
+    }
+  }, [currentVibe]);
 
   /**
    * Updates a task in the state.
