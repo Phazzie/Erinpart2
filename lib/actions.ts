@@ -40,7 +40,7 @@ export async function signIn(prevState: any, formData: FormData) {
   }
 
   revalidatePath('/', 'layout')
-  redirect('/')
+  // redirect('/')
 }
 
 export async function signUp(prevState: any, formData: FormData) {
