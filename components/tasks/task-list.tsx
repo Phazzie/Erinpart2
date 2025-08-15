@@ -18,34 +18,33 @@ import {
 import { MessageCircle } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { SortableTaskItem } from './task-item'
+import { Task } from '@/lib/types'
 
-// This should be defined in a central types file, e.g., lib/types.ts
-interface Task {
-  id: string;
-  session_id: string;
-  text: string;
-  choice: 'yes' | 'no' | 'maybe' | '';
-  day: 'today' | 'tomorrow';
-  order_index: number;
-  comments: string;
-  created_at: string;
-  updated_at: string;
-}
-
+/**
+ * Defines the props for the TaskList component.
+ */
 interface TaskListProps {
   tasks: Task[]
   onUpdateTask: (taskId: string, updates: Partial<Task>) => void
   onReorderTasks: (tasks: Task[]) => void
   selectedTask: Task | null
   onSelectTask: (task: Task) => void
+  onVote: (taskId: string) => void
+  currentUserId: string
 }
 
+/**
+ * A component that displays a list of tasks, handles drag-and-drop reordering,
+ * and renders individual task items.
+ */
 export default function TaskList({
   tasks,
   onUpdateTask,
   onReorderTasks,
   selectedTask,
-  onSelectTask
+  onSelectTask,
+  onVote,
+  currentUserId,
 }: TaskListProps) {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -54,6 +53,9 @@ export default function TaskList({
     })
   )
 
+  /**
+   * Handles the end of a drag event to reorder tasks.
+   */
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
 
@@ -118,6 +120,8 @@ export default function TaskList({
                   onUpdate={onUpdateTask}
                   onSelect={onSelectTask}
                   isSelected={selectedTask?.id === task.id}
+                  onVote={onVote}
+                  currentUserId={currentUserId}
                 />
               ))}
             </SortableContext>

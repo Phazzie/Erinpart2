@@ -9,6 +9,7 @@
 - Complex UI interactions
 - Toast notifications
 - Loading states
+- Secret Tasks with Reveal Voting
 
 ## 🔄 Ready for V0 Integration:
 - Replace mock Supabase with real database

@@ -1,3 +1,9 @@
+/**
+ * This file contains mock data for the application.
+ * In a production environment, this data would be fetched from a database.
+ */
+
+// Mock data for user profiles
 export const mockUsers = [
   {
     id: 'user-1',
@@ -11,6 +17,7 @@ export const mockUsers = [
   }
 ]
 
+// Mock data for collaborative sessions
 export const mockSessions = [
   {
     id: 'session-1',
@@ -24,6 +31,7 @@ export const mockSessions = [
   }
 ]
 
+// Mock data for tasks within a session
 export const mockTasks = [
   {
     id: 'task-1',
@@ -35,7 +43,9 @@ export const mockTasks = [
     comments: '',
     created_by: 'user-1',
     created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z'
+    updated_at: '2024-01-01T00:00:00Z',
+    is_secret: false,
+    votes: [],
   },
   {
     id: 'task-2',
@@ -47,7 +57,9 @@ export const mockTasks = [
     comments: 'Depends on the vibe check',
     created_by: 'user-1',
     created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z'
+    updated_at: '2024-01-01T00:00:00Z',
+    is_secret: false,
+    votes: [],
   },
   {
     id: 'task-3',
@@ -59,7 +71,23 @@ export const mockTasks = [
     comments: 'This is non-negotiable',
     created_by: 'user-1',
     created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z'
+    updated_at: '2024-01-01T00:00:00Z',
+    is_secret: false,
+    votes: [],
+  },
+  {
+    id: 'task-5-secret',
+    session_id: 'session-1',
+    text: 'Steal the Declaration of Independence',
+    choice: '',
+    day: 'today',
+    order_index: 3,
+    comments: '',
+    created_by: 'user-2',
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z',
+    is_secret: true,
+    votes: ['user-2'], // The creator automatically votes
   },
   {
     id: 'task-4',
@@ -71,10 +99,13 @@ export const mockTasks = [
     comments: '',
     created_by: 'user-1',
     created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z'
+    updated_at: '2024-01-01T00:00:00Z',
+    is_secret: false,
+    votes: [],
   }
 ]
 
+// Mock data for Vibes (task templates)
 export const mockVibes = [
   {
     id: 'vibe-1',
