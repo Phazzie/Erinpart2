@@ -28,3 +28,19 @@ npm run dev
 Visit http://localhost:3000 to see the full implementation!
 
 All animations, interactions, and styling are complete and ready for production database integration.
+
+## 🛠️ Setup
+
+### Environment Variables
+
+To connect to your Supabase project, copy `.env.example` to `.env.local` and fill in the following:
+
+-   `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL.
+-   `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase project's public (anon) key.
+
+### Google OAuth Redirect URIs
+
+If you plan to use Google OAuth for authentication, you must add the following Redirect URIs to your Google Cloud Project's OAuth 2.0 Client IDs:
+
+-   `YOUR_SUPABASE_URL/auth/v1/callback`
+-   `http://localhost:3000/auth/callback` (for local development)

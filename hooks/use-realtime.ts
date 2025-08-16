@@ -2,14 +2,17 @@
 // For example, listening for new tasks, updates, or presence changes.
 
 import { useEffect } from 'react';
-import { supabase } from '@/lib/supabase/client';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
 
 export const useRealtime = (sessionId: string) => {
   useEffect(() => {
-    const channel = supabase.channel(`session:${sessionId}`);
+  if (!sessionId) return;
+  if (!isSupabaseConfigured) return;
+
+  const channel: any = supabase.channel(`session:${sessionId}`);
 
     channel
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, (payload) => {
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, (payload: any) => {
         console.log('Real-time task update:', payload);
       })
       .on('presence', { event: 'sync' }, () => {
@@ -18,7 +21,7 @@ export const useRealtime = (sessionId: string) => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      try { supabase.removeChannel(channel); } catch {}
     };
   }, [sessionId]);
 };

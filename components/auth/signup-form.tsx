@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState, useState, useTransition } from 'react'
+import { useFormState } from 'react-dom'
+import { useState, useTransition } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,18 +10,13 @@ import { Loader2, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 import { signUp } from '@/lib/actions'
 
+type SignupState = { error?: string; success?: string } | null
 export default function SignupForm() {
-  const [state, formAction] = useActionState(signUp, null)
+  const [state, formAction] = useFormState<SignupState, FormData>(signUp as any, null)
   const [showPassword, setShowPassword] = useState(false)
   const [isPending, startTransition] = useTransition();
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    startTransition(() => {
-      formAction(formData);
-    });
-  };
+  // Using server actions with <form action={formAction}>.
 
   return (
     <div className="space-y-6">
@@ -47,7 +43,7 @@ export default function SignupForm() {
         )}
       </AnimatePresence>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+  <form data-testid="signup-form" action={formAction} className="space-y-4">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -86,6 +82,7 @@ export default function SignupForm() {
             />
             <button
               type="button"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
               onClick={() => setShowPassword(!showPassword)}
               className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-cyan-400 transition-colors"
             >
@@ -101,12 +98,8 @@ export default function SignupForm() {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
-          <Button
-            type="submit"
-            className="btn-neon w-full"
-            disabled={isPending}
-          >
-            {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : '✨ Create Account'}
+          <Button type="submit" className="btn-neon w-full">
+            ✨ Create Account
           </Button>
         </motion.div>
       </form>

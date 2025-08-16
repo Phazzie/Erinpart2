@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState, useState, useTransition } from 'react'
+import { useFormState } from 'react-dom'
+import { useState, useTransition } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,8 +12,9 @@ import { signIn, signInWithGoogle } from '@/lib/actions'
 import { toast } from '@/lib/toast'
 import AnimalCodeForm from './animal-code-form'
 
+type AuthState = { error?: string } | null
 export default function LoginForm() {
-  const [state, formAction] = useActionState(signIn, null)
+  const [state, formAction] = useFormState<AuthState, FormData>(signIn as any, null)
   const [showPassword, setShowPassword] = useState(false)
   const [isPending, startTransition] = useTransition();
 
@@ -27,13 +29,7 @@ export default function LoginForm() {
     });
   }
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    startTransition(() => {
-        formAction(formData);
-    });
-  };
+  // Using server actions with <form action={formAction}> so no manual submit handler needed.
 
   return (
     <div className="space-y-6">
@@ -114,8 +110,8 @@ export default function LoginForm() {
         </div>
       </div>
 
-      {/* Email/Password Form */}
-      <form onSubmit={handleSubmit} className="space-y-4">
+  {/* Email/Password Form */}
+  <form action={formAction} className="space-y-4">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -153,6 +149,7 @@ export default function LoginForm() {
             />
             <button
               type="button"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
               onClick={() => setShowPassword(!showPassword)}
               className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-cyan-400 transition-colors"
             >
@@ -168,12 +165,8 @@ export default function LoginForm() {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
-          <Button
-            type="submit"
-            className="btn-neon w-full"
-            disabled={isPending}
-          >
-            {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : '🚀 Start a session'}
+          <Button type="submit" className="btn-neon w-full">
+            🚀 Start a session
           </Button>
         </motion.div>
       </form>

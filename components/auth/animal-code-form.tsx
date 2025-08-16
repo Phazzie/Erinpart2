@@ -81,13 +81,13 @@ export default function AnimalCodeForm() {
               Joining the pack...
             </>
           ) : (
-            '🦁 Join with Animal Code'
+            <span>🦁 Join with Animal Code</span>
           )}
         </Button>
       </motion.div>
 
       <p className="text-xs text-gray-400 text-center">
-        Animal Code = invite-in-disguise. Share it, and you're in! 🎭
+        Animal Code = invite-in-disguise. Share it, and you&apos;re in! 🎭
       </p>
     </motion.div>
   )

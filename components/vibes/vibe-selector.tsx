@@ -204,24 +204,24 @@ export default function VibeSelector({ vibes, currentVibe, onVibeChange, isOwner
                                   transition={{ duration: 0.2 }}
                                   className="flex overflow-hidden"
                                 >
-                                  <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    className="rounded-none bg-slate-500 hover:bg-yellow-500 px-2 hover-lift"
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                  >
-                                    <Edit className="h-3 w-3" />
-                                  </Button>
-                                  <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    className="rounded-l-none bg-slate-500 hover:bg-red-500 px-2 hover-lift"
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
+                                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                                    <Button
+                                      variant="secondary"
+                                      size="sm"
+                                      className="rounded-none bg-slate-500 hover:bg-yellow-500 px-2 hover-lift"
+                                    >
+                                      <Edit className="h-3 w-3" />
+                                    </Button>
+                                  </motion.div>
+                                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                                    <Button
+                                      variant="secondary"
+                                      size="sm"
+                                      className="rounded-l-none bg-slate-500 hover:bg-red-500 px-2 hover-lift"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  </motion.div>
                                 </motion.div>
                               )}
                             </AnimatePresence>

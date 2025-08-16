@@ -54,8 +54,8 @@ export default function SessionDetails({ selectedTask, onUpdateTask }: SessionDe
                     AI Suggestions
                   </label>
                   <div className="p-3 bg-slate-900/50 rounded-lg text-sm text-gray-400">
-                    <p>✨ Try adding "but make it fashion."</p>
-                    <p>✨ "Is this a good time to start a coup?"</p>
+                    <p>✨ Try adding &quot;but make it fashion.&quot;</p>
+                    <p>✨ &quot;Is this a good time to start a coup?&quot;</p>
                   </div>
                 </div>
               </div>

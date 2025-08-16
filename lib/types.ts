@@ -5,6 +5,7 @@ export interface Task {
   id: string;
   session_id: string;
   text: string;
+  is_complete: boolean;
   choice: 'yes' | 'no' | 'maybe' | '';
   day: 'today' | 'tomorrow';
   order_index: number;

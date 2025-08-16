@@ -32,11 +32,14 @@ export const mockSessions = [
 ]
 
 // Mock data for tasks within a session
-export const mockTasks = [
+import type { Task, Vibe } from './types'
+
+export const mockTasks: Task[] = [
   {
     id: 'task-1',
     session_id: 'session-1',
     text: 'Come Over',
+    is_complete: false,
     choice: '',
     day: 'today',
     order_index: 0,
@@ -51,6 +54,7 @@ export const mockTasks = [
     id: 'task-2',
     session_id: 'session-1',
     text: 'Get Offensively High',
+    is_complete: false,
     choice: 'maybe',
     day: 'today',
     order_index: 1,
@@ -65,6 +69,7 @@ export const mockTasks = [
     id: 'task-3',
     session_id: 'session-1',
     text: 'Solidify Permanent Spot on the Cereal List',
+    is_complete: false,
     choice: 'yes',
     day: 'today',
     order_index: 2,
@@ -79,6 +84,7 @@ export const mockTasks = [
     id: 'task-5-secret',
     session_id: 'session-1',
     text: 'Steal the Declaration of Independence',
+    is_complete: false,
     choice: '',
     day: 'today',
     order_index: 3,
@@ -93,6 +99,7 @@ export const mockTasks = [
     id: 'task-4',
     session_id: 'session-1',
     text: 'Plan world domination (but make it cute)',
+    is_complete: false,
     choice: '',
     day: 'tomorrow',
     order_index: 0,
@@ -106,7 +113,7 @@ export const mockTasks = [
 ]
 
 // Mock data for Vibes (task templates)
-export const mockVibes = [
+export const mockVibes: Vibe[] = [
   {
     id: 'vibe-1',
     name: 'default',

@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { mockTasks, mockVibes, mockUsers } from '@/lib/mock-data'
+import { useState, useEffect, useMemo } from 'react'
 import DayToggle from '@/components/layout/day-toggle'
 import SessionHeader from './session-header'
 import TaskList from '../tasks/task-list'
@@ -9,20 +8,22 @@ import VibeSelector from '../vibes/vibe-selector'
 import SessionDetails from './session-details'
 import TaskForm from '../tasks/task-form'
 import { Task, Vibe } from '@/lib/types'
+import { useSession } from '@/hooks/use-session'
+import { useTasks } from '@/hooks/use-tasks'
+import { mockVibes } from '@/lib/mock-data'
 
 /**
  * The main component that orchestrates the entire session view.
  * It manages the state for tasks, vibes, and UI selections.
  */
 export default function SessionBoard() {
-  // Mock the current user. In a real app, this would come from an auth context.
-  const currentUserId = 'user-1';
-  // Define the number of participants for the reveal threshold.
-  const participantCount = mockUsers.length;
+  const { user, sessionId: defaultSessionId } = useSession()
+  const [sessionId, setSessionId] = useState(defaultSessionId)
+  const [answersEncoded, setAnswersEncoded] = useState<string | undefined>(undefined)
+  const [guestAnswers, setGuestAnswers] = useState<Record<string, 'yes'|'no'|'maybe'|''>>({})
 
-  // State for the list of tasks, initialized with mock data.
-  const [tasks, setTasks] = useState<Task[]>(mockTasks)
-  // State for the list of vibes, initialized with mock data.
+  const { tasks, addTask, updateTask } = useTasks(sessionId)
+  // State for the list of vibes (still local for now).
   const [vibes] = useState<Vibe[]>(mockVibes)
   // State to track the currently selected day ('today' or 'tomorrow').
   const [currentDay, setCurrentDay] = useState<'today' | 'tomorrow'>('today')
@@ -45,23 +46,39 @@ export default function SessionBoard() {
     }
   }, [currentVibe]);
 
+  // On mount, parse URL params to set session and optional answers
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const url = new URL(window.location.href)
+    const s = url.searchParams.get('session')
+    const a = url.searchParams.get('answers')
+    if (s) setSessionId(s)
+    if (a) {
+      try {
+        const decoded = JSON.parse(decodeURIComponent(atob(a))) as Record<string, 'yes'|'no'|'maybe'|''>
+        setGuestAnswers(decoded)
+        setAnswersEncoded(a)
+      } catch {
+        // ignore bad payload
+      }
+    }
+  }, [])
+
   /**
    * Updates a task in the state.
    * @param taskId The ID of the task to update.
    * @param updates An object with the properties of the task to update.
    */
   const handleUpdateTask = (taskId: string, updates: Partial<Task>) => {
-    setTasks(tasks.map(t => t.id === taskId ? { ...t, ...updates } : t))
+    updateTask(taskId, updates)
   }
 
   /**
    * Reorders tasks within the current day's list after a drag-and-drop action.
    * @param reorderedTasks The newly ordered array of tasks for the current day.
    */
-  const handleReorderTasks = (reorderedTasks: Task[]) => {
-    const otherDayTasks = tasks.filter(t => t.day !== currentDay);
-    const updatedTasks = [...otherDayTasks, ...reorderedTasks].sort((a,b) => a.day.localeCompare(b.day) || a.order_index - b.order_index);
-    setTasks(updatedTasks);
+  const handleReorderTasks = (_reorderedTasks: Task[]) => {
+    // TODO: Persist order_index updates via server action or batch update
   }
 
   /**
@@ -70,60 +87,46 @@ export default function SessionBoard() {
    * @param isSecret A boolean indicating if the task is secret.
    */
   const handleAddTask = (text: string, isSecret: boolean) => {
-    const newTask: Task = {
-      id: `task-${Date.now()}`,
-      session_id: 'session-1',
-      text,
-      choice: '',
-      day: currentDay,
-      order_index: tasks.filter(t => t.day === currentDay).length,
-      comments: '',
-      created_by: currentUserId,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      is_secret: isSecret,
-      votes: isSecret ? [currentUserId] : [], // Creator of a secret task automatically votes
-    };
-    setTasks([...tasks, newTask]);
-  };
+    addTask(text, isSecret)
+  }
 
   /**
    * Handles a user's vote to reveal a secret task.
    * @param taskId The ID of the secret task to vote on.
    */
   const handleVoteToReveal = (taskId: string) => {
-    setTasks(currentTasks => {
-      // Create a new array to avoid direct state mutation
-      const newTasks = [...currentTasks];
-      const taskIndex = newTasks.findIndex(t => t.id === taskId);
-
-      // If task is not found, do nothing
-      if (taskIndex === -1) return currentTasks;
-
-      const task = newTasks[taskIndex];
-
-      // Add vote if the user hasn't voted already
-      if (!task.votes.includes(currentUserId)) {
-        task.votes.push(currentUserId);
-      }
-
-      // Check if the number of votes meets the threshold (e.g., all participants)
-      // In a real app, you'd get the participant count from the session.
-      if (task.votes.length >= participantCount) {
-        task.is_secret = false; // Reveal the task!
-      }
-
-      // Return the updated tasks array to set the new state
-      return newTasks;
-    });
-  };
+    const uid = user?.id || 'user-1'
+    const target = tasks.find(t => t.id === taskId)
+    if (!target) return
+    if (!target.votes.includes(uid)) {
+      const updates: Partial<Task> = { votes: [...target.votes, uid] as any }
+      // Reveal task if threshold met (client heuristic only for now)
+      const thresholdMet = (updates.votes as any)?.length >= 2
+      if (thresholdMet) updates.is_secret = false
+      updateTask(taskId, updates)
+    }
+  }
 
   const filteredTasks = tasks.filter(task => task.day === currentDay)
+
+  // Encode only the choices for a minimal "answers" payload in URL
+  const answersPayload = useMemo(() => {
+    const map: Record<string, 'yes'|'no'|'maybe'|''> = {}
+    tasks.forEach(t => { if (t.choice) map[t.id] = t.choice })
+    return map
+  }, [tasks])
+
+  const answersParam = useMemo(() => {
+    try {
+      const json = JSON.stringify(answersPayload)
+      return btoa(encodeURIComponent(json))
+    } catch { return undefined }
+  }, [answersPayload])
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
       <div className="lg:col-span-8">
-        <SessionHeader name="Erin's Escapades" />
+  <SessionHeader name="Erin's Escapades" sessionId={sessionId} answersEncoded={answersParam} />
         <DayToggle currentDay={currentDay} onDayChange={setCurrentDay} />
         <TaskList
           tasks={filteredTasks}
@@ -132,7 +135,7 @@ export default function SessionBoard() {
           selectedTask={selectedTask}
           onSelectTask={setSelectedTask}
           onVote={handleVoteToReveal}
-          currentUserId={currentUserId}
+          currentUserId={user?.id || 'user-1'}
         />
         <TaskForm onAddTask={handleAddTask} />
       </div>

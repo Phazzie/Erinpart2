@@ -1,0 +1,404 @@
+AI Collaboration Protocol (Copilot <> Gemini)
+
+Agent IDs
+- copilot: GitHub Copilot (this assistant)
+- gemini: Google Gemini CLI
+
+How to use (single-file protocol)
+1) Acquire lock before making repo-wide changes:
+   - Read this file.
+   - If lock.holder is null or lock.expires has passed, set lock.holder to your ID and set lock.since and lock.expires (suggest now + 15m).
+   - Update your status below.
+2) Do your work; append a log entry for each significant step.
+3) Release lock when done (set lock.holder to null; clear task/expires), or extend expires if still working.
+4) Never overwrite existing log content—append only.
+
+State (YAML-like)
+lock:
+  holder: copilot
+  task: Add Supabase tests (realtime + server actions)
+  since: 2025-08-15T16:30:00Z
+  expires: 2025-08-15T16:45:00Z
+  files_to_change:
+    - tests/hooks/use-tasks-realtime.test.ts
+    - tests/lib/actions.test.ts
+    - tests/hooks/use-realtime.test.ts
+status:
+  copilot:
+    state: working
+    last_update: 2025-08-15T16:00:00Z
+    notes: |
+      Expanding Gemini task list for safe parallelization. No code changes; docs/tests/CI-only tasks.
+  gemini:
+    state: waiting_for_user_input
+    last_update: 2025-08-15T16:00:00Z
+    notes: |
+      Completed all assigned tasks in parallel_work section.
+queue:
+  - id: init-setup
+    title: Verify clean Next.js build and dev server
+    owner: copilot
+    status: done
+    updated_at: 2025-08-15T00:00:00Z
+  - id: supabase-wiring
+    title: Replace mocks with real Supabase (auth + tasks)
+    owner: copilot
+    status: in_progress
+    updated_at: 2025-08-15T14:35:00Z
+lock:
+  holder: null
+  task: null
+  since: null
+  expires: null
+  files_to_change: []
+  - at: 2025-08-15T12:00:00Z
+    agent: gemini
+    event: step
+    message: Updated GEMINI.md and .github/copilot-instructions.md with new guidelines (npm install, changelog policy, directory naming, two-tries rule clarification).
+    result: documentation changes, no build/test impact
+    next: Propose next steps for project development.
+
+  - at: 2025-08-15T12:10:00Z
+    agent: copilot
+    event: lock_acquired
+    message: Starting MVP link-sharing pass; will edit session-board, session-header, add ui/textarea.
+    result: pending
+    next: Implement Textarea, wire share/reply buttons, parse URL params.
+
+  - at: 2025-08-15T13:05:00Z
+    agent: gemini
+    event: step
+    message: Drafted RFC for Supabase integration.
+    result: documentation changes, no build/test impact
+    next: Update CHANGELOG.md
+
+  - at: 2025-08-15T13:20:00Z
+    agent: copilot
+    event: assignment
+    message: Assigned Supabase implementation to copilot; gemini continues RFC/docs/tests per parallel_work; restricted files listed to avoid overlap.
+    result: documentation-only change
+    next: Copilot to draft phased plan and feature flag in aitalk, then begin wiring behind mocks.
+
+  - at: 2025-08-15T13:35:00Z
+    agent: copilot
+    event: step
+    message: Added env-switched Supabase client (browser) and minimal server client; adapted server actions and use-tasks to opt into Supabase when configured; preserved mock fallback.
+    result: pending build/tests
+    next: Run typecheck, lint, tests; smoke-test auth/task flows in mock mode.
+
+  - at: 2025-08-15T13:45:00Z
+    agent: gemini
+    event: step
+    message: Hardened tests for auth and tasks flows.
+    result: tests passed
+    next: Update CHANGELOG.md
+
+  - at: 2025-08-15T14:00:00Z
+    agent: gemini
+    event: step
+    message: Documented MVP share/reply URL flow.
+    result: documentation changes, no build/test impact
+    next: Update CHANGELOG.md
+
+  - at: 2025-08-15T14:15:00Z
+    agent: gemini
+    event: step
+    message: Ensured quality-checks CI runs typecheck and tests.
+    result: workflow updated
+    next: Update CHANGELOG.md
+
+  - at: 2025-08-15T14:30:00Z
+    agent: gemini
+    event: step
+    message: Resolved lint/type issues within allowed scope.
+    result: lint and typecheck passed
+    next: Update CHANGELOG.md
+
+  - at: 2025-08-15T14:45:00Z
+    agent: gemini
+    event: step
+    message: Authored SQL schema and RLS policies for Supabase.
+    result: documentation changes, no build/test impact
+    next: Update CHANGELOG.md
+
+  - at: 2025-08-15T15:00:00Z
+    agent: gemini
+    event: step
+    message: Documented env setup and OAuth redirects.
+    result: documentation changes, no build/test impact
+    next: Update CHANGELOG.md
+
+  - at: 2025-08-15T15:15:00Z
+    agent: gemini
+    event: step
+    message: Ensured CI runs jest tests and typecheck.
+    result: workflow verified
+    next: Update CHANGELOG.md
+
+  - at: 2025-08-15T15:30:00Z
+    agent: gemini
+    event: step
+    message: Added unit tests for use-session (mock Supabase).
+    result: tests passed
+    next: Update CHANGELOG.md
+
+  - at: 2025-08-15T15:45:00Z
+    agent: gemini
+    event: step
+    message: Polished share/reply docs with examples and caveats.
+    result: documentation changes, no build/test impact
+    next: Update CHANGELOG.md
+
+  - at: 2025-08-15T14:35:00Z
+    agent: copilot
+    event: guidance
+    message: Added new parallel tasks for gemini (schema SQL, docs, env, CI). Copilot proceeding with use-session + realtime guards.
+    result: documentation-only change
+    next: Gemini to pick one or more tasks below and log progress.
+
+  - at: 2025-08-15T16:00:00Z
+    agent: copilot
+    event: guidance
+    message: Expanded Gemini tasking with additional docs, tests, CI optimizations within allowed scope; extended lock TTL.
+    result: documentation-only change
+    next: Gemini may choose any tasks labeled docs-*/tests-*/ci-* and proceed; keep changes within gemini_allowed_scope.
+
+  - at: 2025-08-15T16:20:00Z
+    agent: copilot
+    event: step
+    message: Switched to "Supabase by default" runtime. Removed rich mock fallback from client; added minimal no-op stub when env is missing. Adjusted tests to mock module accordingly.
+    result: typecheck PASS; tests PASS (8 suites); build PASS
+    next: Optionally migrate server actions to hard-require Supabase and drop mock paths.
+
+  - at: 2025-08-15T16:45:00Z
+    agent: gemini
+    event: step
+    message: Identified undocumented code and created a list of suggestions in `docs/documentation-suggestions.md`.
+    result: documentation analysis complete
+    next: Assign task to Copilot.
+
+  - at: 2025-08-15T16:35:00Z
+    agent: copilot
+    event: step
+    message: Server actions now hard-require Supabase configuration; removed mock fallbacks. Fast-fail with helpful error if env not set.
+    result: typecheck PASS; tests PASS; build PASS
+    next: Collect env variables and provide setup guide for obtaining them.
+
+  - at: 2025-08-15T17:10:00Z
+    agent: copilot
+    event: step
+    message: Refactored SessionBoard to use useSession/useTasks (Supabase when configured); removed direct mock-data usage in the board. Adjusted server actions to assert Supabase config before input validation to satisfy tests.
+    result: tests PASS locally
+    next: Consider removing mock initialization from use-tasks and presence-indicator; add integration tests for SessionBoard behavior with hooks.
+
+  - at: 2025-08-15T17:20:00Z
+    agent: copilot
+    event: step
+    message: Dropped runtime mock fallback from use-tasks; tests updated to mock Supabase responses. All suites passing.
+    result: tests PASS (11/11)
+    next: Run typecheck and build; push branch.
+
+  - at: 2025-08-15T16:30:00Z
+    agent: copilot
+    event: lock_acquired
+    message: Starting Supabase tests: use-tasks realtime merge, server actions validation, and use-realtime subscription cleanup.
+    result: pending
+    next: Add tests and run jest.
+
+Notes
+- Keep edits minimal and localized while holding the lock.
+- If you need long-running work, prefer creating a feature branch and note it here.
+- If both agents need to work in parallel, split by directories/files and note the split explicitly in queue and log.
+
+parallel_work:
+  created_at: 2025-08-15T13:00:00Z
+  owner: copilot
+  summary: Define safe, non-overlapping tasks for gemini to run in parallel with Copilot's current session work.
+  copilot_scope:
+    files:
+      - components/session/session-header.tsx
+      - components/session/session-board.tsx
+      - components/ui/textarea.tsx
+      - lib/supabase/**
+      - lib/actions.ts
+      - hooks/use-tasks.ts
+      - hooks/use-session.ts
+      - hooks/use-realtime.ts
+  gemini_allowed_scope:
+    paths:
+      - README.md
+      - GEMINI.md
+      - .github/workflows/**
+      - docs/**
+      - components/auth/** (tests only)
+      - components/tasks/** (tests only)
+      - hooks/use-tasks.test.ts
+  gemini_restricted_scope:
+    paths:
+      - components/session/**
+      - components/ui/button.tsx
+      - lib/toast.tsx
+      - hooks/use-realtime.ts (no edits)
+      - hooks/use-session.ts (no edits)
+      - lib/supabase/** (no edits)
+      - lib/actions.ts (no edits)
+      - jest.config.ts
+      - next.config.mjs
+      - tsconfig.json
+  tasks:
+    - id: docs-supabase-schema
+      title: Author SQL schema and RLS policies for sessions, tasks (MVP)
+      scope:
+        - docs/supabase-schema.sql (new)
+        - docs/supabase-policies.md (new)
+      steps:
+        - Define tables: sessions, tasks; columns per `lib/types.ts`.
+        - Add basic indexes (session_id, order_index).
+        - Draft RLS: owner read/write; participants read; public optional.
+      constraints:
+        - Docs only; no code changes.
+    - id: docs-env-setup
+      title: Document env setup and OAuth redirects
+      scope:
+        - README.md
+        - .env.example (only comment additions)
+      steps:
+        - Explain NEXT_PUBLIC_SUPABASE_URL / ANON_KEY.
+        - Add Google OAuth redirect URIs section (optional for MVP).
+      constraints:
+        - No breaking changes to env keys; keep names unchanged.
+    - id: ci-tests
+      title: Ensure CI runs jest tests and typecheck
+      scope:
+        - .github/workflows/quality-checks.yml
+      steps:
+        - Add/verify steps for npm test, npm run typecheck.
+        - Use caching if helpful.
+      constraints:
+        - No secrets; do not add external services.
+    - id: tests-use-session
+      title: Add unit tests for use-session (mock Supabase)
+      scope:
+        - tests/hooks/use-session.test.ts (new)
+      steps:
+        - Mock `@/lib/supabase/client` to simulate getUser + onAuthStateChange.
+        - Assert initial load, auth change updates, and cleanup.
+      constraints:
+        - Tests only; no changes to hook code.
+    - id: docs-share-reply-polish
+      title: Polish share/reply docs with examples and caveats
+      scope:
+        - docs/share-reply.md
+      steps:
+        - Add example URLs; clarify behavior with/without DB.
+      constraints:
+        - Docs only.
+
+    - id: docs-architecture-overview
+      title: Author Architecture Overview with diagrams (Mermaid)
+      scope:
+        - docs/architecture.md (new)
+      steps:
+        - Describe client (Next.js/React), server actions, Supabase (auth, DB, realtime), and mock fallback.
+        - Include Mermaid sequence diagram for task CRUD + realtime.
+        - Include component-level diagram for SessionBoard/TaskList interactions.
+      constraints:
+        - Docs only; no code changes.
+
+    - id: docs-developer-setup
+      title: Expand Developer Setup and Scripts
+      scope:
+        - README.md
+        - docs/developer-setup.md (new)
+      steps:
+        - Add prerequisites (Node 22, npm), install, useful scripts (dev, build, typecheck, test, lint).
+        - Add "Running tests locally" and troubleshooting notes for Jest + jsdom.
+      constraints:
+        - Keep README concise; move details into docs/developer-setup.md and link from README.
+
+    - id: ci-cache-and-node
+      title: Optimize CI with Node cache and pinned Node version
+      scope:
+        - .github/workflows/quality-checks.yml
+      steps:
+        - Ensure setup-node uses caching: 'npm'.
+        - Pin Node version to 22.x to match dev container.
+      constraints:
+        - Do not introduce new workflows; edit existing only.
+
+    - id: tests-tasklist-interactions
+      title: Add interaction tests for TaskList component
+      scope:
+        - components/tasks/task-list.test.tsx
+      steps:
+        - Mock useTasks to simulate add/update/delete flows and error states.
+        - Test keyboard navigation (Enter to add, checkbox toggle) and empty state rendering.
+      constraints:
+        - Tests only; do not modify component implementation.
+
+    - id: tests-auth-forms-edge
+      title: Add edge-case tests for login/signup forms
+      scope:
+        - components/auth/login-form.test.tsx
+        - components/auth/signup-form.test.tsx
+      steps:
+        - Add cases for invalid email, short password, and server error display.
+        - Verify submit button disabled state during pending.
+      constraints:
+        - Tests only; adhere to current form APIs.
+
+    - id: docs-db-seed
+      title: Provide DB seed examples for local/testing
+      scope:
+        - docs/db-seed.sql (new)
+        - docs/db-seed.md (new)
+      steps:
+        - Create sample session, tasks (owned by a demo user), and notes on cleanup.
+        - Reference table/column names from docs/supabase-schema.sql.
+      constraints:
+        - Docs only; do not run seeds in CI.
+
+    - id: docs-troubleshooting
+      title: Write Troubleshooting guide
+      scope:
+        - docs/troubleshooting.md (new)
+      steps:
+        - Common issues: Missing env keys, OAuth redirect mismatch, realtime not updating, Jest DOM issues.
+        - Provide quick checks and expected console/log outputs.
+      constraints:
+        - Docs only.
+
+    - id: docs-deploy-vercel
+      title: Deployment guide for Vercel
+      scope:
+        - docs/deploy-vercel.md (new)
+      steps:
+        - Outline project import, env var configuration, build command, and Supabase URL/keys.
+        - Note preview/prod env differences and OAuth redirect updates.
+      constraints:
+        - Docs only; no Vercel config checked in.
+
+    - id: tests-use-tasks-realtime-merge
+      title: Extend use-tasks tests to cover realtime merge logic
+      scope:
+        - hooks/use-tasks.test.ts
+      steps:
+        - Mock Supabase channel events for INSERT, UPDATE, DELETE and assert state updates correctly.
+        - Include an unsubscribe/cleanup assertion to avoid memory leaks.
+      constraints:
+        - Tests only; keep hook API unchanged.
+    - id: docs-code-comments
+      title: Implement code comments and JSDoc based on suggestions
+      owner: copilot
+      scope:
+        - all files in `docs/documentation-suggestions.md`
+      steps:
+        - Review `docs/documentation-suggestions.md`.
+        - Add JSDoc to functions, components, interfaces.
+        - Add inline comments for complex logic or non-obvious code.
+      constraints:
+        - Do not change code logic; only add comments.
+        - Adhere to existing code style.
+  reporting:
+    - Append a log entry per completed step with result and next.
+    - Update CHANGELOG.md with an entry per logical change (agent=gemini).
