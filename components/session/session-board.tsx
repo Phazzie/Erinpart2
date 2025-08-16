@@ -10,6 +10,7 @@ import TaskForm from '../tasks/task-form'
 import { Task, Vibe } from '@/lib/types'
 import { useSession } from '@/hooks/use-session'
 import { useTasks } from '@/hooks/use-tasks'
+import { useTaskChoices } from '@/hooks/use-task-choices'
 import { mockVibes } from '@/lib/mock-data'
 
 /**
@@ -23,6 +24,7 @@ export default function SessionBoard() {
   const [guestAnswers, setGuestAnswers] = useState<Record<string, 'yes'|'no'|'maybe'|''>>({})
 
   const { tasks, addTask, updateTask } = useTasks(sessionId)
+  const { myChoiceByTask, setMyChoice } = useTaskChoices(sessionId, user?.id)
   // State for the list of vibes (still local for now).
   const [vibes] = useState<Vibe[]>(mockVibes)
   // State to track the currently selected day ('today' or 'tomorrow').
@@ -131,6 +133,8 @@ export default function SessionBoard() {
         <TaskList
           tasks={filteredTasks}
           onUpdateTask={handleUpdateTask}
+          onSetChoice={setMyChoice as any}
+          myChoiceByTask={myChoiceByTask as any}
           onReorderTasks={handleReorderTasks}
           selectedTask={selectedTask}
           onSelectTask={setSelectedTask}

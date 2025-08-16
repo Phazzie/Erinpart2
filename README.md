@@ -44,3 +44,15 @@ If you plan to use Google OAuth for authentication, you must add the following R
 
 -   `YOUR_SUPABASE_URL/auth/v1/callback`
 -   `http://localhost:3000/auth/callback` (for local development)
+
+### Quick Deploy (optional CLI)
+
+```bash
+# Print SQL to apply in Supabase SQL editor
+npm run db:print
+# Print seed SQL
+npm run db:seed:print
+# Deploy via Vercel CLI (after `vercel login` and `vercel link`)
+npm run deploy:preview     # preview
+npm run deploy:prod        # production
+```

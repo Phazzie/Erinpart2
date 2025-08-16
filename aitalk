@@ -46,11 +46,120 @@ queue:
     status: in_progress
     updated_at: 2025-08-15T14:35:00Z
 lock:
-  holder: null
-  task: null
-  since: null
-  expires: null
-  files_to_change: []
+  holder: copilot
+  task: Implement per-user task choices (no tech debt)
+  since: 2025-08-16T10:05:00Z
+  expires: 2025-08-16T10:20:00Z
+  files_to_change:
+    - lib/types.ts
+    - hooks/use-task-choices.ts
+    - components/session/session-board.tsx
+    - CHANGELOG.md
+lock:
+  holder: copilot
+  task: Implement per-user yes/no/maybe via task_choices + hook + realtime
+  since: 2025-08-16T12:00:00Z
+  expires: 2025-08-16T12:15:00Z
+  files_to_change:
+    - lib/types.ts
+    - hooks/use-task-choices.ts
+    - components/tasks/task-item.tsx
+    - components/tasks/task-list.tsx
+    - components/session/session-board.tsx
+    - tests/hooks/use-task-choices.test.ts
+    - components/tasks/task-item.test.tsx
+    - components/tasks/task-list.test.tsx
+    - docs/supabase-schema.md
+    - docs/db-seed.sql
+    - docs/db-seed.md
+    - CHANGELOG.md
+  - at: 2025-08-16T12:00:05Z
+    agent: copilot
+    event: lock_acquired
+    message: Starting implementation of per-user task choices with new hook and UI wiring; will update schema docs and add minimal tests.
+    result: pending
+    next: Add types and hook, then wire TaskItem radios to hook.
+  - at: 2025-08-16T12:18:00Z
+    agent: copilot
+    event: step
+    message: Added `useTaskChoices` hook with realtime, wired TaskItem/TaskList/SessionBoard, updated tests, docs (`supabase-schema.md`, `db-seed.sql`, `.env.example`).
+    result: typecheck PASS; build PASS; tests invoked
+    next: Add deployment guide and run smoke tests post-deploy.
+  - at: 2025-08-16T12:20:00Z
+    agent: copilot
+    event: lock_released
+    message: Implementation complete and verified locally; ready for deployment steps.
+    result: green
+    next: Configure Supabase (schema + realtime), set env on Vercel, then deploy.
+  - at: 2025-08-16T12:28:00Z
+    agent: copilot
+    event: step
+    message: Added realtime test for useTaskChoices to cover INSERT/UPDATE/DELETE merge.
+    result: tests added
+    next: Optional: SessionBoard wiring test; proceed to deploy docs.
+  - at: 2025-08-16T12:35:00Z
+    agent: copilot
+    event: step
+    message: Added OAuth tests for signInWithGoogle server action and GoogleSignInButton component.
+    result: tests added; suite green
+    next: Proceed to Supabase schema apply + Vercel env config.
+  - at: 2025-08-16T12:42:00Z
+    agent: copilot
+    event: step
+    message: Added auth callback route test to ensure redirect to root.
+    result: tests added; suite green
+    next: Deployment guide and smoke test checklist.
+lock:
+  holder: copilot
+  task: Add deployment and troubleshooting docs
+  since: 2025-08-16T12:50:00Z
+  expires: 2025-08-16T13:05:00Z
+  files_to_change:
+    - docs/deploy-vercel.md
+    - docs/troubleshooting.md
+    - CHANGELOG.md
+  - at: 2025-08-16T12:55:00Z
+    agent: copilot
+    event: step
+    message: Authored deployment guide (Vercel + Supabase) and troubleshooting doc; included smoke test checklist.
+    result: docs added
+    next: Confirm deploy steps executed; proceed to actual deploy.
+  - at: 2025-08-16T12:56:00Z
+    agent: copilot
+    event: lock_released
+    message: Docs added; ready for execution of deployment steps.
+    result: n/a
+    next: Apply SQL in Supabase, enable Realtime, set env on Vercel, deploy.
+  - at: 2025-08-16T13:00:00Z
+    agent: copilot
+    event: step
+    message: Aligned Supabase docs and seeds with code (tasks.title -> tasks.text).
+    result: docs updated
+    next: Execute schema apply.
+  - at: 2025-08-16T13:05:00Z
+    agent: copilot
+    event: step
+    message: Added consolidated SQL schema file and npm scripts for quick printing and Vercel deploy convenience.
+    result: helpers added
+    next: Apply schema in Supabase; set Vercel env; run deploy:prod.
+  - at: 2025-08-16T13:20:00Z
+    agent: copilot
+    event: fix
+    message: Reordered sessions visibility policy in `docs/supabase-schema.sql` to be created after `public.tasks` exists; added `CREATE EXTENSION IF NOT EXISTS pgcrypto;` to avoid undefined UUID generator.
+    result: schema doc safe to run top-to-bottom; avoids 42P01 errors when applying in fresh DB.
+    next: Re-run schema in Supabase SQL editor, then enable Realtime on tasks/task_choices.
+  - at: 2025-08-16T13:24:00Z
+    agent: copilot
+    event: step
+    message: Appended realtime publication setup to schema (add tasks/task_choices to `supabase_realtime`; set REPLICA IDENTITY FULL) to make replication setup repeatable and idempotent.
+    result: schema doc now includes replication setup; safe to re-run.
+    next: Execute schema; verify publication tables via pg_publication_tables query.
+  - at: 2025-08-16T13:28:00Z
+    agent: copilot
+    event: step
+    message: Added `NEXT_PUBLIC_ENABLE_GOOGLE` feature flag; GoogleSignInButton now hides when not 'true'. Updated `.env.example`.
+    result: build-safe toggle; avoids showing an inoperative button without Google Cloud setup.
+    next: Typecheck/build; set Vercel env to show it later if desired.
   - at: 2025-08-15T12:00:00Z
     agent: gemini
     event: step
@@ -197,6 +306,27 @@ lock:
     message: Dropped runtime mock fallback from use-tasks; tests updated to mock Supabase responses. All suites passing.
     result: tests PASS (11/11)
     next: Run typecheck and build; push branch.
+
+  - at: 2025-08-16T00:10:00Z
+    agent: copilot
+    event: guidance
+    message: Agreed to no-technical-debt approach for per-user yes/no/maybe. Plan: add task_choices table + RLS, create useTaskChoices hook, wire TaskItem radios to set per-user choice, and add realtime on task_choices. Keep use-tasks focused on task CRUD only.
+    result: planning update only
+    next: Add SQL and docs; implement hook and minimal tests; wire UI to hook.
+
+  - at: 2025-08-16T10:05:00Z
+    agent: copilot
+    event: step
+    message: Start implementing per-user yes/no/maybe via new task_choices hook; keep component APIs stable and route choice updates in SessionBoard.
+    result: pending
+    next: Add useTaskChoices, wire SessionBoard, update CHANGELOG, run tests/build.
+
+  - at: 2025-08-16T10:18:00Z
+    agent: copilot
+    event: lock_released
+    message: Releasing lock prior to turnover; no outstanding edits in progress.
+    result: docs/logs only
+    next: Next agent may acquire lock to implement task_choices schema, hook, and UI wiring.
 
   - at: 2025-08-15T16:30:00Z
     agent: copilot

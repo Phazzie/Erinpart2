@@ -6,6 +6,9 @@ export interface Task {
   session_id: string;
   text: string;
   is_complete: boolean;
+  /**
+   * Deprecated: Per-user choices moved to task_choices table. This field is no longer used by UI logic.
+   */
   choice: 'yes' | 'no' | 'maybe' | '';
   day: 'today' | 'tomorrow';
   order_index: number;
@@ -39,4 +42,18 @@ export interface UserProfile {
   id: string;
   email: string;
   avatar_url?: string;
+}
+
+/**
+ * A normalized per-user choice for a given task.
+ */
+export type Choice = 'yes' | 'no' | 'maybe' | ''
+
+export interface TaskChoice {
+  id: string;
+  task_id: string;
+  user_id: string;
+  choice: Exclude<Choice, ''>;
+  created_at: string;
+  updated_at: string;
 }

@@ -26,6 +26,8 @@ import { Task } from '@/lib/types'
 interface TaskListProps {
   tasks: Task[]
   onUpdateTask: (taskId: string, updates: Partial<Task>) => void
+  onSetChoice?: (taskId: string, choice: 'yes'|'no'|'maybe') => void
+  myChoiceByTask?: Map<string, { choice: 'yes'|'no'|'maybe' } | undefined>
   onReorderTasks: (tasks: Task[]) => void
   selectedTask: Task | null
   onSelectTask: (task: Task) => void
@@ -40,6 +42,8 @@ interface TaskListProps {
 export default function TaskList({
   tasks,
   onUpdateTask,
+  onSetChoice,
+  myChoiceByTask,
   onReorderTasks,
   selectedTask,
   onSelectTask,
@@ -118,6 +122,8 @@ export default function TaskList({
                   key={task.id}
                   task={task}
                   onUpdate={onUpdateTask}
+                  onSetChoice={onSetChoice}
+                  myChoice={myChoiceByTask?.get(task.id)?.choice || ''}
                   onSelect={onSelectTask}
                   isSelected={selectedTask?.id === task.id}
                   onVote={onVote}

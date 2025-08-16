@@ -9,6 +9,10 @@ import { toast } from '@/lib/toast'
 
 export default function GoogleSignInButton() {
   const [isPending, startTransition] = useTransition();
+  // Allow hiding the Google button when provider isn't configured
+  if (process.env.NEXT_PUBLIC_ENABLE_GOOGLE !== 'true') {
+    return null;
+  }
 
   const handleSignIn = () => {
     startTransition(async () => {

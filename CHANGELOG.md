@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - MVP client-only share/reply links and copy-to-clipboard in SessionHeader; added missing Textarea UI component.
 - Env-gated Supabase wiring (client + server clients, server actions integration, optional Supabase path in `use-tasks`), preserving mock fallback.
  - SessionBoard now uses `useSession` and `useTasks` hooks; runtime pulls from Supabase when configured instead of inline mock data.
+ - Documented no-debt plan for per-user choices (task_choices table + RLS + `useTaskChoices` hook) to support yes/no/maybe per recipient.
 
 ### Changelog Entry Template
 - date: 2025-08-15
@@ -37,6 +38,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Runtime now prefers real Supabase by default; removed rich runtime mock fallback. Added a minimal no-op stub only to prevent crashes when env is missing (tests still use explicit mocks). Verified with typecheck, tests, and production build.
+ - Removed runtime mock fallback from `use-tasks`; all CRUD now flows through Supabase when configured. Unit tests mock the Supabase client.
+ - Refactored `components/session/session-board.tsx` to rely on hooks, reducing direct mock usage and aligning with Supabase-first runtime.
 
 ---
 
@@ -53,6 +56,13 @@ This section tracks contributions made by AI assistants like Gemini and GitHub C
     - Ran `npm audit fix --force` to resolve a critical security vulnerability.
 
 ### GitHub Copilot
+
+- **2025-08-16**:
+    - change: Supabase-first pass: removed runtime mocks from `use-tasks`, refactored `SessionBoard` to hooks, and moved env assertion earlier in server actions.
+    - why: Eliminate drift between mock and real paths; ensure consistent behavior and enable DB work.
+    - scope: `hooks/use-tasks.ts`, `components/session/session-board.tsx`, `lib/actions.ts`, tests, `aitalk`, `CHANGELOG.md`.
+    - verification: Tests PASS (11/11), typecheck PASS, build PASS; branch pushed to origin.
+    - followups: Implement per-user choices with `task_choices` table, RLS, Realtime, and a `useTaskChoices` hook; wire radios to set per-user choice.
 
 - **2025-08-15**:
     - change: Implemented client-only share link (session param) and reply link (answers param) flow; added `components/ui/textarea.tsx`; parsed URL params in `SessionBoard` and passed to header; copy-to-clipboard with toasts.

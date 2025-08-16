@@ -17,6 +17,7 @@ jest.mock('@dnd-kit/sortable', () => ({
 
 const mockOnUpdate = jest.fn()
 const mockOnSelect = jest.fn()
+const mockOnSetChoice = jest.fn()
 const mockOnVote = jest.fn()
 
 const normalTask: Task = {
@@ -53,6 +54,8 @@ describe('SortableTaskItem', () => {
         <SortableTaskItem
           task={normalTask}
           onUpdate={mockOnUpdate}
+          onSetChoice={mockOnSetChoice}
+          myChoice=""
           onSelect={mockOnSelect}
           onVote={mockOnVote}
           isSelected={false}
@@ -79,10 +82,12 @@ describe('SortableTaskItem', () => {
     })
 
     it('should call onUpdate when a choice radio button is clicked', async () => {
-        render(
+    render(
           <SortableTaskItem
             task={normalTask}
             onUpdate={mockOnUpdate}
+      onSetChoice={mockOnSetChoice}
+      myChoice=""
             onSelect={mockOnSelect}
             onVote={mockOnVote}
             isSelected={false}
@@ -91,7 +96,7 @@ describe('SortableTaskItem', () => {
         )
         const yesRadio = screen.getByLabelText('yes')
         await userEvent.click(yesRadio)
-        expect(mockOnUpdate).toHaveBeenCalledWith(normalTask.id, { choice: 'yes' })
+    expect(mockOnSetChoice).toHaveBeenCalledWith(normalTask.id, 'yes')
       })
   })
 
@@ -101,6 +106,8 @@ describe('SortableTaskItem', () => {
         <SortableTaskItem
           task={secretTask}
           onUpdate={mockOnUpdate}
+          onSetChoice={mockOnSetChoice}
+          myChoice=""
           onSelect={mockOnSelect}
           onVote={mockOnVote}
           isSelected={false}
@@ -132,6 +139,8 @@ describe('SortableTaskItem', () => {
           <SortableTaskItem
             task={{ ...secretTask, votes: ['user-1'] }} // Current user has voted
             onUpdate={mockOnUpdate}
+            onSetChoice={mockOnSetChoice}
+            myChoice=""
             onSelect={mockOnSelect}
             onVote={mockOnVote}
             isSelected={false}

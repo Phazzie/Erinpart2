@@ -23,6 +23,8 @@ describe('TaskList', () => {
       <TaskList
         tasks={tasksForSession}
         onUpdateTask={mockOnUpdateTask}
+  onSetChoice={jest.fn()}
+  myChoiceByTask={new Map()}
         onReorderTasks={mockOnReorderTasks}
         selectedTask={null}
         onSelectTask={mockOnSelectTask}
@@ -45,6 +47,8 @@ describe('TaskList', () => {
       <TaskList
         tasks={[]}
         onUpdateTask={mockOnUpdateTask}
+  onSetChoice={jest.fn()}
+  myChoiceByTask={new Map()}
         onReorderTasks={mockOnReorderTasks}
         selectedTask={null}
         onSelectTask={mockOnSelectTask}
