@@ -63,8 +63,14 @@ CREATE TABLE IF NOT EXISTS public.tasks (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   is_secret boolean NOT NULL DEFAULT false,
-  votes text[] NOT NULL DEFAULT '{}'::text[]
+  votes text[] NOT NULL DEFAULT '{}'::text[],
+  user_name text -- User display name for anonymous authentication
 );
+
+-- Add user_name column if it doesn't exist
+DO $$ BEGIN
+  ALTER TABLE public.tasks ADD COLUMN user_name text;
+EXCEPTION WHEN duplicate_column THEN NULL; END $$;
 
 ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
 
@@ -74,31 +80,26 @@ CREATE INDEX IF NOT EXISTS idx_tasks_order ON public.tasks(order_index);
 
 DO $$ BEGIN
   CREATE POLICY "Tasks are viewable by session participants." ON public.tasks FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.sessions s
-      WHERE s.id = session_id AND (
-        auth.uid() = s.host_id OR EXISTS (
-          SELECT 1 FROM public.tasks t2 WHERE t2.session_id = s.id AND t2.created_by = auth.uid()
-        )
-      )
-    )
+    true -- Public access for shared animal code sessions
   );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "Users can create tasks for their sessions." ON public.tasks FOR INSERT WITH CHECK (
-    auth.uid() = created_by AND EXISTS (
-      SELECT 1 FROM public.sessions s WHERE s.id = session_id AND auth.uid() = s.host_id
-    )
+  CREATE POLICY "Anonymous users can create tasks." ON public.tasks FOR INSERT WITH CHECK (
+    auth.uid() = created_by
   );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "Users can update their own tasks." ON public.tasks FOR UPDATE USING (auth.uid() = created_by);
+  CREATE POLICY "Anonymous users can update their tasks." ON public.tasks FOR UPDATE USING (auth.uid() = created_by);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "Users can delete their own tasks." ON public.tasks FOR DELETE USING (auth.uid() = created_by);
+  CREATE POLICY "Anonymous users can delete their tasks." ON public.tasks FOR DELETE USING (auth.uid() = created_by);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Tasks are publicly readable for shared sessions." ON public.tasks FOR SELECT USING (true);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Now that tasks exist, we can safely add the sessions visibility policy that references tasks
@@ -118,8 +119,14 @@ CREATE TABLE IF NOT EXISTS public.task_choices (
   choice text NOT NULL CHECK (choice IN ('yes','no','maybe')),
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
+  user_name text, -- User display name for anonymous authentication
   UNIQUE (task_id, user_id)
 );
+
+-- Add user_name column if it doesn't exist
+DO $$ BEGIN
+  ALTER TABLE public.task_choices ADD COLUMN user_name text;
+EXCEPTION WHEN duplicate_column THEN NULL; END $$;
 
 ALTER TABLE public.task_choices ENABLE ROW LEVEL SECURITY;
 
@@ -127,29 +134,19 @@ CREATE INDEX IF NOT EXISTS idx_task_choices_task ON public.task_choices(task_id)
 CREATE INDEX IF NOT EXISTS idx_task_choices_user ON public.task_choices(user_id);
 
 DO $$ BEGIN
-  CREATE POLICY "Choices readable to session participants" ON public.task_choices FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.tasks t
-      JOIN public.sessions s ON s.id = t.session_id
-      WHERE t.id = task_id AND (
-        auth.uid() = s.host_id OR EXISTS (
-          SELECT 1 FROM public.tasks t2 WHERE t2.session_id = s.id AND t2.created_by = auth.uid()
-        )
-      )
-    )
-  );
+  CREATE POLICY "Choices readable publicly for shared sessions" ON public.task_choices FOR SELECT USING (true);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "Users upsert own choice" ON public.task_choices FOR INSERT WITH CHECK (auth.uid() = user_id);
+  CREATE POLICY "Anonymous users can insert choices" ON public.task_choices FOR INSERT WITH CHECK (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "Users update own choice" ON public.task_choices FOR UPDATE USING (auth.uid() = user_id);
+  CREATE POLICY "Anonymous users can update own choice" ON public.task_choices FOR UPDATE USING (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "Users delete own choice" ON public.task_choices FOR DELETE USING (auth.uid() = user_id);
+  CREATE POLICY "Anonymous users can delete own choice" ON public.task_choices FOR DELETE USING (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- REALTIME PUBLICATION (recommended)

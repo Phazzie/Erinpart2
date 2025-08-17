@@ -1,58 +1,80 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase, isSupabaseConfigured } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
+
+type SessionData = {
+  sessionId: string
+  userName: string
+  joinedAt: string
+}
 
 type SessionHook = {
   sessionId: string
   isOwner: boolean
-  user: { id: string; email?: string } | null
+  user: { id: string; name: string } | null
   loading: boolean
 }
 
-// Supabase-backed session hook (preserves API keys used by the app)
 export const useSession = (): SessionHook => {
-  const [user, setUser] = useState<{ id: string; email?: string } | null>(null)
+  const [sessionData, setSessionData] = useState<SessionData | null>(null)
+  const [user, setUser] = useState<{ id: string; name: string } | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
     let isMounted = true
-    const init = async () => {
+    
+    const initSession = async () => {
       try {
-        if (isSupabaseConfigured) {
-          const { data } = await supabase.auth.getUser()
-          if (!isMounted) return
-          setUser(data.user ? { id: data.user.id, email: (data.user as any).email } : null)
-        } else {
-          // Fallback for mock/dev without Supabase
-          setUser({ id: 'user-1', email: 'erin@example.com' })
+        // Check localStorage for session data
+        const stored = localStorage.getItem('sessionData')
+        if (stored) {
+          const parsed = JSON.parse(stored) as SessionData
+          setSessionData(parsed)
+          
+          // Sign in anonymously to Supabase for data persistence
+          const { data: authData, error } = await supabase.auth.signInAnonymously()
+          if (!error && authData.user && isMounted) {
+            setUser({
+              id: authData.user.id,
+              name: parsed.userName
+            })
+          }
         }
+      } catch (error) {
+        console.log('Session init error:', error)
       } finally {
         if (isMounted) setLoading(false)
       }
     }
-    init()
 
-    // Subscribe to auth state changes
-    const { data: sub } = isSupabaseConfigured
-      ? supabase.auth.onAuthStateChange((
-          _event: string,
-          session: { user?: { id: string; email?: string } } | null
-        ) => {
-          setUser(session?.user ? { id: session.user.id, email: session.user.email } : null)
-        })
-      : { data: { subscription: null as any } }
+    initSession()
 
     return () => {
       isMounted = false
-      try { sub?.subscription?.unsubscribe?.() } catch {}
     }
   }, [])
 
-  // sessionId and isOwner are app-level constructs; keep sensible defaults
+  // Listen for localStorage changes (when user joins session)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const stored = localStorage.getItem('sessionData')
+      if (stored) {
+        const parsed = JSON.parse(stored) as SessionData
+        setSessionData(parsed)
+        // Trigger re-init of auth
+        setLoading(true)
+        window.location.reload()
+      }
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
+
   return {
-    sessionId: 'session-1',
-    isOwner: true,
+    sessionId: sessionData?.sessionId || '',
+    isOwner: true, // For now, everyone is an owner
     user,
     loading,
   }

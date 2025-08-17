@@ -20,6 +20,9 @@ export interface Task {
   // New fields for the Secret Task feature
   is_secret: boolean; // If true, the task text is hidden until revealed
   votes: string[]; // Array of user IDs who have voted to reveal the task
+  
+  // User identification for logging
+  user_name?: string; // The display name of the user who created/modified this task
 }
 
 /**

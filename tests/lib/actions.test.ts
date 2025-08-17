@@ -1,4 +1,4 @@
-import { signIn, signUp, signOut, createTask, updateTask, deleteTask, updateSession, createShareableSession } from '@/lib/actions'
+import { createTask, updateTask, deleteTask, updateSession, createShareableSession } from '@/lib/actions'
 
 jest.mock('next/navigation', () => ({
   redirect: jest.fn(),
@@ -12,15 +12,12 @@ describe('server actions validation', () => {
   })
   afterAll(() => { process.env = OLD_ENV })
 
-  it('throws when Supabase is not configured', async () => {
+  it('throws when Supabase is not configured for task operations', async () => {
     delete process.env.NEXT_PUBLIC_SUPABASE_URL
     delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-    await expect(signIn(null as any, new FormData())).rejects.toThrow('Supabase is not configured')
-    await expect(signUp(null as any, new FormData())).rejects.toThrow('Supabase is not configured')
-    await expect(signOut()).rejects.toThrow('Supabase is not configured')
-    await expect(createTask('s1', { text: 'x' })).rejects.toThrow('Supabase is not configured')
-    await expect(updateTask('t1', { text: 'y' })).rejects.toThrow('Supabase is not configured')
+    await expect(createTask('s1', { text: 'x' }, 'testuser')).rejects.toThrow('Supabase is not configured')
+    await expect(updateTask('t1', { text: 'y' }, 'testuser')).rejects.toThrow('Supabase is not configured')
     await expect(deleteTask('t1')).rejects.toThrow('Supabase is not configured')
     await expect(updateSession('s1', { name: 'n' })).rejects.toThrow('Supabase is not configured')
   })

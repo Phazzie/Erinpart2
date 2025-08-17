@@ -1,14 +1,35 @@
-import NeonTitle from "@/components/common/neon-title";
 import SessionBoard from "@/components/session/session-board";
+import AnimalCodeForm from "@/components/auth/animal-code-form";
+import ClientOnly from "@/components/common/client-only";
 import { Suspense } from "react";
 import Loading from "./loading";
 
 export default function HomePage() {
   return (
     <div className="container mx-auto p-4 md:p-8">
-      <Suspense fallback={<Loading />}>
-        <SessionBoard />
-      </Suspense>
+      <ClientOnly fallback={<Loading />}>
+        <Suspense fallback={<Loading />}>
+          <SessionChecker />
+        </Suspense>
+      </ClientOnly>
     </div>
   );
+}
+
+function SessionChecker() {
+  if (typeof window === 'undefined') {
+    return <Loading />
+  }
+  
+  const sessionData = localStorage.getItem('sessionData')
+  
+  if (!sessionData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <AnimalCodeForm />
+      </div>
+    )
+  }
+  
+  return <SessionBoard />
 }

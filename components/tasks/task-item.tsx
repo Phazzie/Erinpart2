@@ -102,12 +102,19 @@ export function SortableTaskItem({ task, onUpdate, onSetChoice, myChoice = '', o
 
       {/* Task text input */}
       <div className="col-span-5">
-        <Input
-          value={task.text}
-          onChange={(e) => onUpdate(task.id, { text: e.target.value })}
-          className="input-neon bg-transparent border-none p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-          placeholder="Enter your chaotic plan..."
-        />
+        <div className="space-y-1">
+          <Input
+            value={task.text}
+            onChange={(e) => onUpdate(task.id, { text: e.target.value })}
+            className="input-neon bg-transparent border-none p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+            placeholder="Enter your chaotic plan..."
+          />
+          {task.user_name && (
+            <div className="text-xs text-cyan-400/70 font-mono">
+              {task.user_name}
+            </div>
+          )}
+        </div>
       </div>
 
   {/* Yes/No/Maybe radio buttons (per-user via task_choices) */}
