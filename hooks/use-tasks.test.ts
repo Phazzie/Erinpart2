@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react'
+import { renderHook, act, waitFor } from '@testing-library/react'
 import { useTasks } from './use-tasks'
 
 // Provide a minimal mock of the Supabase client used by the hook
@@ -54,8 +54,11 @@ const SESSION_ID = 'session-1';
 describe('useTasks', () => {
   it('should initialize with tasks for the given session', async () => {
     const { result } = renderHook(() => useTasks(SESSION_ID))
-    // Wait one tick for initial fetch
-    await act(async () => {})
+
+    await waitFor(() => {
+      expect(result.current.tasks.length).toBeGreaterThan(0)
+    })
+
     expect(result.current.tasks.map(t => t.id)).toEqual(rows.filter(r => r.session_id === SESSION_ID).map(r => r.id))
   })
 
