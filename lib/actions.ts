@@ -56,3 +56,30 @@ export async function createShareableSession(sessionId: string) {
   }
   return { success: true, shareUrl }
 }
+
+export async function signIn(prevState: { error?: string } | null, formData: FormData) {
+  assertSupabaseConfigured()
+
+  const email = formData.get('email') as string
+  const password = formData.get('password') as string
+
+  if (!email || !password) {
+    return { error: 'Email and password are required.' }
+  }
+
+  const { error } = await supabaseServer.auth.signInWithPassword({
+    email,
+    password,
+  })
+
+  if (error) {
+    // Supabase returns a generic error for invalid credentials, so we'll make it more specific.
+    if (error.message === 'Invalid login credentials') {
+      return { error: 'Invalid email or password.' }
+    }
+    return { error: error.message }
+  }
+
+  revalidatePath('/')
+  redirect('/')
+}
