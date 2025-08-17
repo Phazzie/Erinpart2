@@ -41,28 +41,12 @@ export function useTasks(sessionId: string) {
     fetchTasks()
   }, [fetchTasks])
 
-  // Setup Supabase real-time subscription
-  useEffect(() => {
-    if (!isSupabaseConfigured || !sessionId) return
-
-    const channel = supabase.channel(`tasks-for-session-${sessionId}`)
-
-    channel
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'tasks',
-        filter: `session_id=eq.${sessionId}`
-      }, (payload: any) => {
-        // Refetch tasks on any change
-        handleRealtimeUpdate(payload)
-      })
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [sessionId, handleRealtimeUpdate])
+  useRealtime({
+    channelName: `tasks-for-session-${sessionId}`,
+    table: 'tasks',
+    filter: `session_id=eq.${sessionId}`,
+    callback: handleRealtimeUpdate,
+  })
 
   const addTask = async (text: string, is_secret = false) => {
     if (!text.trim() || !sessionId) return

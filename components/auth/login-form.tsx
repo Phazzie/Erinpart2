@@ -17,10 +17,15 @@ export default function LoginForm() {
   const [state, formAction] = useFormState<AuthState, FormData>(signIn as any, null)
   const [showPassword, setShowPassword] = useState(false)
 
+  const [showEmailLogin, setShowEmailLogin] = useState(false)
+
   // Using server actions with <form action={formAction}> so no manual submit handler needed.
 
   return (
     <div className="space-y-6">
+      {/* Animal Code Form is now the primary method */}
+      <AnimalCodeForm />
+
       <AnimatePresence>
         {state?.error && (
           <motion.div
@@ -39,84 +44,86 @@ export default function LoginForm() {
         )}
       </AnimatePresence>
 
-      {/* Animal Code Form */}
-      <AnimalCodeForm />
-
-      {/* Email/Password Form */}
-  <form action={formAction} className="space-y-4">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 }}
+      <div className="text-center">
+        <button
+          onClick={() => setShowEmailLogin(prev => !prev)}
+          className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
         >
-          <Label htmlFor="email" className="text-white font-semibold text-glow-cyan">
-            Email Address
-          </Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            required
-            className="input-neon mt-1"
-            placeholder="your.email@awesome.com"
-          />
-        </motion.div>
+          {showEmailLogin ? 'Hide admin login' : 'Admin or registered user?'}
+        </button>
+      </div>
 
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Label htmlFor="password" className="text-white font-semibold text-glow-pink">
-            Password
-          </Label>
-          <div className="relative mt-1">
-            <Input
-              id="password"
-              name="password"
-              type={showPassword ? 'text' : 'password'}
-              required
-              className="input-neon pr-10"
-              placeholder="Your secret passphrase"
-            />
-            <button
-              type="button"
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-cyan-400 transition-colors"
-            >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </button>
-          </div>
-        </motion.div>
+      <AnimatePresence>
+        {showEmailLogin && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            {/* Email/Password Form */}
+            <form action={formAction} className="space-y-4 pt-4 border-t border-purple-500/20">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <Label htmlFor="email" className="text-white font-semibold text-glow-cyan">
+                  Email Address
+                </Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  className="input-neon mt-1"
+                  placeholder="your.email@awesome.com"
+                />
+              </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <Button type="submit" className="btn-neon w-full">
-            🚀 Start a session
-          </Button>
-        </motion.div>
-      </form>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <Label htmlFor="password" className="text-white font-semibold text-glow-pink">
+                  Password
+                </Label>
+                <div className="relative mt-1">
+                  <Input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    className="input-neon pr-10"
+                    placeholder="Your secret passphrase"
+                  />
+                  <button
+                    type="button"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-cyan-400 transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
-        className="text-center"
-      >
-        <span className="text-gray-300">New to the chaos? </span>
-        <Link
-          href="/auth/signup"
-          className="text-pink-400 hover:text-cyan-400 font-bold transition-colors duration-300 text-glow-pink"
-        >
-          Join the escapade
-        </Link>
-      </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Button type="submit" className="btn-neon w-full">
+                  🚀 Start a session
+                </Button>
+              </motion.div>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
