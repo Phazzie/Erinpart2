@@ -16,16 +16,15 @@ jest.mock('@dnd-kit/sortable', () => ({
 
 const mockTask: Task = {
   id: '1',
-  text: 'Test Task',
-  status: 'todo',
-  order_index: 0,
   session_id: 'session-1',
-  user_id: 'user-1',
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
+  text: 'Test Task',
   choice: 'yes',
   day: 'today',
+  order_index: 0,
   comments: 'This is a test comment',
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+  created_by: 'user-1',
 }
 
 describe('TaskItem', () => {
