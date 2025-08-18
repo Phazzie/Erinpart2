@@ -11,7 +11,7 @@ type UseRealtimeProps = {
 
 export const useRealtime = ({ channelName, table, filter, callback }: UseRealtimeProps) => {
   useEffect(() => {
-    if (!isSupabaseConfigured) return
+    if (!isSupabaseConfigured || !channelName) return
 
     const channel: RealtimeChannel = supabase.channel(channelName)
 

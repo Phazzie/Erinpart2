@@ -1,118 +1,92 @@
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { useSession } from '@/hooks/use-session'
-
-// Mock Supabase client module shape used by the hook
-jest.mock('@/lib/supabase/client', () => {
-  const mockAuth = {
-    getUser: jest.fn(),
-    onAuthStateChange: jest.fn(),
-  }
-  return {
-    supabase: { auth: mockAuth },
-    isSupabaseConfigured: true
-  }
-})
+import { supabase } from '@/lib/supabase/client'
 
 describe('useSession', () => {
-  // Re-require the mocked module to access the created mocks
-  const { supabase } = jest.requireMock('@/lib/supabase/client') as any
-  const mockGetUser = supabase.auth.getUser as jest.Mock
-  const mockOnAuthStateChange = supabase.auth.onAuthStateChange as jest.Mock
+  let signInAnonymouslySpy: jest.SpyInstance
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    localStorage.clear()
+    signInAnonymouslySpy = jest.spyOn(supabase.auth, 'signInAnonymously').mockResolvedValue({
+      data: { user: { id: 'test-user' }, session: {} as any },
+      error: null,
+    })
   })
 
-  it('should return initial session state as null and loading as true', () => {
-    mockGetUser.mockResolvedValueOnce({ data: { user: null }, error: null })
-    mockOnAuthStateChange.mockReturnValue({ data: { subscription: { unsubscribe: jest.fn() } } })
+  afterEach(() => {
+    signInAnonymouslySpy.mockRestore()
+  })
 
+  it('should initialize with loading true and no session data', () => {
     const { result } = renderHook(() => useSession())
-
-  // Hook exposes user/loading, not a full session object
     expect(result.current.loading).toBe(true)
     expect(result.current.user).toBeNull()
+    expect(result.current.sessionId).toBe('')
   })
 
-  it('should fetch user on initial load and update state', async () => {
-    const mockUser = { id: '123', email: 'test@example.com' }
-    mockGetUser.mockResolvedValueOnce({ data: { user: mockUser }, error: null })
-    mockOnAuthStateChange.mockReturnValue({ data: { subscription: { unsubscribe: jest.fn() } } })
+  it('should load session data from localStorage and sign in anonymously', async () => {
+    const sessionData = {
+      sessionId: 'cat-dog',
+      userName: 'Test User',
+      joinedAt: new Date().toISOString(),
+    }
+    localStorage.setItem('sessionData', JSON.stringify(sessionData))
 
     const { result } = renderHook(() => useSession())
 
     await waitFor(() => {
-  expect(result.current.loading).toBe(false)
-  expect(result.current.user).toEqual(mockUser)
+      expect(result.current.loading).toBe(false)
     })
+
+    expect(result.current.sessionId).toBe('cat-dog')
+    expect(result.current.user).toEqual({ id: 'test-user', name: 'Test User' })
+    expect(signInAnonymouslySpy).toHaveBeenCalledTimes(1)
   })
 
-  it('should handle auth state changes', async () => {
-    const mockUser1 = { id: '1', email: 'user1@example.com' }
-    const mockUser2 = { id: '2', email: 'user2@example.com' }
-    let authStateChangeCallback: (event: string, session: any) => void = () => {}
+  it('should handle storage events', async () => {
+    const { result } = renderHook(() => useSession())
 
-    mockGetUser.mockResolvedValueOnce({ data: { user: null }, error: null })
-    mockOnAuthStateChange.mockImplementation((callback) => {
-      authStateChangeCallback = callback
-      return { data: { subscription: { unsubscribe: jest.fn() } } }
+    const sessionData = {
+      sessionId: 'lion-tiger',
+      userName: 'New User',
+      joinedAt: new Date().toISOString(),
+    }
+
+    // Mock window.location.reload
+    const reloadSpy = jest.fn()
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: { ...window.location, reload: reloadSpy },
     })
+
+    act(() => {
+      localStorage.setItem('sessionData', JSON.stringify(sessionData))
+      window.dispatchEvent(new Event('storage'))
+    })
+
+    await waitFor(() => {
+      expect(reloadSpy).toHaveBeenCalledTimes(1)
+    })
+
+    reloadSpy.mockRestore()
+  })
+
+  it('should handle errors during session init gracefully', async () => {
+    signInAnonymouslySpy.mockRejectedValueOnce(new Error('Sign in failed'))
+
+    const sessionData = {
+      sessionId: 'cat-dog',
+      userName: 'Test User',
+      joinedAt: new Date().toISOString(),
+    }
+    localStorage.setItem('sessionData', JSON.stringify(sessionData))
 
     const { result } = renderHook(() => useSession())
 
-    // Simulate initial load with no user
-    await waitFor(() => expect(result.current.loading).toBe(false))
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
     expect(result.current.user).toBeNull()
-
-    // Simulate login
-    act(() => {
-      authStateChangeCallback('SIGNED_IN', { user: mockUser1 })
-    })
-
-    await waitFor(() => {
-      expect(result.current.user).toEqual(mockUser1)
-    })
-
-    // Simulate user change
-    act(() => {
-      authStateChangeCallback('SIGNED_IN', { user: mockUser2 })
-    })
-
-    await waitFor(() => {
-      expect(result.current.user).toEqual(mockUser2)
-    })
-
-    // Simulate logout
-    act(() => {
-      authStateChangeCallback('SIGNED_OUT', { user: null })
-    })
-
-    await waitFor(() => {
-      expect(result.current.user).toBeNull()
-    })
-  })
-
-  it('should unsubscribe on unmount', () => {
-    const mockUnsubscribe = jest.fn()
-    mockGetUser.mockResolvedValueOnce({ data: { user: null }, error: null })
-    mockOnAuthStateChange.mockReturnValue({ data: { subscription: { unsubscribe: mockUnsubscribe } } })
-
-    const { unmount } = renderHook(() => useSession())
-
-    unmount()
-
-    expect(mockUnsubscribe).toHaveBeenCalledTimes(1)
-  })
-
-  it('should handle getUser error gracefully', async () => {
-    mockGetUser.mockResolvedValueOnce({ data: { user: null }, error: new Error('Failed to fetch user') })
-    mockOnAuthStateChange.mockReturnValue({ data: { subscription: { unsubscribe: jest.fn() } } })
-
-    const { result } = renderHook(() => useSession())
-
-    await waitFor(() => {
-  expect(result.current.loading).toBe(false)
-  expect(result.current.user).toBeNull()
-    })
   })
 })

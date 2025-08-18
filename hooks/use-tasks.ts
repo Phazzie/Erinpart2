@@ -37,9 +37,16 @@ export function useTasks(sessionId: string) {
   }, [fetchTasks])
 
   const handleRealtimeUpdate = useCallback((payload: any) => {
-    // A bit of a sledgehammer, but ensures consistency
-    fetchTasks()
-  }, [fetchTasks])
+    if (payload.eventType === 'INSERT' && payload.new.session_id === sessionId) {
+      setTasks(currentTasks => [...currentTasks, payload.new])
+    } else if (payload.eventType === 'UPDATE' && payload.new.session_id === sessionId) {
+      setTasks(currentTasks =>
+        currentTasks.map(t => (t.id === payload.new.id ? payload.new : t))
+      )
+    } else if (payload.eventType === 'DELETE' && payload.old.session_id === sessionId) {
+      setTasks(currentTasks => currentTasks.filter(t => t.id !== payload.old.id))
+    }
+  }, [sessionId])
 
   useRealtime({
     channelName: `tasks-for-session-${sessionId}`,
