@@ -1,13 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { Task } from '@/lib/types'
-import { toast } from 'sonner'
+import { toast } from 'react-hot-toast'
 
-export const useTasks = (sessionId: string) => {
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [loading, setLoading] = useState(true)
+export const useTasks = (sessionId: string, initialTasks: Task[] = []) => {
+  const [tasks, setTasks] = useState<Task[]>(initialTasks)
+  const [loading, setLoading] = useState(initialTasks.length === 0)
 
   useEffect(() => {
+    if (initialTasks.length > 0) return;
+
     const fetchTasks = async () => {
       try {
         setLoading(true)
@@ -27,7 +29,7 @@ export const useTasks = (sessionId: string) => {
     }
 
     fetchTasks()
-  }, [sessionId])
+  }, [sessionId, initialTasks.length])
 
   useEffect(() => {
     const channel = supabase
@@ -131,5 +133,14 @@ export const useTasks = (sessionId: string) => {
     }
   }
 
-  return { tasks, loading, addTask, updateTask, deleteTask }
+  const reorderTasks = (reorderedTasks: Task[]) => {
+    setTasks(current => {
+      const otherDayTasks = current.filter(t => !reorderedTasks.find(rt => rt.id === t.id));
+      const updatedTasks = [...otherDayTasks, ...reorderedTasks].sort((a,b) => a.day.localeCompare(b.day) || a.order_index - b.order_index);
+      return updatedTasks;
+    });
+    // Here you might want to also update the order_index in the backend for persistence
+  }
+
+  return { tasks, loading, addTask, updateTask, deleteTask, reorderTasks }
 }
