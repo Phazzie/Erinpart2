@@ -1,27 +1,35 @@
-// This hook could manage real-time subscriptions using Supabase.
-// For example, listening for new tasks, updates, or presence changes.
+import { useEffect } from 'react'
+import { supabase, isSupabaseConfigured } from '@/lib/supabase/client'
+import { RealtimeChannel } from '@supabase/supabase-js'
 
-import { useEffect } from 'react';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
+type UseRealtimeProps = {
+  channelName: string
+  table: string
+  filter?: string
+  callback: (payload: any) => void
+}
 
-export const useRealtime = (sessionId: string) => {
+export const useRealtime = ({ channelName, table, filter, callback }: UseRealtimeProps) => {
   useEffect(() => {
-  if (!sessionId) return;
-  if (!isSupabaseConfigured) return;
+    if (!isSupabaseConfigured || !channelName) return
 
-  const channel: any = supabase.channel(`session:${sessionId}`);
+    const channel: RealtimeChannel = supabase.channel(channelName)
 
     channel
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, (payload: any) => {
-        console.log('Real-time task update:', payload);
-      })
-      .on('presence', { event: 'sync' }, () => {
-        console.log('Presence synced:', channel.presenceState());
-      })
-      .subscribe();
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table,
+          filter,
+        },
+        callback
+      )
+      .subscribe()
 
     return () => {
-      try { supabase.removeChannel(channel); } catch {}
-    };
-  }, [sessionId]);
-};
+      supabase.removeChannel(channel)
+    }
+  }, [channelName, table, filter, callback])
+}

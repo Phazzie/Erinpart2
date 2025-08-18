@@ -18,17 +18,17 @@ describe('useRealtime', () => {
     jest.clearAllMocks()
   })
 
-  it('subscribes and cleans up when sessionId provided', () => {
-  const { __mock } = jest.requireMock('@/lib/supabase/client') as any
-  const { unmount } = renderHook(() => useRealtime('session-1'))
-  expect(__mock.subscribe).toHaveBeenCalled()
+  it('subscribes and cleans up when channelName is provided', () => {
+    const { __mock } = jest.requireMock('@/lib/supabase/client') as any
+    const { unmount } = renderHook(() => useRealtime({ channelName: 'test-channel', table: 'tasks', callback: () => {} }))
+    expect(__mock.subscribe).toHaveBeenCalled()
     unmount()
-  expect(__mock.removeChannel).toHaveBeenCalled()
+    expect(__mock.removeChannel).toHaveBeenCalled()
   })
 
-  it('does nothing when no sessionId', () => {
-  const { __mock } = jest.requireMock('@/lib/supabase/client') as any
-  renderHook(() => useRealtime(''))
-  expect(__mock.subscribe).not.toHaveBeenCalled()
+  it('does nothing when no channelName', () => {
+    const { __mock } = jest.requireMock('@/lib/supabase/client') as any
+    renderHook(() => useRealtime({ channelName: '', table: 'tasks', callback: () => {} }))
+    expect(__mock.subscribe).not.toHaveBeenCalled()
   })
 })

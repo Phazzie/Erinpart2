@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import TaskForm from './task-form'
 
@@ -66,7 +66,7 @@ describe('TaskForm', () => {
     const submitButton = screen.getByRole('button', { name: /add task/i })
 
     const longText = 'a'.repeat(1000)
-    await userEvent.type(taskInput, longText)
+    fireEvent.change(taskInput, { target: { value: longText } })
     await userEvent.click(submitButton)
 
     expect(mockOnAddTask).toHaveBeenCalledWith(longText, false)

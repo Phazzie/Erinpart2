@@ -37,32 +37,23 @@ export function useTasks(sessionId: string) {
   }, [fetchTasks])
 
   const handleRealtimeUpdate = useCallback((payload: any) => {
-    // A bit of a sledgehammer, but ensures consistency
-    fetchTasks()
-  }, [fetchTasks])
-
-  // Setup Supabase real-time subscription
-  useEffect(() => {
-    if (!isSupabaseConfigured || !sessionId) return
-
-    const channel = supabase.channel(`tasks-for-session-${sessionId}`)
-
-    channel
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'tasks',
-        filter: `session_id=eq.${sessionId}`
-      }, (payload: any) => {
-        // Refetch tasks on any change
-        handleRealtimeUpdate(payload)
-      })
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
+    if (payload.eventType === 'INSERT' && payload.new.session_id === sessionId) {
+      setTasks(currentTasks => [...currentTasks, payload.new])
+    } else if (payload.eventType === 'UPDATE' && payload.new.session_id === sessionId) {
+      setTasks(currentTasks =>
+        currentTasks.map(t => (t.id === payload.new.id ? payload.new : t))
+      )
+    } else if (payload.eventType === 'DELETE' && payload.old.session_id === sessionId) {
+      setTasks(currentTasks => currentTasks.filter(t => t.id !== payload.old.id))
     }
-  }, [sessionId, handleRealtimeUpdate])
+  }, [sessionId])
+
+  useRealtime({
+    channelName: `tasks-for-session-${sessionId}`,
+    table: 'tasks',
+    filter: `session_id=eq.${sessionId}`,
+    callback: handleRealtimeUpdate,
+  })
 
   const addTask = async (text: string, is_secret = false) => {
     if (!text.trim() || !sessionId) return
