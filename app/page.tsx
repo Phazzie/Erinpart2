@@ -1,5 +1,5 @@
 import SessionBoard from "@/components/session/session-board";
-import LoginForm from "@/components/auth/login-form";
+import AnimalCodeForm from "@/components/auth/animal-code-form";
 import ClientOnly from "@/components/common/client-only";
 import { Suspense } from "react";
 import Loading from "./loading";
@@ -26,7 +26,7 @@ function SessionChecker() {
   if (!sessionData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <LoginForm />
+        <AnimalCodeForm />
       </div>
     )
   }
