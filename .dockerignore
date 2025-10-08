@@ -64,7 +64,7 @@ tsconfig.tsbuildinfo
 # Dev container
 .devcontainer
 
-# Lock files (already processed)
-package-lock.json
+# Lock files (keep package-lock.json for npm ci)
+# package-lock.json is REQUIRED for Docker builds
 yarn.lock
 pnpm-lock.yaml
