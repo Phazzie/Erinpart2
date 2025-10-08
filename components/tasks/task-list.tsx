@@ -1,5 +1,6 @@
 'use client'
 
+import { motion } from 'framer-motion'
 import {
   DndContext,
   closestCenter,
@@ -77,26 +78,31 @@ export default function TaskList({
   }
 
   return (
-    <Card className="card-neon mb-6 overflow-hidden animate-slide-in-left">
-      <CardContent className="p-0">
-        {/* Animated Header */}
-        <div className="grid grid-cols-12 gap-2 p-4 bg-gradient-to-r from-slate-800/80 to-slate-900/80 font-semibold text-sm text-cyan-400/80 border-b border-cyan-500/20">
-          <div className="col-span-1"></div>
-          <div className="col-span-5 text-glow-cyan">Task</div>
-          <div className="col-span-5 text-center">Status</div>
-          <div className="col-span-1 text-center">
-            <MessageCircle className="h-4 w-4 mx-auto text-cyan-400/60" />
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
+    >
+      <Card className="card-neon mb-6 overflow-hidden">
+        <CardContent className="p-0">
+          {/* Animated Header */}
+          <div className="grid grid-cols-12 gap-2 p-4 bg-gradient-to-r from-slate-800/80 to-slate-900/80 font-semibold text-sm text-cyan-400/80 border-b border-cyan-500/20">
+            <div className="col-span-1"></div>
+            <div className="col-span-5 text-glow-cyan">Task</div>
+            <div className="col-span-5 text-center">Status</div>
+            <div className="col-span-1 text-center">
+              <MessageCircle className="h-4 w-4 mx-auto text-cyan-400/60" />
+            </div>
           </div>
-        </div>
 
-        {/* Drag and Drop Tasks */}
-        {tasks.length === 0 ? (
-          <div className="p-12 text-center animate-fade-in-up">
-            <div className="animate-float text-6xl mb-4">🎭</div>
-            <p className="text-lg text-gray-400 font-medium">No tasks yet. Add your first plot point!</p>
-            <p className="text-sm text-gray-500 mt-2">Your chaotic adventure awaits...</p>
-          </div>
-        ) : (
+          {/* Drag and Drop Tasks */}
+          {tasks.length === 0 ? (
+            <div className="p-12 text-center animate-fade-in-up">
+              <div className="animate-float text-6xl mb-4">🎭</div>
+              <p className="text-lg text-gray-400 font-medium">No tasks yet. Add your first plot point!</p>
+              <p className="text-sm text-gray-500 mt-2">Your chaotic adventure awaits...</p>
+            </div>
+          ) : (
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
@@ -121,5 +127,6 @@ export default function TaskList({
         )}
       </CardContent>
     </Card>
+    </motion.div>
   )
 }

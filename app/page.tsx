@@ -2,6 +2,7 @@
 
 import SessionBoard from "@/components/session/session-board";
 import AnimalCodeForm from "@/components/auth/animal-code-form";
+import { ErrorBoundary } from "@/components/common/error-boundary";
 import { useEffect, useState } from "react";
 
 export default function HomePage() {
@@ -27,7 +28,9 @@ export default function HomePage() {
           <AnimalCodeForm />
         </div>
       ) : (
-        <SessionBoard />
+        <ErrorBoundary>
+          <SessionBoard />
+        </ErrorBoundary>
       )}
     </div>
   );

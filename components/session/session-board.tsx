@@ -85,8 +85,24 @@ export default function SessionBoard() {
    * Reorders tasks within the current day's list after a drag-and-drop action.
    * @param reorderedTasks The newly ordered array of tasks for the current day.
    */
-  const handleReorderTasks = (_reorderedTasks: Task[]) => {
-    // TODO: Persist order_index updates via server action or batch update
+  const handleReorderTasks = async (reorderedTasks: Task[]) => {
+    // Optimistic update - show new order immediately
+    const updatedTasks = tasks.map(task => {
+      const reordered = reorderedTasks.find(t => t.id === task.id)
+      return reordered || task
+    })
+    
+    // Update with new order_index
+    const tasksWithNewOrder = updatedTasks.map((task, index) => ({
+      ...task,
+      order_index: index
+    }))
+    
+    // Update each task with new order_index
+    for (const task of reorderedTasks) {
+      const newIndex = reorderedTasks.indexOf(task)
+      await updateTask(task.id, { order_index: newIndex })
+    }
   }
 
   /**
@@ -147,8 +163,8 @@ export default function SessionBoard() {
           <TaskList
             tasks={filteredTasks}
             onUpdateTask={handleUpdateTask}
-            onSetChoice={setMyChoice as any}
-            myChoiceByTask={myChoiceByTask as any}
+            onSetChoice={setMyChoice}
+            myChoiceByTask={myChoiceByTask}
             onReorderTasks={handleReorderTasks}
             selectedTask={selectedTask}
             onSelectTask={setSelectedTask}

@@ -57,12 +57,16 @@ export function useTasks(sessionId: string) {
 
   const addTask = async (text: string, is_secret = false) => {
     if (!text.trim() || !sessionId) {
-      console.error('[useTasks] Cannot add task:', { text: text.trim(), sessionId })
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[useTasks] Cannot add task:', { text: text.trim(), sessionId })
+      }
       toast.error('Missing task text or session ID')
       return
     }
 
-    console.log('[useTasks] Adding task:', { text, is_secret, sessionId, isSupabaseConfigured })
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[useTasks] Adding task:', { text, is_secret, sessionId, isSupabaseConfigured })
+    }
 
     const optimisticId = `optimistic-${Date.now()}`
     const newTask: Task = {
@@ -85,13 +89,17 @@ export function useTasks(sessionId: string) {
     setTasks(current => [...current, newTask])
 
     if (!isSupabaseConfigured) {
-      console.warn('[useTasks] Supabase not configured, using optimistic update only')
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[useTasks] Supabase not configured, using optimistic update only')
+      }
       toast.success('Task added (local only - Supabase not configured)')
       return
     }
 
     try {
-      console.log('[useTasks] Inserting task into Supabase...')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[useTasks] Inserting task into Supabase...')
+      }
       const { data, error } = await supabase
         .from('tasks')
         .insert({ text, is_secret, session_id: sessionId, order_index: tasks.length })
@@ -99,15 +107,21 @@ export function useTasks(sessionId: string) {
         .single()
 
       if (error) {
-        console.error('[useTasks] Supabase error:', error)
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[useTasks] Supabase error:', error)
+        }
         throw error
       }
 
-      console.log('[useTasks] Task inserted successfully:', data)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[useTasks] Task inserted successfully:', data)
+      }
       setTasks(current => current.map(t => t.id === optimisticId ? { ...t, ...data } : t))
       toast.success('Task added!')
     } catch (error: any) {
-      console.error('[useTasks] Failed to add task:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[useTasks] Failed to add task:', error)
+      }
       toast.error(`Failed to add task: ${error.message}`)
       setTasks(current => current.filter(t => t.id !== optimisticId))
     }
