@@ -18,7 +18,8 @@ import { mockVibes } from '@/lib/mock-data'
  * It manages the state for tasks, vibes, and UI selections.
  */
 export default function SessionBoard() {
-  const { user, sessionId: defaultSessionId, userName } = useSession()
+  const { user, sessionId: defaultSessionId } = useSession()
+  const userName = user?.name
   const [sessionId, setSessionId] = useState(defaultSessionId)
   const [answersEncoded, setAnswersEncoded] = useState<string | undefined>(undefined)
   const [guestAnswers, setGuestAnswers] = useState<Record<string, 'yes'|'no'|'maybe'|''>>({})

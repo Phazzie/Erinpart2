@@ -1,3 +1,7 @@
+
+> erins-escapades@0.1.0 db:print
+> cat docs/supabase-schema.sql
+
 -- Safe to run multiple times; uses IF NOT EXISTS / ON CONFLICT where possible
 
 -- Ensure UUID generator is available

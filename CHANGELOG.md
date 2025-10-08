@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- date: 2025-10-08T00:00:00Z
+  agent: copilot
+  change: Added complete Digital Ocean deployment support with Docker containerization
+  why: User requested deployment to Digital Ocean App Platform instead of Vercel; required containerization and standalone Next.js build configuration
+  scope: [Dockerfile, .dockerignore, docker-compose.yml, next.config.mjs, docs/deploy-digitalocean.md]
+  verification: build PASS (with standalone output), tests PASS (9 suites), Docker multi-stage build configured
+  followups: Test Docker build locally before deploying to Digital Ocean
+
 - date: 2025-08-17T18:00:00Z
   agent: copilot
   change: Implemented animal code authentication system to replace OAuth/Google authentication
@@ -28,6 +36,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - verification: Build/tests outcome
 - followups: Optional next actions
 ### Fixed
+- date: 2025-08-18
+  agent: gemini
+  change: Fixed all linting and TypeScript errors.
+  why: The codebase was in a broken state with multiple syntax and type errors. This change resolves all of them, allowing the project to be built and run successfully.
+  scope: [hooks/use-tasks.ts, components/session/session-board.tsx]
+  verification: npm run check PASS
+  followups: None
 - Resolved a critical security vulnerability by force-updating dependencies via `npm audit fix`.
  - Server actions env assertion now runs before input validation, ensuring tests correctly fail when Supabase env is missing.
  - Supabase health integration test now lazy-inits the client inside tests, preventing env errors when the test suite is skipped by default.
@@ -58,6 +73,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   followups: Phase 3C verification testing
 
 ### Removed
+- date: 2025-10-08T00:00:00Z
+  agent: copilot
+  change: Removed empty test files causing test suite failures
+  why: Cleanup from previous OAuth removal - test files existed but had no tests after OAuth components were deleted
+  scope: [tests/lib/actions-trap-login.test.ts, tests/lib/actions-oauth.test.ts, components/auth/google-signin-button.test.tsx]
+  verification: test suite now runs cleanly (9 passing suites instead of failures)
+  followups: None - test cleanup complete
+
 - date: 2025-08-17T18:05:00Z
   agent: copilot
   change: Completely removed OAuth/Google authentication system including login/signup forms and auth pages
