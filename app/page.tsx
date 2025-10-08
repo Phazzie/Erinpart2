@@ -1,35 +1,34 @@
+'use client'
+
 import SessionBoard from "@/components/session/session-board";
 import AnimalCodeForm from "@/components/auth/animal-code-form";
-import ClientOnly from "@/components/common/client-only";
-import { Suspense } from "react";
-import Loading from "./loading";
+import { useEffect, useState } from "react";
 
 export default function HomePage() {
+  const [sessionData, setSessionData] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Check for session data on mount
+    const data = localStorage.getItem('sessionData');
+    setSessionData(data);
+    setIsLoading(false);
+  }, []);
+
+  // Don't render anything during initial load to prevent flash
+  if (isLoading) {
+    return null;
+  }
+
   return (
     <div className="container mx-auto p-4 md:p-8">
-      <ClientOnly fallback={<Loading />}>
-        <Suspense fallback={<Loading />}>
-          <SessionChecker />
-        </Suspense>
-      </ClientOnly>
+      {!sessionData ? (
+        <div className="min-h-screen flex items-center justify-center">
+          <AnimalCodeForm />
+        </div>
+      ) : (
+        <SessionBoard />
+      )}
     </div>
   );
-}
-
-function SessionChecker() {
-  if (typeof window === 'undefined') {
-    return <Loading />
-  }
-  
-  const sessionData = localStorage.getItem('sessionData')
-  
-  if (!sessionData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <AnimalCodeForm />
-      </div>
-    )
-  }
-  
-  return <SessionBoard />
 }
