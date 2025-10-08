@@ -19,11 +19,12 @@ import { mockVibes } from '@/lib/mock-data'
  */
 export default function SessionBoard() {
   const { user, sessionId: defaultSessionId } = useSession()
+  const userName = user?.name
   const [sessionId, setSessionId] = useState(defaultSessionId)
   const [answersEncoded, setAnswersEncoded] = useState<string | undefined>(undefined)
   const [guestAnswers, setGuestAnswers] = useState<Record<string, 'yes'|'no'|'maybe'|''>>({})
 
-  const { tasks, addTask, updateTask } = useTasks(sessionId)
+  const { tasks, addTask, updateTask } = useTasks(sessionId, userName)
   const { myChoiceByTask, setMyChoice } = useTaskChoices(sessionId, user?.id)
   // State for the list of vibes (still local for now).
   const [vibes] = useState<Vibe[]>(mockVibes)

@@ -1,0 +1,70 @@
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage
+.nyc_output
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+tests/
+jest.config.ts
+jest.setup.ts
+
+# Next.js
+.next/
+out/
+build
+dist
+
+# Production
+.vercel
+
+# Misc
+.DS_Store
+*.pem
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local env files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Git
+.git
+.gitignore
+.github
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Documentation (not needed in container)
+README.md
+CHANGELOG.md
+*.md
+docs/
+
+# TypeScript cache
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Dev container
+.devcontainer
+
+# Lock files (already processed)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

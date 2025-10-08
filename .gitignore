@@ -27,9 +27,13 @@ pnpm-debug.log*
 
 # local env files
 .env*.local
+.env
 
 # vercel
 .vercel
+
+# vscode (contains API tokens for MCP servers)
+.vscode/settings.json
 
 # typescript
 *.tsbuildinfo
