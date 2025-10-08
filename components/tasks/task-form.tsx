@@ -49,17 +49,21 @@ export default function TaskForm({ onAddTask }: TaskFormProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
-      className="mt-4 p-4 rounded-lg bg-slate-800/50 border border-cyan-500/10"
+      className="mt-6 p-5 rounded-lg bg-gradient-to-br from-slate-800/60 to-slate-900/60 border border-cyan-500/20 backdrop-blur-sm"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <Input
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Add a new chaotic task..."
             className="input-neon flex-grow"
           />
-          <Button type="submit" className="btn-neon" disabled={!text.trim()}>
+          <Button 
+            type="submit" 
+            className="btn-neon whitespace-nowrap" 
+            disabled={!text.trim()}
+          >
             <PlusCircle className="h-4 w-4 mr-2" />
             Add Task
           </Button>

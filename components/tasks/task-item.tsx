@@ -89,9 +89,9 @@ export function SortableTaskItem({ task, onUpdate, onSetChoice, myChoice = '', o
       ref={setNodeRef}
       style={style}
       onClick={() => onSelect(task)}
-      className={`grid grid-cols-12 gap-2 border-b border-pink-500/10 items-center p-3 hover:bg-pink-500/5 transition-all duration-300 cursor-pointer group animate-fade-in-up ${
+      className={`grid grid-cols-12 gap-2 border-b border-pink-500/10 items-center p-3 hover:bg-pink-500/5 transition-all duration-300 cursor-pointer group ${
         isSelected ? 'bg-pink-500/10 glow-pink' : ''
-      } ${isDragging ? 'z-50 rotate-2 scale-105' : ''}`}
+      } ${isDragging ? 'z-50 rotate-2 scale-105 shadow-2xl shadow-cyan-500/50' : ''}`}
     >
       {/* Drag handle */}
       <div className="col-span-1 flex justify-center">
@@ -108,6 +108,7 @@ export function SortableTaskItem({ task, onUpdate, onSetChoice, myChoice = '', o
             onChange={(e) => onUpdate(task.id, { text: e.target.value })}
             className="input-neon bg-transparent border-none p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             placeholder="Enter your chaotic plan..."
+            onClick={(e) => e.stopPropagation()}
           />
           {task.user_name && (
             <div className="text-xs text-cyan-400/70 font-mono">
@@ -118,13 +119,13 @@ export function SortableTaskItem({ task, onUpdate, onSetChoice, myChoice = '', o
       </div>
 
       {/* Yes/No/Maybe styled buttons */}
-      <div className="col-span-5 flex items-center gap-2 justify-center">
+      <div className="col-span-5 flex items-center gap-2 justify-center flex-wrap">
         <button
           onClick={(e) => {
             e.stopPropagation()
             onSetChoice?.(task.id, 'yes')
           }}
-          className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
+          className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
             myChoice === 'yes'
               ? 'bg-green-500 text-white shadow-lg shadow-green-500/50 scale-105'
               : 'bg-green-500/20 text-green-400 hover:bg-green-500/30 border border-green-500/30'
@@ -137,7 +138,7 @@ export function SortableTaskItem({ task, onUpdate, onSetChoice, myChoice = '', o
             e.stopPropagation()
             onSetChoice?.(task.id, 'maybe')
           }}
-          className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
+          className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
             myChoice === 'maybe'
               ? 'bg-yellow-500 text-white shadow-lg shadow-yellow-500/50 scale-105'
               : 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30 border border-yellow-500/30'
@@ -150,7 +151,7 @@ export function SortableTaskItem({ task, onUpdate, onSetChoice, myChoice = '', o
             e.stopPropagation()
             onSetChoice?.(task.id, 'no')
           }}
-          className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
+          className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
             myChoice === 'no'
               ? 'bg-red-500 text-white shadow-lg shadow-red-500/50 scale-105'
               : 'bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30'
