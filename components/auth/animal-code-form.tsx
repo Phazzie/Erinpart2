@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,29 +15,49 @@ const ANIMALS = [
 ]
 
 export default function AnimalCodeForm() {
+  const router = useRouter()
   const [animal1, setAnimal1] = useState('')
   const [animal2, setAnimal2] = useState('')
   const [firstName, setFirstName] = useState('')
   const [isPending, startTransition] = useTransition();
 
   const handleJoinSession = async () => {
-    if (animal1.trim() && animal2.trim() && firstName.trim()) {
-      startTransition(() => {
-        const sessionId = `${animal1.toLowerCase()}-${animal2.toLowerCase()}`
-        const userName = firstName.trim()
-        
-        // Store session info in localStorage
-        localStorage.setItem('sessionData', JSON.stringify({
-          sessionId,
-          userName,
-          joinedAt: new Date().toISOString()
-        }))
-        
-        toast.success(`Welcome ${userName}! 🐾`)
-        // Reload page to trigger session detection
-        window.location.reload()
-      });
+    // Validation
+    if (!animal1 || !animal2 || !firstName) {
+      toast.error('Please fill in all fields')
+      return
     }
+    
+    if (animal1 === animal2) {
+      toast.error('Please choose two different animals')
+      return
+    }
+    
+    const name = firstName.trim()
+    if (name.length < 2) {
+      toast.error('Name must be at least 2 characters')
+      return
+    }
+    
+    if (name.length > 20) {
+      toast.error('Name must be less than 20 characters')
+      return
+    }
+
+    startTransition(() => {
+      const sessionId = `${animal1.toLowerCase()}-${animal2.toLowerCase()}`
+      
+      // Store session info in localStorage
+      localStorage.setItem('sessionData', JSON.stringify({
+        sessionId,
+        userName: name,
+        joinedAt: new Date().toISOString()
+      }))
+      
+      toast.success(`Welcome ${name}! 🐾`)
+      // Use Next.js router instead of window.location.reload()
+      router.refresh()
+    });
   }
 
   return (

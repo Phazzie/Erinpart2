@@ -18,11 +18,16 @@ import { mockVibes } from '@/lib/mock-data'
  * It manages the state for tasks, vibes, and UI selections.
  */
 export default function SessionBoard() {
-  const { user, sessionId: defaultSessionId } = useSession()
+  const { user, sessionId: defaultSessionId, loading: sessionLoading } = useSession()
   const userName = user?.name
-  const [sessionId, setSessionId] = useState(defaultSessionId)
+  
+  // Parse URL params for session and answers
+  const [urlSessionId, setUrlSessionId] = useState<string>('')
   const [answersEncoded, setAnswersEncoded] = useState<string | undefined>(undefined)
   const [guestAnswers, setGuestAnswers] = useState<Record<string, 'yes'|'no'|'maybe'|''>>({})
+
+  // Use URL session if present, otherwise use default from useSession
+  const sessionId = urlSessionId || defaultSessionId
 
   const { tasks, addTask, updateTask } = useTasks(sessionId)
   const { myChoiceByTask, setMyChoice } = useTaskChoices(sessionId, user?.id)
@@ -55,7 +60,7 @@ export default function SessionBoard() {
     const url = new URL(window.location.href)
     const s = url.searchParams.get('session')
     const a = url.searchParams.get('answers')
-    if (s) setSessionId(s)
+    if (s) setUrlSessionId(s)
     if (a) {
       try {
         const decoded = JSON.parse(decodeURIComponent(atob(a))) as Record<string, 'yes'|'no'|'maybe'|''>

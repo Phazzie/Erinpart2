@@ -32,13 +32,24 @@ export const useSession = (): SessionHook => {
           const parsed = JSON.parse(stored) as SessionData
           setSessionData(parsed)
           
-          // Sign in anonymously to Supabase for data persistence
-          const { data: authData, error } = await supabase.auth.signInAnonymously()
-          if (!error && authData.user && isMounted) {
+          // Check if already signed in before creating new anonymous session
+          const { data: { session } } = await supabase.auth.getSession()
+          
+          if (session?.user && isMounted) {
+            // Already signed in, use existing session
             setUser({
-              id: authData.user.id,
+              id: session.user.id,
               name: parsed.userName
             })
+          } else {
+            // Sign in anonymously to Supabase for data persistence
+            const { data: authData, error } = await supabase.auth.signInAnonymously()
+            if (!error && authData.user && isMounted) {
+              setUser({
+                id: authData.user.id,
+                name: parsed.userName
+              })
+            }
           }
         }
       } catch (error) {
