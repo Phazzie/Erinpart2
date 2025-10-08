@@ -19,7 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${inter.className} bg-bg-primary text-white`}>
-        <AnimatedBackground variant="particles" intensity="low" />
+        <AnimatedBackground variant="particles" intensity="medium" />
         <Toaster position="top-right" />
         <main className="relative z-10">{children}</main>
       </body>

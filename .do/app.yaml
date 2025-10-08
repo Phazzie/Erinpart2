@@ -1,0 +1,26 @@
+name: erins-escapades
+services:
+  - name: web
+    github:
+      repo: Phazzie/Erinpart2
+      branch: feat/erins-escapades-full-implementation
+      deploy_on_push: true
+    dockerfile_path: Dockerfile
+    http_port: 3000
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    routes:
+      - path: /
+    envs:
+      - key: NEXT_PUBLIC_SITE_URL
+        value: ${APP_URL}
+        scope: RUN_TIME
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        value: https://pticifvppekrgqaeotjr.supabase.co
+        scope: RUN_AND_BUILD_TIME
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0aWNpZnZwcGVrcmdxYWVvdGpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUyNzg1MTAsImV4cCI6MjA3MDg1NDUxMH0.SluCtYLgV8CALB5ksNv1nTC3DGNMM1HTxkwTQ9fzMhs
+        scope: RUN_AND_BUILD_TIME
+      - key: NEXT_PUBLIC_ENABLE_GOOGLE
+        value: "false"
+        scope: RUN_TIME

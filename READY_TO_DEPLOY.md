@@ -1,3 +1,4 @@
+AUTOMATICALLY
 # 🚀 DEPLOYMENT READY - Let's Go Live!
 
 ## ✅ What's Done:

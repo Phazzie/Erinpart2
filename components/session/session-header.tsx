@@ -4,16 +4,28 @@ import { motion } from 'framer-motion'
 import { Share2, Users, Link as LinkIcon, Copy } from 'lucide-react'
 import { Button } from '../ui/button'
 import PresenceIndicator from '../layout/presence-indicator'
+import VibeDropdown from '../vibes/vibe-dropdown'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from '@/lib/toast'
+import { Vibe } from '@/lib/types'
 
 interface SessionHeaderProps {
   name: string
   sessionId?: string
   answersEncoded?: string // optional, when generating a reply link
+  vibes?: Vibe[]
+  currentVibe?: string
+  onVibeChange?: (vibeId: string) => void
 }
 
-export default function SessionHeader({ name, sessionId = 'session-1', answersEncoded }: SessionHeaderProps) {
+export default function SessionHeader({ 
+  name, 
+  sessionId = 'session-1', 
+  answersEncoded,
+  vibes = [],
+  currentVibe = 'default',
+  onVibeChange
+}: SessionHeaderProps) {
   const [copied, setCopied] = useState<'share' | 'reply' | null>(null)
 
   const shareUrl = useMemo(() => {
@@ -48,10 +60,17 @@ export default function SessionHeader({ name, sessionId = 'session-1', answersEn
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="flex items-center justify-between mb-8"
+      className="flex items-center justify-between mb-8 flex-wrap gap-4"
     >
       <h1 className="text-4xl font-bold text-rainbow">{name}</h1>
       <div className="flex items-center gap-4">
+        {vibes.length > 0 && onVibeChange && (
+          <VibeDropdown 
+            vibes={vibes} 
+            currentVibe={currentVibe} 
+            onVibeChange={onVibeChange} 
+          />
+        )}
         <PresenceIndicator />
         <Button variant="ghost" size="icon" className="hover-glow">
           <Users className="h-5 w-5 text-purple-400" />

@@ -117,19 +117,48 @@ export function SortableTaskItem({ task, onUpdate, onSetChoice, myChoice = '', o
         </div>
       </div>
 
-  {/* Yes/No/Maybe radio buttons (per-user via task_choices) */}
-  {(['yes', 'no', 'maybe'] as const).map((choice) => (
-        <div key={choice} className={`${choice === 'maybe' ? 'col-span-1' : 'col-span-2'} text-center`}>
-          <input
-            type="radio"
-            name={`choice-${task.id}`}
-    checked={myChoice === choice}
-    onChange={() => onSetChoice?.(task.id, choice)}
-            className="h-5 w-5 text-pink-400 bg-slate-900 border-slate-600 focus:ring-pink-400 focus:ring-offset-slate-800 hover:scale-110 transition-transform cursor-pointer"
-            aria-label={choice}
-          />
-        </div>
-      ))}
+      {/* Yes/No/Maybe styled buttons */}
+      <div className="col-span-5 flex items-center gap-2 justify-center">
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onSetChoice?.(task.id, 'yes')
+          }}
+          className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
+            myChoice === 'yes'
+              ? 'bg-green-500 text-white shadow-lg shadow-green-500/50 scale-105'
+              : 'bg-green-500/20 text-green-400 hover:bg-green-500/30 border border-green-500/30'
+          }`}
+        >
+          ✓ Yes
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onSetChoice?.(task.id, 'maybe')
+          }}
+          className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
+            myChoice === 'maybe'
+              ? 'bg-yellow-500 text-white shadow-lg shadow-yellow-500/50 scale-105'
+              : 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30 border border-yellow-500/30'
+          }`}
+        >
+          ? Maybe
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onSetChoice?.(task.id, 'no')
+          }}
+          className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
+            myChoice === 'no'
+              ? 'bg-red-500 text-white shadow-lg shadow-red-500/50 scale-105'
+              : 'bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30'
+          }`}
+        >
+          ✗ No
+        </button>
+      </div>
 
       {/* Comments indicator */}
       <div className="col-span-1 text-center">

@@ -8,6 +8,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- date: 2025-10-08T22:13:00Z
+  agent: copilot
+  change: Created cosmic loading screen with orbiting emojis and rotating inspirational phrases
+  why: User requested removal of "Entering the matrix..." text and wanted a more interesting, eclectic loading screen that fits the app's unconventional theme
+  scope: [components/common/loading-spinner.tsx, app/loading.tsx]
+  verification: build in progress, new 'cosmic' variant with 10 emojis orbiting, pulsing gradient orb, rotating phrases like "Consulting the cosmic vibes...", "Wrangling digital chaos..."
+  followups: Verify loading screen appearance in production
+
+- date: 2025-10-08T22:11:00Z
+  agent: copilot
+  change: Simplified page.tsx to remove loading screen hang
+  why: App was stuck on loading screen due to ClientOnly wrapper showing Loading fallback; simplified to direct client component with useEffect to check localStorage
+  scope: [app/page.tsx]
+  verification: build PASS, removed ClientOnly and Suspense wrappers, now returns null during initial load then shows AnimalCodeForm or SessionBoard
+  followups: Monitor for hydration issues
+
+- date: 2025-10-08T21:56:00Z
+  agent: copilot
+  change: Fixed auth form import to use AnimalCodeForm directly
+  why: Page was importing LoginForm which had issues; animal code authentication is the current system
+  scope: [app/page.tsx]
+  verification: build PASS, deployment ACTIVE
+  followups: Test production authentication flow
+
 - date: 2025-10-08T00:00:00Z
   agent: copilot
   change: Added complete Digital Ocean deployment support with Docker containerization

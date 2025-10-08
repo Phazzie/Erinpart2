@@ -127,32 +127,35 @@ export default function SessionBoard() {
   }, [answersPayload])
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-      <div className="lg:col-span-8">
-  <SessionHeader name="Erin's Escapades" sessionId={sessionId} answersEncoded={answersParam} />
-        <DayToggle currentDay={currentDay} onDayChange={setCurrentDay} />
-        <TaskList
-          tasks={filteredTasks}
-          onUpdateTask={handleUpdateTask}
-          onSetChoice={setMyChoice as any}
-          myChoiceByTask={myChoiceByTask as any}
-          onReorderTasks={handleReorderTasks}
-          selectedTask={selectedTask}
-          onSelectTask={setSelectedTask}
-          onVote={handleVoteToReveal}
-          currentUserId={user?.id || 'user-1'}
-        />
-        <TaskForm onAddTask={handleAddTask} />
-      </div>
-      <div className="lg:col-span-4">
-        <div className="sticky top-8 space-y-8">
-          <VibeSelector
-            vibes={vibes}
-            currentVibe={currentVibe}
-            onVibeChange={setCurrentVibe}
-            isOwner={true} // Mocking as owner
+    <div className="max-w-7xl mx-auto">
+      <SessionHeader 
+        name="Erin's Escapades" 
+        sessionId={sessionId} 
+        answersEncoded={answersParam}
+        vibes={vibes}
+        currentVibe={currentVibe}
+        onVibeChange={setCurrentVibe}
+      />
+      <DayToggle currentDay={currentDay} onDayChange={setCurrentDay} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
+        <div className="lg:col-span-2">
+          <TaskList
+            tasks={filteredTasks}
+            onUpdateTask={handleUpdateTask}
+            onSetChoice={setMyChoice as any}
+            myChoiceByTask={myChoiceByTask as any}
+            onReorderTasks={handleReorderTasks}
+            selectedTask={selectedTask}
+            onSelectTask={setSelectedTask}
+            onVote={handleVoteToReveal}
+            currentUserId={user?.id || 'user-1'}
           />
-          <SessionDetails selectedTask={selectedTask} onUpdateTask={handleUpdateTask} />
+          <TaskForm onAddTask={handleAddTask} />
+        </div>
+        <div className="lg:col-span-1">
+          <div className="sticky top-8">
+            <SessionDetails selectedTask={selectedTask} onUpdateTask={handleUpdateTask} />
+          </div>
         </div>
       </div>
     </div>
