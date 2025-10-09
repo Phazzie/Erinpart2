@@ -153,5 +153,5 @@ export function useTasks(sessionId: string) {
     }
   }
 
-  return { tasks, loading, addTask, updateTask, deleteTask }
+  return { tasks, loading, addTask, updateTask, deleteTask, refetchTasks: fetchTasks }
 }

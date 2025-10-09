@@ -32,7 +32,7 @@ export default function SessionBoard() {
   // Use URL session if present, otherwise use default from useSession
   const sessionId = urlSessionId || defaultSessionId
 
-  const { tasks, addTask, updateTask } = useTasks(sessionId)
+  const { tasks, addTask, updateTask, refetchTasks } = useTasks(sessionId)
   const { myChoiceByTask, setMyChoice } = useTaskChoices(sessionId, user?.id)
   // State for the list of vibes (still local for now).
   const [vibes] = useState<Vibe[]>(mockVibes)
@@ -89,28 +89,7 @@ export default function SessionBoard() {
    * @param reorderedTasks The newly ordered array of tasks for the current day.
    */
   const handleReorderTasks = async (reorderedTasks: Task[]) => {
-    // Store original tasks for rollback on error
-    const previousTasks = tasks
-    
-    // Optimistic update - show new order immediately
-    const updatedTasks = tasks.map(task => {
-      const reordered = reorderedTasks.find(t => t.id === task.id)
-      return reordered || task
-    })
-    
-    // Update with new order_index
-    const tasksWithNewOrder = updatedTasks.map((task, index) => {
-      const reorderedTask = reorderedTasks.find(t => t.id === task.id)
-      if (reorderedTask) {
-        return { ...task, order_index: reorderedTasks.indexOf(reorderedTask) }
-      }
-      return task
-    })
-    
-    // Apply optimistic update
-    updateTask(tasksWithNewOrder[0]?.id || '', {}) // Trigger a state update
-    
-    // Persist to database - batch update all reordered tasks
+    // Batch update to database - save all order_index changes at once
     try {
       const updates = reorderedTasks.map((task, index) => 
         supabase.from('tasks').update({ order_index: index }).eq('id', task.id)
@@ -121,15 +100,20 @@ export default function SessionBoard() {
       // Check if any updates failed
       const errors = results.filter(r => r.error)
       if (errors.length > 0) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[SessionBoard] Some task order updates failed:', errors)
+        }
         throw new Error('Failed to save task order')
       }
+      
+      // Success - updates are persisted, realtime will sync the state
     } catch (error: any) {
       toast.error('Failed to save task order')
-      // Revert to previous state on error
-      // Since updateTask is already being called by the hook, we need to manually trigger a refresh
       if (process.env.NODE_ENV === 'development') {
         console.error('[SessionBoard] Failed to save task order:', error)
       }
+      // On error, refetch tasks to restore correct order from database
+      await refetchTasks()
     }
   }
 
