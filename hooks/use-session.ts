@@ -53,7 +53,9 @@ export const useSession = (): SessionHook => {
           }
         }
       } catch (error) {
-        console.log('Session init error:', error)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Session init error:', error)
+        }
       } finally {
         if (isMounted) setLoading(false)
       }

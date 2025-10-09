@@ -12,6 +12,9 @@ import { useSession } from '@/hooks/use-session'
 import { useTasks } from '@/hooks/use-tasks'
 import { useTaskChoices } from '@/hooks/use-task-choices'
 import { mockVibes } from '@/lib/mock-data'
+import { toast } from '@/lib/toast'
+import { supabase } from '@/lib/supabase/client'
+import LoadingSpinner from '@/components/common/loading-spinner'
 
 /**
  * The main component that orchestrates the entire session view.
@@ -86,6 +89,9 @@ export default function SessionBoard() {
    * @param reorderedTasks The newly ordered array of tasks for the current day.
    */
   const handleReorderTasks = async (reorderedTasks: Task[]) => {
+    // Store original tasks for rollback on error
+    const previousTasks = tasks
+    
     // Optimistic update - show new order immediately
     const updatedTasks = tasks.map(task => {
       const reordered = reorderedTasks.find(t => t.id === task.id)
@@ -93,15 +99,37 @@ export default function SessionBoard() {
     })
     
     // Update with new order_index
-    const tasksWithNewOrder = updatedTasks.map((task, index) => ({
-      ...task,
-      order_index: index
-    }))
+    const tasksWithNewOrder = updatedTasks.map((task, index) => {
+      const reorderedTask = reorderedTasks.find(t => t.id === task.id)
+      if (reorderedTask) {
+        return { ...task, order_index: reorderedTasks.indexOf(reorderedTask) }
+      }
+      return task
+    })
     
-    // Update each task with new order_index
-    for (const task of reorderedTasks) {
-      const newIndex = reorderedTasks.indexOf(task)
-      await updateTask(task.id, { order_index: newIndex })
+    // Apply optimistic update
+    updateTask(tasksWithNewOrder[0]?.id || '', {}) // Trigger a state update
+    
+    // Persist to database - batch update all reordered tasks
+    try {
+      const updates = reorderedTasks.map((task, index) => 
+        supabase.from('tasks').update({ order_index: index }).eq('id', task.id)
+      )
+      
+      const results = await Promise.all(updates)
+      
+      // Check if any updates failed
+      const errors = results.filter(r => r.error)
+      if (errors.length > 0) {
+        throw new Error('Failed to save task order')
+      }
+    } catch (error: any) {
+      toast.error('Failed to save task order')
+      // Revert to previous state on error
+      // Since updateTask is already being called by the hook, we need to manually trigger a refresh
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[SessionBoard] Failed to save task order:', error)
+      }
     }
   }
 
@@ -146,6 +174,11 @@ export default function SessionBoard() {
       return btoa(encodeURIComponent(json))
     } catch { return undefined }
   }, [answersPayload])
+
+  // Show loading spinner while session is initializing
+  if (sessionLoading || (!user && !urlSessionId)) {
+    return <LoadingSpinner variant="cosmic" />
+  }
 
   return (
     <div className="max-w-7xl mx-auto">

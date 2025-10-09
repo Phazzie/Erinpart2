@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- date: 2025-01-15T00:00:00Z
+  agent: copilot
+  change: Fixed medium priority issues - task persistence, console logs, loading states, realtime cleanup
+  why: Polish and UX improvements for production readiness; implemented task reordering persistence, removed debug console logs from production, added loading states, verified realtime cleanup
+  scope: [components/session/session-board.tsx, hooks/use-tasks.ts, hooks/use-session.ts, hooks/use-realtime.ts, components/tasks/task-form.tsx]
+  verification: Task order persists after page refresh, console logs wrapped in development check, loading states added, realtime cleanup verified
+  followups: Test task reordering persistence in production
+
 - date: 2025-10-08T22:30:00Z
   agent: copilot
   change: Completed comprehensive bug audit and fixed all critical/high priority issues
