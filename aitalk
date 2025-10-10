@@ -12,7 +12,21 @@ How to use (single-file protocol)
     result: pending
     next: Implement Textarea, wire share/reply buttons, parse URL params.
 
-  - at: 2025-10-08T00:00:00Z
+  - at: 2025-10-09T00:00:00Z
+    agent: copilot
+    event: lock_acquired
+    message: Reviewing PR #11 (Fix medium priority issues), creating comprehensive LESSONS_LEARNED.md, then running Playwright tests
+    result: pending
+    next: Review PR changes, add lessons learned, run E2E tests
+
+  - at: 2025-10-10T00:00:00Z
+    agent: copilot
+    event: step
+    message: Created LESSONS_LEARNED.md with 17+ comprehensive lessons (bug audits, documentation, Playwright, Docker, type safety, etc.)
+    result: file created, ready for future contributors to add entries
+    next: Review PR #11 for merge, then run Playwright tests
+
+  - at: 2025-10-10T00:05:00Z
     agent: copilot
     event: lock_acquired
     message: Preparing app for Digital Ocean deployment; adding Docker containerization, cleaning up tests, updating docs.
