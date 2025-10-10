@@ -8,7 +8,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- date: 2025-10-10T00:00:00Z
+- date: 2025-10-10T14:00:00Z
+  agent: copilot
+  change: Enhanced animal code login system with 46 animals (was 16), Quick Join button, and comprehensive test coverage
+  why: User requested more interesting animals and tests; 3x expansion provides better variety (quirky: Platypus/Axolotl, mythical: Dragon/Unicorn); Quick Join reduces decision fatigue; tests ensure reliability
+  scope: [components/auth/animal-code-form.tsx, components/auth/animal-code-form.test.tsx (new, 19 tests)]
+  verification: All 19 tests passing, build successful, button correctly disables on empty fields
+  followups: Consider adding animal emojis/icons for visual appeal
+
+- date: 2025-10-10T13:30:00Z
+  agent: copilot
+  change: Fixed loading screen hang and added comprehensive auth flow debugging
+  why: App hung on loading screen when Supabase not configured; added fallback local user ID if anonymous auth fails
+  scope: [hooks/use-session.ts, lib/supabase/client.ts]
+  verification: Build passing, loading resolves correctly with or without Supabase
+  followups: Monitor auth flow logs in development to catch edge cases
+
+- date: 2025-10-10T13:00:00Z
+  agent: copilot
+  change: Fixed critical created_by field missing from task creation
+  why: Coding agent's code archaeology found RLS policy requires created_by field; task creation would fail in production
+  scope: [hooks/use-tasks.ts, components/session/session-board.tsx]
+  verification: Build passing, userId now passed to useTasks and included in insert
+  followups: Verify task creation works in production with RLS enabled
+
+- date: 2025-10-09T00:30:00Z
   agent: copilot
   change: Created comprehensive LESSONS_LEARNED.md with 17+ development insights and contribution guide
   why: Centralize knowledge from bug audits, deployments, testing, and architectural decisions for future contributors and chat windows

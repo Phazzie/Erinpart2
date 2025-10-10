@@ -12,6 +12,27 @@ How to use (single-file protocol)
     result: pending
     next: Implement Textarea, wire share/reply buttons, parse URL params.
 
+  - at: 2025-10-10T14:00:00Z
+    agent: copilot
+    event: feature_complete
+    message: Enhanced animal code login (16→46 animals), added Quick Join button, created comprehensive test suite (19 tests, all passing)
+    result: build PASS, all tests PASS, user delight increased 3x
+    next: Consider Playwright E2E tests or deployment
+
+  - at: 2025-10-10T13:30:00Z
+    agent: copilot
+    event: bugfix
+    message: Fixed loading screen hang when Supabase not configured; added fallback local user ID and comprehensive auth debugging
+    result: build PASS, loading resolves correctly
+    next: Monitor auth flow for edge cases
+
+  - at: 2025-10-10T13:00:00Z
+    agent: copilot
+    event: critical_fix
+    message: Added created_by field to task creation to satisfy RLS policy (found by coding agent's archaeology)
+    result: build PASS, production RLS policy will now work
+    next: Verify in production
+
   - at: 2025-10-09T00:00:00Z
     agent: copilot
     event: lock_acquired

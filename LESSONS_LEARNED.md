@@ -73,6 +73,36 @@ This file collects key lessons, insights, and best practices from the developmen
 - **Lesson:** Documentation upfront prevents repeated context gathering.
 - **Recommendation:** Create these docs early in development, not as afterthoughts.
 
+---
+
+## Lessons Learned
+
+### 2025-10-10 - Test-Driven Enhancements Reveal UI Strengths
+- **Context:** User requested more animals and tests for animal-code-form. Created comprehensive test suite (19 tests).
+- **Discovery:** Tests revealed that disabled buttons prevent invalid submissions (good UX!). Initial test expected validation error on empty fields, but button was correctly disabled.
+- **Lesson:** Writing tests AFTER implementing features can validate good UX decisions you made intuitively.
+- **Recommendation:** When adding tests to existing code, expect to discover both bugs AND good patterns you implemented without realizing.
+
+### 2025-10-10 - Quick Wins: Expanding Enums/Lists
+- **Insight:** User requested "more interesting animals" - trivial code change (16 → 46 animals), HUGE UX impact.
+- **Lesson:** Simple data expansions (like animal lists, emoji sets, color palettes) are:
+  - Easy to implement (just add to array)
+  - High user delight (3x more options!)
+  - Low risk (no logic changes)
+- **Recommendation:** Don't underestimate the value of expanding choices in dropdown/select lists. Users love variety.
+
+### 2025-10-10 - "Quick Join" Reduces Friction
+- **Context:** Added random animal selection button to reduce decision fatigue.
+- **Lesson:** Users sometimes just want to "get started" without making choices. Offering a "randomize" or "quick start" option alongside manual selection serves both user types.
+- **Pattern:** Manual control + Quick shortcut = Best of both worlds.
+- **Recommendation:** For any multi-step form, consider adding a "use defaults" or "randomize" button.
+
+### 2025-10-10 - Test Organization Mirrors User Journeys
+- **Insight:** Organized tests into sections: Rendering, Validation, Session Creation, Quick Join, Button States, Animal List.
+- **Lesson:** Test suite structure should mirror user mental models and workflows, not just code structure.
+- **Benefit:** Makes test failures immediately understandable ("Validation test failed" vs "Line 243 failed").
+- **Recommendation:** Group tests by feature/journey, not by file location.
+
 ### 2025-10-09 - Real-time Testing with Playwright
 - **Insight:** Automated browser testing (Playwright) is essential for verifying multi-user features when manual testing is impractical.
 - **Context:** User didn't have separate browser windows available.
