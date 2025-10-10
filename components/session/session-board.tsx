@@ -32,7 +32,7 @@ export default function SessionBoard() {
   // Use URL session if present, otherwise use default from useSession
   const sessionId = urlSessionId || defaultSessionId
 
-  const { tasks, addTask, updateTask, refetchTasks } = useTasks(sessionId)
+  const { tasks, addTask, updateTask, refetchTasks } = useTasks(sessionId, user?.id)
   const { myChoiceByTask, setMyChoice } = useTaskChoices(sessionId, user?.id)
   // State for the list of vibes (still local for now).
   const [vibes] = useState<Vibe[]>(mockVibes)

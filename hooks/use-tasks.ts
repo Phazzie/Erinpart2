@@ -6,7 +6,7 @@ import { useRealtime } from '@/hooks/use-realtime'
 import { type Task } from '@/lib/types'
 import { toast } from '@/lib/toast'
 
-export function useTasks(sessionId: string) {
+export function useTasks(sessionId: string, userId?: string) {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -100,9 +100,22 @@ export function useTasks(sessionId: string) {
       if (process.env.NODE_ENV === 'development') {
         console.log('[useTasks] Inserting task into Supabase...')
       }
+      
+      const insertData: any = {
+        text,
+        is_secret,
+        session_id: sessionId,
+        order_index: tasks.length,
+      }
+      
+      // Add created_by if userId is available (required by RLS policy)
+      if (userId) {
+        insertData.created_by = userId
+      }
+      
       const { data, error } = await supabase
         .from('tasks')
-        .insert({ text, is_secret, session_id: sessionId, order_index: tasks.length })
+        .insert(insertData)
         .select()
         .single()
 
