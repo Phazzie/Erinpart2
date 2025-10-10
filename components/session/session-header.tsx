@@ -1,13 +1,13 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Share2, Users, Link as LinkIcon, Copy } from 'lucide-react'
+import { Share2, Users } from 'lucide-react'
 import { Button } from '../ui/button'
 import PresenceIndicator from '../layout/presence-indicator'
 import VibeDropdown from '../vibes/vibe-dropdown'
-import { useEffect, useMemo, useState } from 'react'
-import { toast } from '@/lib/toast'
+import { useMemo, useState } from 'react'
 import { Vibe } from '@/lib/types'
+import ShareSessionModal from './share-session-modal'
 
 interface SessionHeaderProps {
   name: string
@@ -16,6 +16,7 @@ interface SessionHeaderProps {
   vibes?: Vibe[]
   currentVibe?: string
   onVibeChange?: (vibeId: string) => void
+  passphrase?: string // optional passphrase if session created via magic word
 }
 
 export default function SessionHeader({ 
@@ -24,9 +25,10 @@ export default function SessionHeader({
   answersEncoded,
   vibes = [],
   currentVibe = 'default',
-  onVibeChange
+  onVibeChange,
+  passphrase
 }: SessionHeaderProps) {
-  const [copied, setCopied] = useState<'share' | 'reply' | null>(null)
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
 
   const shareUrl = useMemo(() => {
     if (typeof window === 'undefined') return ''
@@ -35,25 +37,6 @@ export default function SessionHeader({
     url.searchParams.delete('answers')
     return url.toString()
   }, [sessionId])
-
-  const replyUrl = useMemo(() => {
-    if (typeof window === 'undefined' || !answersEncoded) return ''
-    const url = new URL(window.location.href)
-    url.searchParams.set('session', sessionId)
-    url.searchParams.set('answers', answersEncoded)
-    return url.toString()
-  }, [sessionId, answersEncoded])
-
-  const copy = async (text: string, kind: 'share' | 'reply') => {
-    try {
-      await navigator.clipboard.writeText(text)
-      setCopied(kind)
-      toast.success(kind === 'share' ? 'Share link copied' : 'Reply link copied')
-      setTimeout(() => setCopied(null), 1500)
-    } catch (e) {
-      toast.error('Failed to copy link')
-    }
-  }
 
   return (
     <motion.div
@@ -78,26 +61,22 @@ export default function SessionHeader({
         <Button
           variant="ghost"
           size="icon"
-          className="hover-glow"
-          onClick={() => shareUrl && copy(shareUrl, 'share')}
-          aria-label="Copy share link"
-          title="Copy share link"
+          className="hover-glow group"
+          onClick={() => setIsShareModalOpen(true)}
+          aria-label="Share session"
+          title="Share session (QR code, link, or code)"
         >
-          {copied === 'share' ? <Copy className="h-5 w-5 text-green-400" /> : <Share2 className="h-5 w-5 text-cyan-400" />}
+          <Share2 className="h-5 w-5 text-cyan-400 group-hover:text-cyan-300 transition-colors" />
         </Button>
-        {answersEncoded ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="hover-glow"
-            onClick={() => replyUrl && copy(replyUrl, 'reply')}
-            aria-label="Copy reply link"
-            title="Copy reply link"
-          >
-            {copied === 'reply' ? <Copy className="h-5 w-5 text-green-400" /> : <LinkIcon className="h-5 w-5 text-pink-400" />}
-          </Button>
-        ) : null}
       </div>
+
+      <ShareSessionModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        shareUrl={shareUrl}
+        sessionId={sessionId}
+        passphrase={passphrase}
+      />
     </motion.div>
   )
 }
