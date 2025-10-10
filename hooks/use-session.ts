@@ -32,8 +32,16 @@ export const useSession = (): SessionHook => {
           const parsed = JSON.parse(stored) as SessionData
           setSessionData(parsed)
           
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[useSession] Found sessionData:', parsed)
+          }
+          
           // Check if already signed in before creating new anonymous session
           const { data: { session } } = await supabase.auth.getSession()
+          
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[useSession] Existing session:', session ? 'found' : 'none')
+          }
           
           if (session?.user && isMounted) {
             // Already signed in, use existing session
@@ -41,23 +49,53 @@ export const useSession = (): SessionHook => {
               id: session.user.id,
               name: parsed.userName
             })
+            if (process.env.NODE_ENV === 'development') {
+              console.log('[useSession] Using existing user:', session.user.id)
+            }
           } else {
             // Sign in anonymously to Supabase for data persistence
+            if (process.env.NODE_ENV === 'development') {
+              console.log('[useSession] Attempting anonymous sign-in...')
+            }
             const { data: authData, error } = await supabase.auth.signInAnonymously()
-            if (!error && authData.user && isMounted) {
+            if (error) {
+              if (process.env.NODE_ENV === 'development') {
+                console.error('[useSession] Anonymous sign-in error:', error)
+              }
+              // Still set user with mock ID to allow app to function
+              if (isMounted) {
+                setUser({
+                  id: 'local-' + Math.random().toString(36).substring(7),
+                  name: parsed.userName
+                })
+              }
+            } else if (authData.user && isMounted) {
               setUser({
                 id: authData.user.id,
                 name: parsed.userName
               })
+              if (process.env.NODE_ENV === 'development') {
+                console.log('[useSession] Created anonymous user:', authData.user.id)
+              }
             }
+          }
+        } else {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[useSession] No sessionData in localStorage')
           }
         }
       } catch (error) {
         if (process.env.NODE_ENV === 'development') {
-          console.log('Session init error:', error)
+          console.error('[useSession] Session init error:', error)
         }
+        // Set loading to false even on error to prevent infinite spinner
       } finally {
-        if (isMounted) setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[useSession] Init complete, loading = false')
+          }
+        }
       }
     }
 

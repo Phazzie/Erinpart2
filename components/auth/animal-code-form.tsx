@@ -10,8 +10,18 @@ import { Loader2 } from 'lucide-react'
 import { toast } from '@/lib/toast'
 
 const ANIMALS = [
+  // Classic
   'Cat', 'Dog', 'Fish', 'Bird', 'Tiger', 'Dolphin', 'Lion', 'Eagle',
-  'Bear', 'Wolf', 'Fox', 'Owl', 'Shark', 'Whale', 'Elephant', 'Monkey'
+  'Bear', 'Wolf', 'Fox', 'Owl', 'Shark', 'Whale', 'Elephant', 'Monkey',
+  // Quirky & Fun
+  'Platypus', 'Axolotl', 'Narwhal', 'Capybara', 'Pangolin', 'Quokka', 
+  'Otter', 'Penguin', 'Red Panda', 'Sloth', 'Koala', 'Octopus',
+  // Mythical
+  'Dragon', 'Phoenix', 'Unicorn', 'Kraken',
+  // Exotic
+  'Lemur', 'Toucan', 'Chameleon', 'Flamingo', 'Peacock', 'Mantis',
+  // Extra Fun
+  'Raccoon', 'Hedgehog', 'Puffin', 'Manatee', 'Jellyfish', 'Starfish'
 ]
 
 export default function AnimalCodeForm() {
@@ -20,6 +30,14 @@ export default function AnimalCodeForm() {
   const [animal2, setAnimal2] = useState('')
   const [firstName, setFirstName] = useState('')
   const [isPending, startTransition] = useTransition();
+
+  const handleQuickJoin = () => {
+    // Generate two random different animals
+    const shuffled = [...ANIMALS].sort(() => Math.random() - 0.5)
+    setAnimal1(shuffled[0])
+    setAnimal2(shuffled[1])
+    toast.success(`Random animals selected: ${shuffled[0]} & ${shuffled[1]}! 🎲`)
+  }
 
   const handleJoinSession = async () => {
     // Validation
@@ -141,6 +159,29 @@ export default function AnimalCodeForm() {
           ) : (
             <span>🦁 Join Session</span>
           )}
+        </Button>
+      </motion.div>
+
+      <div className="relative my-4">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-600"></div>
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-gray-900 px-2 text-gray-400">Or</span>
+        </div>
+      </div>
+
+      <motion.div
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        <Button
+          onClick={handleQuickJoin}
+          disabled={isPending}
+          variant="outline"
+          className="w-full border-2 border-cyan-500/50 bg-cyan-900/20 hover:bg-cyan-800/30 text-cyan-300 font-semibold py-2 px-4 rounded-lg transition-all duration-300"
+        >
+          🎲 Pick Random Animals for Me
         </Button>
       </motion.div>
 

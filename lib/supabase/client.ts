@@ -13,6 +13,7 @@ const supabaseStub: any = {
   auth: {
     getUser: async () => ({ data: { user: null }, error: null }),
     getSession: async () => ({ data: { session: null }, error: null }),
+    signInAnonymously: async () => ({ data: { user: null, session: null }, error: { message: 'Supabase not configured' } }),
     onAuthStateChange: (_cb: any) => ({ data: { subscription: { unsubscribe: noop } } }),
     signInWithPassword: async () => ({ data: { user: null }, error: { message: 'Supabase not configured' } }),
     signUp: async () => ({ data: { user: null }, error: { message: 'Supabase not configured' } }),
