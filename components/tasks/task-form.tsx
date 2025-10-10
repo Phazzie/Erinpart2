@@ -29,18 +29,25 @@ export default function TaskForm({ onAddTask }: TaskFormProps) {
   const [text, setText] = useState('')
   // State for the "secret task" checkbox
   const [isSecret, setIsSecret] = useState(false)
+  // State for submission loading
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   /**
    * Handles the form submission event.
    * Prevents the default form action, trims the input text,
    * calls the onAddTask prop, and resets the form fields.
    */
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (text.trim()) {
-      onAddTask(text.trim(), isSecret)
-      setText('')
-      setIsSecret(false)
+      setIsSubmitting(true)
+      try {
+        await onAddTask(text.trim(), isSecret)
+        setText('')
+        setIsSecret(false)
+      } finally {
+        setIsSubmitting(false)
+      }
     }
   }
 
@@ -62,10 +69,10 @@ export default function TaskForm({ onAddTask }: TaskFormProps) {
           <Button 
             type="submit" 
             className="btn-neon whitespace-nowrap" 
-            disabled={!text.trim()}
+            disabled={!text.trim() || isSubmitting}
           >
             <PlusCircle className="h-4 w-4 mr-2" />
-            Add Task
+            {isSubmitting ? 'Adding...' : 'Add Task'}
           </Button>
         </div>
         <div className="flex items-center space-x-2">

@@ -29,6 +29,9 @@ export const useRealtime = ({ channelName, table, filter, callback }: UseRealtim
       .subscribe()
 
     return () => {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[useRealtime] Cleaning up channel: ${channelName}`)
+      }
       supabase.removeChannel(channel)
     }
   }, [channelName, table, filter, callback])
