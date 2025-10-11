@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- date: 2025-10-11T18:45:00Z
+  agent: copilot
+  change: Fixed infinite recursion error when adding tasks by wrapping handler functions in useCallback
+  why: Functions in session-board.tsx (handleAddTask, handleUpdateTask, handleVoteToReveal) and use-tasks.ts (addTask, updateTask, deleteTask) were being recreated on every render, causing infinite re-render loops
+  scope: [components/session/session-board.tsx, hooks/use-tasks.ts]
+  verification: Wrapped all handler functions in useCallback with proper dependencies to ensure stable references
+  followups: Test in browser by adding a task - should not get infinite recursion error popup
+
 ### Added
 - date: 2025-10-11T10:30:00Z
   agent: copilot
