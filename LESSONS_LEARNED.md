@@ -34,6 +34,30 @@ This file collects key lessons, insights, and best practices from the developmen
 
 ## Lessons Learned
 
+### 2025-10-11 - Loading Screens and Async State Conflicts
+- **Issue:** Loading screen stuck after animal selection because `startTransition()` + `window.location.href` created conflicting async states.
+- **Context:** React's `useTransition()` expects navigation to complete within the transition, but `window.location.href` causes immediate page unload.
+- **Lesson:** Don't wrap full page navigation in `startTransition()`. Use simple boolean state for loading indicators instead.
+- **Fix:** Removed `useTransition()`, used `setIsJoining(true)` before navigation.
+- **Recommendation:** `useTransition()` is for React-controlled transitions (router.push, state updates), not for browser navigation (window.location).
+
+### 2025-10-11 - URL Parameters + localStorage for Session Persistence
+- **Issue:** E2E tests couldn't verify sessions because app only used localStorage (not visible to tests).
+- **Context:** Tests need to assert URLs, but localStorage is isolated per browser context.
+- **Lesson:** Use BOTH localStorage (for persistence) AND URL parameters (for sharing/testing).
+- **Implementation:** `window.location.href = /?session=${sessionId}` enables URL sharing while keeping localStorage benefits.
+- **Recommendation:** For shareable features, always include state in URL even if you also persist to localStorage.
+
+### 2025-10-11 - GitHub Coding Agent Coordination Protocol
+- **Insight:** When working with multiple AI agents (Copilot + GitHub Coding Agent), clear task separation prevents conflicts.
+- **Implementation:** Created `GITHUB_AGENT_TASK.md` with:
+  - Specific files/functions to fix
+  - Code examples showing current vs. fixed state
+  - Definition of done with test commands
+  - Explicit "DO NOT TOUCH" list for other agent's work
+- **Lesson:** Coordination documents work better than verbal handoffs for async AI collaboration.
+- **Recommendation:** Use `aitalk` file for real-time coordination + task documents for detailed work specs.
+
 ### 2025-10-10 - Comprehensive Bug Audits Save Time
 - **Insight:** Running a comprehensive code review early catches critical issues before they compound.
 - **Context:** BUG_AUDIT.md identified 10 issues (3 critical, 4 high, 3 medium) that would have caused production problems.

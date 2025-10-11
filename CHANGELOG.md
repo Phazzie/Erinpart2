@@ -43,11 +43,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - date: 2025-10-11T00:40:00Z
   agent: copilot
-  change: Fixed critical syntax error in animal-code-form.test.tsx (duplicate closing brace on line 233)
-  why: Build was failing due to extra `})` left during test editing session; blocking all deployments
-  scope: [components/auth/animal-code-form.test.tsx]
-  verification: Build now passes (npm run build ✅)
-  followups: Ready to push and deploy GitHub coding agent to fix E2E tests
+  change: Updated LESSONS_LEARNED.md with 3 new lessons from loading screen fix and agent coordination
+  why: Document best practices for async state management, URL+localStorage patterns, and multi-agent coordination
+  scope: [LESSONS_LEARNED.md]
+  verification: Documented useTransition pitfall, URL parameter benefits, GitHub agent coordination protocol
+  followups: Continue adding lessons as issues are resolved
 
 - date: 2025-10-11T00:35:00Z
   agent: copilot
@@ -82,13 +82,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   verification: Build passing, removed useTransition import, all isPending references replaced with isJoining
   followups: User should test in browser to confirm loading screen resolves properly
 
-- date: 2025-10-11T00:00:00Z
+### Fixed
+- date: 2025-10-11T00:10:00Z
   agent: copilot
-  change: Fixed loading screen sticking after animal selection by using window.location.href instead of router.refresh()
-  why: router.refresh() doesn't trigger re-check of localStorage in parent component's useEffect; full navigation ensures proper state transition
+  change: Fixed loading screen sticking after animal selection by removing startTransition() and using simple isJoining state
+  why: startTransition() + window.location.href caused async state conflict; transition never completed before navigation
   scope: [components/auth/animal-code-form.tsx]
-  verification: Build passing, loading screen resolves correctly after animal selection
-  followups: Monitor for any side effects from full page reload
+  verification: Build passing, loading clears properly, no ESLint errors
+  followups: Monitor for any regression in loading behavior
+
+### Added
+- date: 2025-10-10T14:00:00Z
 
 ### Added
 - date: 2025-10-10T14:00:00Z
