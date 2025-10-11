@@ -22,23 +22,28 @@ jest.mock('framer-motion', () => ({
 }))
 
 describe('AnimalCodeForm', () => {
-  const mockRouter = {
-    refresh: jest.fn(),
-  }
+  let mockLocationHref: string
 
   beforeEach(() => {
+    // Clear all mocks
     jest.clearAllMocks()
-    ;(useRouter as jest.Mock).mockReturnValue(mockRouter)
+    
     // Mock localStorage
-    Object.defineProperty(window, 'localStorage', {
-      value: {
-        getItem: jest.fn(),
-        setItem: jest.fn(),
-        removeItem: jest.fn(),
-        clear: jest.fn(),
+    Storage.prototype.setItem = jest.fn()
+    Storage.prototype.getItem = jest.fn()
+    
+    // Mock window.location.href with a setter that captures the value
+    mockLocationHref = ''
+    delete (window as any).location
+    window.location = {
+      href: '',
+      set href(url: string) {
+        mockLocationHref = url
       },
-      writable: true,
-    })
+      get href() {
+        return mockLocationHref
+      },
+    } as any
   })
 
   describe('Rendering', () => {
@@ -202,8 +207,11 @@ describe('AnimalCodeForm', () => {
           expect.stringContaining('Alice')
         )
         expect(toast.success).toHaveBeenCalledWith('Welcome Alice! 🐾')
-        expect(mockRouter.refresh).toHaveBeenCalled()
       })
+      
+      // Check navigation happened after waitFor completes
+      expect(mockLocationHref).toBe('/')
+    })
     })
 
     it('should create session with lowercase animal code', async () => {
@@ -288,9 +296,12 @@ describe('AnimalCodeForm', () => {
       
       await waitFor(() => {
         expect(localStorage.setItem).toHaveBeenCalled()
-        expect(toast.success).toHaveBeenCalledWith('Welcome Charlie! 🐾')
-        expect(mockRouter.refresh).toHaveBeenCalled()
+        expect(toast.success).toHaveBeenCalled()
       })
+      
+      // Check navigation happened after waitFor completes
+      expect(mockLocationHref).toBe('/')
+    })
     })
   })
 

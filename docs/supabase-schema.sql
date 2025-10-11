@@ -29,12 +29,21 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 CREATE TABLE IF NOT EXISTS public.sessions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at timestamptz NOT NULL DEFAULT now(),
+  expires_at timestamptz NOT NULL DEFAULT (now() + interval '3 days'),
   host_id uuid NOT NULL REFERENCES public.users ON DELETE CASCADE,
   day_vibe jsonb,
   session_code text UNIQUE NOT NULL
 );
 
 ALTER TABLE public.sessions ENABLE ROW LEVEL SECURITY;
+
+-- Cleanup job: delete expired sessions (run manually or via pg_cron)
+-- To run manually:
+-- DELETE FROM public.sessions WHERE expires_at < now();
+
+-- If pg_cron is available, schedule daily cleanup:
+-- CREATE EXTENSION IF NOT EXISTS pg_cron;
+-- SELECT cron.schedule('cleanup-expired-sessions', '0 3 * * *', $$DELETE FROM public.sessions WHERE expires_at < now()$$);
 
 DO $$ BEGIN
   CREATE POLICY "Hosts can create sessions." ON public.sessions FOR INSERT WITH CHECK (auth.uid() = host_id);

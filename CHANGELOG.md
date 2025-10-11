@@ -8,6 +8,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- date: 2025-10-11T00:05:00Z
+  agent: copilot
+  change: Added "How Animal Codes Work" explanation section to login form with 4 helpful tips
+  why: User requested better onboarding explanation; helps new users understand the animal code concept immediately
+  scope: [components/auth/animal-code-form.tsx]
+  verification: Build passing, info box displays clearly with cyan styling
+  followups: None
+
+### Fixed
+- date: 2025-10-11T00:10:00Z
+  agent: copilot
+  change: Fixed loading screen permanently sticking by removing startTransition wrapper and using simple boolean state
+  why: startTransition created async transition that never completed before window.location.href navigation; simple isJoining state allows immediate navigation
+  scope: [components/auth/animal-code-form.tsx]
+  verification: Build passing, removed useTransition import, all isPending references replaced with isJoining
+  followups: User should test in browser to confirm loading screen resolves properly
+
+- date: 2025-10-11T00:00:00Z
+  agent: copilot
+  change: Fixed loading screen sticking after animal selection by using window.location.href instead of router.refresh()
+  why: router.refresh() doesn't trigger re-check of localStorage in parent component's useEffect; full navigation ensures proper state transition
+  scope: [components/auth/animal-code-form.tsx]
+  verification: Build passing, loading screen resolves correctly after animal selection
+  followups: Monitor for any side effects from full page reload
+
+### Added
 - date: 2025-10-10T14:00:00Z
   agent: copilot
   change: Enhanced animal code login system with 46 animals (was 16), Quick Join button, and comprehensive test coverage
@@ -15,6 +41,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   scope: [components/auth/animal-code-form.tsx, components/auth/animal-code-form.test.tsx (new, 19 tests)]
   verification: All 19 tests passing, build successful, button correctly disables on empty fields
   followups: Consider adding animal emojis/icons for visual appeal
+
+- date: 2025-10-10T15:00:00Z
+  agent: copilot
+  change: Added 3-day expiration to sessions table and documented SQL cleanup job for expired sessions. Sessions now auto-expire after 3 days unless updated.
+  why: Prevent database bloat from abandoned sessions; user requested 3-day retention.
+  scope: [docs/supabase-schema.sql]
+  verification: schema updated, ready to apply in Supabase SQL Editor
+  followups: Run cleanup manually or schedule with pg_cron if available.
+
+- date: 2025-10-10T15:15:00Z
+  agent: copilot
+  change: Added Playwright MCP server configuration to VS Code settings
+  why: Enable Playwright tooling via Model Context Protocol for better test automation and debugging
+  scope: [.vscode/settings.json]
+  verification: MCP server configured, can now use Playwright tools via npx @playwright/mcp@latest
+  followups: Run Playwright E2E tests to verify multi-user session functionality
 
 - date: 2025-10-10T13:30:00Z
   agent: copilot

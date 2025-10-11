@@ -12,6 +12,27 @@ How to use (single-file protocol)
     result: pending
     next: Implement Textarea, wire share/reply buttons, parse URL params.
 
+  - at: 2025-10-11T00:00:00Z
+    agent: copilot
+    event: bugfix
+    message: Fixed loading screen sticking after animal selection; changed router.refresh() to window.location.href to force re-check of localStorage
+    result: build PASS
+    next: Add explanation section and update CHANGELOG
+
+  - at: 2025-10-11T00:10:00Z
+    agent: copilot
+    event: critical_bugfix
+    message: Fixed loading screen hang by removing startTransition wrapper; replaced with simple isJoining state; window.location.href now completes immediately without async transition blocking
+    result: build PASS
+    next: Release lock, update CHANGELOG, test in browser
+
+  - at: 2025-10-11T00:05:00Z
+    agent: copilot
+    event: feature_complete
+    message: Added "How Animal Codes Work" explanation section with 4 helpful tips; enhanced UX clarity
+    result: build PASS, improved user onboarding
+    next: Release lock and update CHANGELOG
+
   - at: 2025-10-10T14:00:00Z
     agent: copilot
     event: feature_complete

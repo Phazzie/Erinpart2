@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
@@ -29,7 +29,7 @@ export default function AnimalCodeForm() {
   const [animal1, setAnimal1] = useState('')
   const [animal2, setAnimal2] = useState('')
   const [firstName, setFirstName] = useState('')
-  const [isPending, startTransition] = useTransition();
+  const [isJoining, setIsJoining] = useState(false)
 
   const handleQuickJoin = () => {
     // Generate two random different animals
@@ -39,7 +39,7 @@ export default function AnimalCodeForm() {
     toast.success(`Random animals selected: ${shuffled[0]} & ${shuffled[1]}! 🎲`)
   }
 
-  const handleJoinSession = async () => {
+  const handleJoinSession = () => {
     // Validation
     if (!animal1 || !animal2 || !firstName) {
       toast.error('Please fill in all fields')
@@ -62,20 +62,22 @@ export default function AnimalCodeForm() {
       return
     }
 
-    startTransition(() => {
-      const sessionId = `${animal1.toLowerCase()}-${animal2.toLowerCase()}`
-      
-      // Store session info in localStorage
-      localStorage.setItem('sessionData', JSON.stringify({
-        sessionId,
-        userName: name,
-        joinedAt: new Date().toISOString()
-      }))
-      
-      toast.success(`Welcome ${name}! 🐾`)
-      // Use Next.js router instead of window.location.reload()
-      router.refresh()
-    });
+    // Set loading state
+    setIsJoining(true)
+    
+    const sessionId = `${animal1.toLowerCase()}-${animal2.toLowerCase()}`
+    
+    // Store session info in localStorage
+    localStorage.setItem('sessionData', JSON.stringify({
+      sessionId,
+      userName: name,
+      joinedAt: new Date().toISOString()
+    }))
+    
+    toast.success(`Welcome ${name}! 🐾`)
+    
+    // Force a full page reload to trigger the parent's useEffect
+    window.location.href = '/'
   }
 
   return (
@@ -91,6 +93,19 @@ export default function AnimalCodeForm() {
         <p className="text-sm text-gray-300 mt-2">
           Pick two animals and enter your name to join or create a session
         </p>
+      </div>
+
+      {/* Explanation Section */}
+      <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg p-4 space-y-2">
+        <h4 className="text-cyan-400 font-semibold text-sm flex items-center gap-2">
+          <span>ℹ️</span> How Animal Codes Work
+        </h4>
+        <ul className="text-xs text-gray-300 space-y-1.5 list-disc list-inside">
+          <li>Choose any 2 animals to create a unique session code</li>
+          <li>Anyone with the same animal pair can join your session</li>
+          <li>Share your code with friends to collaborate in real-time!</li>
+          <li>Example: &quot;Cat-Dog&quot; or &quot;Unicorn-Dolphin&quot;</li>
+        </ul>
       </div>
 
       <div className="space-y-4">
@@ -148,10 +163,10 @@ export default function AnimalCodeForm() {
       >
         <Button
           onClick={handleJoinSession}
-          disabled={!animal1.trim() || !animal2.trim() || !firstName.trim() || isPending}
+          disabled={!animal1.trim() || !animal2.trim() || !firstName.trim() || isJoining}
           className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isPending ? (
+          {isJoining ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Joining session...
@@ -177,7 +192,7 @@ export default function AnimalCodeForm() {
       >
         <Button
           onClick={handleQuickJoin}
-          disabled={isPending}
+          disabled={isJoining}
           variant="outline"
           className="w-full border-2 border-cyan-500/50 bg-cyan-900/20 hover:bg-cyan-800/30 text-cyan-300 font-semibold py-2 px-4 rounded-lg transition-all duration-300"
         >
