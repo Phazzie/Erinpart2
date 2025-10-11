@@ -76,8 +76,8 @@ export default function AnimalCodeForm() {
     
     toast.success(`Welcome ${name}! 🐾`)
     
-    // Force a full page reload to trigger the parent's useEffect
-    window.location.href = '/'
+    // Navigate to session with URL parameter for sharing/bookmarking
+    window.location.href = `/?session=${sessionId}`
   }
 
   return (

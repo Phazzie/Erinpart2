@@ -212,7 +212,6 @@ describe('AnimalCodeForm', () => {
       // Check navigation happened after waitFor completes
       expect(mockLocationHref).toBe('/')
     })
-    })
 
     it('should create session with lowercase animal code', async () => {
       render(<AnimalCodeForm />)
@@ -301,7 +300,6 @@ describe('AnimalCodeForm', () => {
       
       // Check navigation happened after waitFor completes
       expect(mockLocationHref).toBe('/')
-    })
     })
   })
 

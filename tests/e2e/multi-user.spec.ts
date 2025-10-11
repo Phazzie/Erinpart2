@@ -13,17 +13,17 @@ test.describe('Multi-User Session Joining', () => {
     await page1.goto('/')
     
     // Select animals for User 1
-    await page1.selectOption('select[aria-label="First animal"]', 'dragon')
-    await page1.selectOption('select[aria-label="Second animal"]', 'phoenix')
+    await page1.selectOption('#animal1', 'Dragon')
+    await page1.selectOption('#animal2', 'Phoenix')
     
     // Enter name
-    await page1.fill('input[placeholder*="first name"]', 'Alice')
+    await page1.fill('#firstName', 'Alice')
     
     // Join session
     await page1.click('button:has-text("Join Session")')
     
-    // Wait for session board to load
-    await page1.waitForSelector('text=Erin\'s Escapades', { timeout: 10000 })
+    // Wait for session board to load - wait for task input instead
+    await page1.waitForSelector('textarea[placeholder*="Add a new chaotic task"]', { timeout: 10000 })
     
     // Get the session URL
     const sessionUrl = page1.url()
@@ -33,17 +33,17 @@ test.describe('Multi-User Session Joining', () => {
     await page2.goto('/')
     
     // Select same animals
-    await page2.selectOption('select[aria-label="First animal"]', 'dragon')
-    await page2.selectOption('select[aria-label="Second animal"]', 'phoenix')
+    await page2.selectOption('#animal1', 'Dragon')
+    await page2.selectOption('#animal2', 'Phoenix')
     
     // Enter different name
-    await page2.fill('input[placeholder*="first name"]', 'Bob')
+    await page2.fill('#firstName', 'Bob')
     
     // Join session
     await page2.click('button:has-text("Join Session")')
     
     // Wait for session board
-    await page2.waitForSelector('text=Erin\'s Escapades', { timeout: 10000 })
+    await page2.waitForSelector('textarea[placeholder*="Add a new chaotic task"]', { timeout: 10000 })
 
     // User 1 creates a task
     await page1.fill('textarea[placeholder*="Add a new chaotic task"]', 'Buy groceries')
@@ -69,11 +69,11 @@ test.describe('Multi-User Session Joining', () => {
 
     // User 1: Create session
     await page1.goto('/')
-    await page1.selectOption('select[aria-label="First animal"]', 'cat')
-    await page1.selectOption('select[aria-label="Second animal"]', 'dog')
-    await page1.fill('input[placeholder*="first name"]', 'Charlie')
+    await page1.selectOption('#animal1', 'Cat')
+    await page1.selectOption('#animal2', 'Dog')
+    await page1.fill('#firstName', 'Charlie')
     await page1.click('button:has-text("Join Session")')
-    await page1.waitForSelector('text=Erin\'s Escapades', { timeout: 10000 })
+    await page1.waitForSelector('textarea[placeholder*="Add a new chaotic task"]', { timeout: 10000 })
     
     // Get session URL
     const sessionUrl = page1.url()
@@ -83,14 +83,14 @@ test.describe('Multi-User Session Joining', () => {
     
     // Should see session board directly (no login needed if localStorage magic works)
     // OR may need to enter name - let's handle both cases
-    const hasLoginForm = await page2.locator('input[placeholder*="first name"]').isVisible().catch(() => false)
+    const hasLoginForm = await page2.locator('#firstName').isVisible().catch(() => false)
     
     if (hasLoginForm) {
-      await page2.fill('input[placeholder*="first name"]', 'Dana')
+      await page2.fill('#firstName', 'Dana')
       await page2.click('button:has-text("Join Session")')
     }
     
-    await page2.waitForSelector('text=Erin\'s Escapades', { timeout: 10000 })
+    await page2.waitForSelector('textarea[placeholder*="Add a new chaotic task"]', { timeout: 10000 })
 
     // Verify both users are in the same session
     expect(page1.url()).toBe(page2.url())
@@ -105,11 +105,11 @@ test.describe('Multi-User Session Joining', () => {
 
     // User 1: Create session and open share modal
     await page1.goto('/')
-    await page1.selectOption('select[aria-label="First animal"]', 'unicorn')
-    await page1.selectOption('select[aria-label="Second animal"]', 'narwhal')
-    await page1.fill('input[placeholder*="first name"]', 'Eve')
+    await page1.selectOption('#animal1', 'Unicorn')
+    await page1.selectOption('#animal2', 'Narwhal')
+    await page1.fill('#firstName', 'Eve')
     await page1.click('button:has-text("Join Session")')
-    await page1.waitForSelector('text=Erin\'s Escapades', { timeout: 10000 })
+    await page1.waitForSelector('textarea[placeholder*="Add a new chaotic task"]', { timeout: 10000 })
     
     // Click share button
     await page1.click('button:has-text("Share")')
@@ -133,9 +133,9 @@ test.describe('Multi-User Session Joining', () => {
     await page2.goto(shareUrl)
     
     // May need to enter name
-    const hasLoginForm = await page2.locator('input[placeholder*="first name"]').isVisible().catch(() => false)
+    const hasLoginForm = await page2.locator('#firstName').isVisible().catch(() => false)
     if (hasLoginForm) {
-      await page2.fill('input[placeholder*="first name"]', 'Frank')
+      await page2.fill('#firstName', 'Frank')
       await page2.click('button:has-text("Join Session")')
     }
     
@@ -151,8 +151,12 @@ test.describe('Multi-User Session Joining', () => {
   test('Quick Join creates random session', async ({ page }) => {
     await page.goto('/')
     
-    // Click Quick Join button
-    await page.click('button:has-text("Quick Join")')
+    // Click Quick Join button - need to fill name first for button to be enabled
+    await page.fill('#firstName', 'QuickUser')
+    await page.click('button:has-text("Pick Random Animals")')
+    
+    // Now join the session with the random animals
+    await page.click('button:has-text("Join Session")')
     
     // Should automatically join with random animals
     await page.waitForSelector('text=Erin\'s Escapades', { timeout: 10000 })
