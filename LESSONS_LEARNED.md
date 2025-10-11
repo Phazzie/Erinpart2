@@ -1,7 +1,7 @@
 # 📚 Lessons Learned - Erin's Escapades
 
 **Date Started:** October 9, 2025  
-**Last Updated:** October 10, 2025  
+**Last Updated:** October 11, 2025  
 **Maintainer:** GitHub Copilot
 
 ---
@@ -76,6 +76,46 @@ This file collects key lessons, insights, and best practices from the developmen
 ---
 
 ## Lessons Learned
+
+### 2025-10-11 - React Transitions Can Cause Loading State Bugs
+- **Issue:** Used `useTransition()` and `startTransition()` wrapper around navigation code, causing loading screen to stick indefinitely.
+- **Root Cause:** `startTransition()` creates async React transition state that never completes when `window.location.href` triggers full page navigation.
+- **Lesson:** Don't wrap full page navigations (window.location) in `startTransition()` - they bypass React's transition lifecycle.
+- **Fix:** Use simple boolean state (`isJoining`) for loading indicators during full page navigation.
+- **When to Use Transitions:** Only for React-managed state updates, not for browser-level navigation.
+- **Recommendation:** If you need loading state for window.location changes, use regular useState, not useTransition.
+
+### 2025-10-11 - Agent Coordination Requires Clear Division of Labor
+- **Insight:** Created GITHUB_AGENT_TASK.md to coordinate parallel work between Copilot and GitHub coding agent.
+- **What Worked:**
+  - Explicit "DO NOT TOUCH" section listing files Copilot is handling
+  - Clear priority levels (CRITICAL, HIGH, MEDIUM)
+  - Specific code examples showing expected fixes
+  - Definition of Done checklist
+  - Reference to coordination log (aitalk file)
+- **Lesson:** When splitting work across agents/sessions, document boundaries clearly to prevent conflicts.
+- **Pattern:** "Agent A handles X files/features, Agent B handles Y files/features"
+- **Recommendation:** Use aitalk file for real-time coordination, task docs for long-form instructions.
+
+### 2025-10-11 - E2E Tests Need Reliable Selectors
+- **Issue:** Playwright E2E tests failing because selectors were too generic (`text=Erin's Escapades`) or used non-existent attributes (`aria-label`).
+- **Lesson:** E2E tests should use:
+  1. Element IDs first (`#firstName`, `#animal1`)
+  2. Unique attributes second (placeholder text, data-testid)
+  3. Text content last (too fragile)
+- **Best Practice:** Add test IDs during component development, not as afterthought.
+- **Recommendation:** When fixing E2E tests, check actual HTML in dev tools, don't guess at selectors.
+
+### 2025-10-11 - URL Params + localStorage = Flexible Session Management
+- **Insight:** App originally used only localStorage for sessions, but E2E tests and URL sharing need URL parameters.
+- **Solution:** Support BOTH: `?session=animal1-animal2` in URL AND localStorage for persistence.
+- **Lesson:** Hybrid approach enables:
+  - URL sharing (works across devices)
+  - Bookmarking
+  - E2E test assertions
+  - Offline persistence (localStorage)
+- **Pattern:** Parse URL params first, fall back to localStorage if no URL param.
+- **Recommendation:** For session-based apps, always support URL parameters even if using localStorage internally.
 
 ### 2025-10-10 - Test-Driven Enhancements Reveal UI Strengths
 - **Context:** User requested more animals and tests for animal-code-form. Created comprehensive test suite (19 tests).

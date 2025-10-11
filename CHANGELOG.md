@@ -8,6 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- date: 2025-10-11T00:35:00Z
+  agent: copilot
+  change: Created GITHUB_AGENT_TASK.md comprehensive task document for GitHub coding agent coordination
+  why: Systematic approach to fixing E2E tests and critical bugs; clear division of labor between Copilot (UX/UI) and Agent (core stability)
+  scope: [GITHUB_AGENT_TASK.md (new), aitalk]
+  verification: Document pushed to GitHub, includes detailed fix instructions for 3 critical bugs and E2E test failures
+  followups: GitHub coding agent will execute tasks; Copilot continues UX polish
+
+- date: 2025-10-11T00:15:00Z
+  agent: copilot
+  change: Added session URL parameter support - sessions now include ?session=animal1-animal2 in URL
+  why: Enables proper URL sharing, bookmarking, and E2E test assertions; supports both localStorage AND URL-based session joining
+  scope: [components/auth/animal-code-form.tsx]
+  verification: Build passing, URL now includes session parameter for sharing
+  followups: E2E tests need updating to use correct selectors
+
 - date: 2025-10-11T00:05:00Z
   agent: copilot
   change: Added "How Animal Codes Work" explanation section to login form with 4 helpful tips
