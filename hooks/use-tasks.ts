@@ -69,24 +69,29 @@ export function useTasks(sessionId: string, userId?: string) {
     }
 
     const optimisticId = `optimistic-${Date.now()}`
-    const newTask: Task = {
-      id: optimisticId,
-      session_id: sessionId,
-      created_at: new Date().toISOString(),
-      text,
-      is_complete: false,
-      day: 'today', // default value
-      order_index: tasks.length,
-      is_secret,
-      votes: [],
-      // Add missing properties to satisfy the Task type
-      choice: '',
-      comments: '',
-      updated_at: new Date().toISOString(),
-      created_by: '', // Ideally, this would be the current user's ID
-    }
-
-    setTasks(current => [...current, newTask])
+    
+    // Use functional update to get current tasks length
+    let currentLength = 0
+    setTasks(current => {
+      currentLength = current.length
+      const newTask: Task = {
+        id: optimisticId,
+        session_id: sessionId,
+        created_at: new Date().toISOString(),
+        text,
+        is_complete: false,
+        day: 'today', // default value
+        order_index: currentLength,
+        is_secret,
+        votes: [],
+        // Add missing properties to satisfy the Task type
+        choice: '',
+        comments: '',
+        updated_at: new Date().toISOString(),
+        created_by: '', // Ideally, this would be the current user's ID
+      }
+      return [...current, newTask]
+    })
 
     if (!isSupabaseConfigured) {
       if (process.env.NODE_ENV === 'development') {
@@ -105,7 +110,7 @@ export function useTasks(sessionId: string, userId?: string) {
         text,
         is_secret,
         session_id: sessionId,
-        order_index: tasks.length,
+        order_index: currentLength,
       }
       
       // Add created_by if userId is available (required by RLS policy)
@@ -138,11 +143,15 @@ export function useTasks(sessionId: string, userId?: string) {
       toast.error(`Failed to add task: ${error.message}`)
       setTasks(current => current.filter(t => t.id !== optimisticId))
     }
-  }, [sessionId, tasks.length, userId])
+  }, [sessionId, userId])
 
   const updateTask = useCallback(async (id: string, updates: Partial<Task>) => {
-    const originalTasks = tasks
-    setTasks(current => current.map(t => t.id === id ? { ...t, ...updates } : t))
+    // Store original state for rollback using functional update
+    let originalTasks: Task[] = []
+    setTasks(current => {
+      originalTasks = current
+      return current.map(t => t.id === id ? { ...t, ...updates } : t)
+    })
 
     try {
       const { error } = await supabase.from('tasks').update(updates).eq('id', id)
@@ -154,8 +163,12 @@ export function useTasks(sessionId: string, userId?: string) {
   }, [])
 
   const deleteTask = useCallback(async (id: string) => {
-    const originalTasks = tasks
-    setTasks(current => current.filter(t => t.id !== id))
+    // Store original state for rollback using functional update
+    let originalTasks: Task[] = []
+    setTasks(current => {
+      originalTasks = current
+      return current.filter(t => t.id !== id)
+    })
 
     try {
       const { error } = await supabase.from('tasks').delete().eq('id', id)
