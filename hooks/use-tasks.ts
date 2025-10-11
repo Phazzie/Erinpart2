@@ -55,7 +55,7 @@ export function useTasks(sessionId: string, userId?: string) {
     callback: handleRealtimeUpdate,
   })
 
-  const addTask = async (text: string, is_secret = false) => {
+  const addTask = useCallback(async (text: string, is_secret = false) => {
     if (!text.trim() || !sessionId) {
       if (process.env.NODE_ENV === 'development') {
         console.error('[useTasks] Cannot add task:', { text: text.trim(), sessionId })
@@ -138,9 +138,9 @@ export function useTasks(sessionId: string, userId?: string) {
       toast.error(`Failed to add task: ${error.message}`)
       setTasks(current => current.filter(t => t.id !== optimisticId))
     }
-  }
+  }, [sessionId, tasks.length, userId])
 
-  const updateTask = async (id: string, updates: Partial<Task>) => {
+  const updateTask = useCallback(async (id: string, updates: Partial<Task>) => {
     const originalTasks = tasks
     setTasks(current => current.map(t => t.id === id ? { ...t, ...updates } : t))
 
@@ -151,9 +151,9 @@ export function useTasks(sessionId: string, userId?: string) {
       toast.error(`Failed to update task: ${error.message}`)
       setTasks(originalTasks)
     }
-  }
+  }, [])
 
-  const deleteTask = async (id: string) => {
+  const deleteTask = useCallback(async (id: string) => {
     const originalTasks = tasks
     setTasks(current => current.filter(t => t.id !== id))
 
@@ -164,7 +164,7 @@ export function useTasks(sessionId: string, userId?: string) {
       toast.error(`Failed to delete task: ${error.message}`)
       setTasks(originalTasks)
     }
-  }
+  }, [])
 
   return { tasks, loading, addTask, updateTask, deleteTask, refetchTasks: fetchTasks }
 }

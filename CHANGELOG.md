@@ -7,7 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- date: 2025-10-11T18:45:00Z
+  agent: copilot
+  change: Fixed infinite recursion error when adding tasks by wrapping handler functions in useCallback
+  why: Functions in session-board.tsx (handleAddTask, handleUpdateTask, handleVoteToReveal) and use-tasks.ts (addTask, updateTask, deleteTask) were being recreated on every render, causing infinite re-render loops
+  scope: [components/session/session-board.tsx, hooks/use-tasks.ts]
+  verification: Wrapped all handler functions in useCallback with proper dependencies to ensure stable references
+  followups: Test in browser by adding a task - should not get infinite recursion error popup
+
 ### Added
+- date: 2025-10-11T10:30:00Z
+  agent: copilot
+  change: Removed unused imports and variables from animal-code-form.tsx (useRouter import and router variable)
+  why: Dead code cleanup - component uses window.location.href for navigation, not Next.js router
+  scope: [components/auth/animal-code-form.tsx]
+  verification: TypeScript check passes, ESLint passes, all 19 Jest tests pass
+  followups: None
+
+- date: 2025-10-11T10:25:00Z
+  agent: copilot
+  change: Fixed E2E test selectors for Share button and session loading indicators
+  why: Share button uses aria-label, not text; "Erin's Escapades" text is not reliable for session loaded state
+  scope: [tests/e2e/multi-user.spec.ts]
+  verification: Updated to use button[aria-label="Share session"] and textarea placeholder selectors
+  followups: E2E tests should pass when run with dev server (Playwright browsers not available in sandboxed environment)
+
+- date: 2025-10-11T10:20:00Z
+  agent: copilot
+  change: Fixed TypeScript errors in animal-code-form.test.tsx (duplicate href property)
+  why: window.location mock had both property and getter/setter with same name, causing TS2300 error
+  scope: [components/auth/animal-code-form.test.tsx]
+  verification: TypeScript check passes, all 19 Jest tests pass, ESLint passes
+  followups: None
+
 - date: 2025-10-11T00:40:00Z
   agent: copilot
   change: Fixed critical syntax error in animal-code-form.test.tsx (duplicate closing brace on line 233)

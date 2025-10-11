@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import DayToggle from '@/components/layout/day-toggle'
 import SessionHeader from './session-header'
 import TaskList from '../tasks/task-list'
@@ -80,9 +80,9 @@ export default function SessionBoard() {
    * @param taskId The ID of the task to update.
    * @param updates An object with the properties of the task to update.
    */
-  const handleUpdateTask = (taskId: string, updates: Partial<Task>) => {
+  const handleUpdateTask = useCallback((taskId: string, updates: Partial<Task>) => {
     updateTask(taskId, updates)
-  }
+  }, [updateTask])
 
   /**
    * Reorders tasks within the current day's list after a drag-and-drop action.
@@ -122,26 +122,28 @@ export default function SessionBoard() {
    * @param text The text content of the new task.
    * @param isSecret A boolean indicating if the task is secret.
    */
-  const handleAddTask = (text: string, isSecret: boolean) => {
+  const handleAddTask = useCallback((text: string, isSecret: boolean) => {
     addTask(text, isSecret)
-  }
+  }, [addTask])
 
   /**
    * Handles a user's vote to reveal a secret task.
    * @param taskId The ID of the secret task to vote on.
    */
-  const handleVoteToReveal = (taskId: string) => {
+  const handleVoteToReveal = useCallback((taskId: string) => {
     const uid = user?.id || 'user-1'
+    // Find the task from current state using a snapshot
     const target = tasks.find(t => t.id === taskId)
     if (!target) return
-    if (!target.votes.includes(uid)) {
-      const updates: Partial<Task> = { votes: [...target.votes, uid] as any }
-      // Reveal task if threshold met (client heuristic only for now)
-      const thresholdMet = (updates.votes as any)?.length >= 2
-      if (thresholdMet) updates.is_secret = false
-      updateTask(taskId, updates)
-    }
-  }
+    if (target.votes.includes(uid)) return
+    
+    const newVotes = [...target.votes, uid]
+    const updates: Partial<Task> = { votes: newVotes as any }
+    // Reveal task if threshold met (client heuristic only for now)
+    const thresholdMet = newVotes.length >= 2
+    if (thresholdMet) updates.is_secret = false
+    updateTask(taskId, updates)
+  }, [user?.id, tasks, updateTask])
 
   const filteredTasks = tasks.filter(task => task.day === currentDay)
 

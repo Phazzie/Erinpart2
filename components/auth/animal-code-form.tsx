@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,7 +24,6 @@ const ANIMALS = [
 ]
 
 export default function AnimalCodeForm() {
-  const router = useRouter()
   const [animal1, setAnimal1] = useState('')
   const [animal2, setAnimal2] = useState('')
   const [firstName, setFirstName] = useState('')
