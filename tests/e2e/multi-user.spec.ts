@@ -111,8 +111,8 @@ test.describe('Multi-User Session Joining', () => {
     await page1.click('button:has-text("Join Session")')
     await page1.waitForSelector('textarea[placeholder*="Add a new chaotic task"]', { timeout: 10000 })
     
-    // Click share button
-    await page1.click('button:has-text("Share")')
+    // Click share button using aria-label
+    await page1.click('button[aria-label="Share session"]')
     
     // Wait for modal
     await page1.waitForSelector('text=QR Code', { timeout: 5000 })
@@ -139,7 +139,7 @@ test.describe('Multi-User Session Joining', () => {
       await page2.click('button:has-text("Join Session")')
     }
     
-    await page2.waitForSelector('text=Erin\'s Escapades', { timeout: 10000 })
+    await page2.waitForSelector('textarea[placeholder*="Add a new chaotic task"]', { timeout: 10000 })
 
     // Verify same session
     expect(page2.url()).toContain('session=unicorn-narwhal')
@@ -158,8 +158,8 @@ test.describe('Multi-User Session Joining', () => {
     // Now join the session with the random animals
     await page.click('button:has-text("Join Session")')
     
-    // Should automatically join with random animals
-    await page.waitForSelector('text=Erin\'s Escapades', { timeout: 10000 })
+    // Should automatically join with random animals and see the session board
+    await page.waitForSelector('textarea[placeholder*="Add a new chaotic task"]', { timeout: 10000 })
     
     // Verify URL has session parameter
     const url = page.url()
