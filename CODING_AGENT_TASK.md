@@ -1,8 +1,45 @@
 # GitHub Coding Agent Task
 
 **Created**: 2025-10-11  
+**Updated**: 2025-10-11T00:45:00Z  
 **Priority**: HIGH  
 **Assigned to**: GitHub Copilot Coding Agent  
+
+---
+
+## 🎯 Mission: Bug Hunt, Verify, and Fix
+
+**CRITICAL INSTRUCTIONS**:
+- ❌ **DO NOT** assume anything is complete based on documentation alone
+- ✅ **VERIFY** all claims by reading actual code and running tests
+- 🐛 **HUNT** for bugs proactively - don't just fix what's listed
+- 📊 **CITE** specific code locations when reporting findings (file:line)
+- 🧪 **TEST** everything you fix - run builds, tests, and manual verification
+- 📝 **DOCUMENT** every finding with evidence (code snippets, error messages)
+
+---
+
+## 🚧 What Copilot Will Be Doing (Avoid These)
+
+While you work, **Copilot (the chat assistant)** will be:
+- 📚 **Documentation updates** - README.md, architecture docs, code comments
+- 🎨 **UI polish** - Minor styling tweaks, animation improvements
+- 🔍 **Code review** - Reviewing your PR and providing feedback
+- 📊 **Analytics** - Checking bundle sizes, performance metrics
+
+**DO NOT TOUCH**:
+- `README.md` - Copilot is updating
+- `docs/architecture.md` - Copilot is documenting
+- Any files in `docs/` - Copilot's territory
+- `lib/utils.ts` - Copilot is adding JSDoc comments
+- `components/ui/*` - Copilot may add accessibility improvements
+
+**SAFE TO EDIT**:
+- All test files (`**/*.test.tsx`, `tests/**/*`)
+- Component logic files (`components/auth/*`, `components/session/*`, etc.)
+- Server actions (`lib/actions.ts`)
+- Type definitions (`lib/types.ts`)
+- Configuration files (if needed for fixes)
 
 ---
 
