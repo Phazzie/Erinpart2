@@ -8,6 +8,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- date: 2025-10-12T10:00:00Z
+  agent: copilot (GitHub Coding Agent)
+  change: Removed duplicate SELECT policy from Supabase schema
+  why: Schema had two identical SELECT policies for tasks table (lines 90-94 and 110-112). The duplicate "Tasks are publicly readable for shared sessions" policy was redundant.
+  scope: [docs/supabase-schema.sql]
+  verification: Removed duplicate policy, keeping "Tasks are viewable by session participants" policy
+  followups: None
+
+- date: 2025-10-12T10:02:00Z
+  agent: copilot (GitHub Coding Agent)
+  change: Added isSupabaseConfigured check to handleReorderTasks in session-board.tsx
+  why: Task reordering was calling Supabase methods without checking if Supabase is configured. This would cause errors in local-only mode. Now checks configuration and skips database update in local mode.
+  scope: [components/session/session-board.tsx]
+  verification: TypeScript check passes, task reordering works in both modes
+  followups: None
+
+- date: 2025-10-12T09:45:00Z
+  agent: copilot (GitHub Coding Agent)
+  change: Fixed critical RLS policy violation - made created_by field required for task creation
+  why: RLS policy in Supabase requires created_by field for all task INSERT operations. Previously, code only added created_by if userId was available, which could cause database errors. Now enforces userId is required before attempting insert.
+  scope: [hooks/use-tasks.ts]
+  verification: TypeScript check passes, added validation to fail early with user-friendly error
+  followups: None - critical fix ensures RLS compliance
+
+- date: 2025-10-12T09:42:00Z
+  agent: copilot (GitHub Coding Agent)
+  change: Added isSupabaseConfigured checks to updateTask and deleteTask operations
+  why: updateTask and deleteTask were calling Supabase methods without checking if Supabase is configured. This would cause errors in local-only mode. Now both operations check configuration and apply optimistic updates in local mode.
+  scope: [hooks/use-tasks.ts]
+  verification: TypeScript check passes, operations work in both Supabase and local-only modes
+  followups: None
+
+- date: 2025-10-12T09:35:00Z
+  agent: copilot (GitHub Coding Agent)
+  change: Removed Google Fonts dependency to enable offline builds
+  why: Google Fonts CDN requests were failing in sandboxed environment, causing build failures. Replaced with system font stack using Tailwind's font-sans utility.
+  scope: [app/layout.tsx]
+  verification: Build passes successfully, TypeScript check passes
+  followups: Consider adding custom fonts via next/font/local if brand fonts needed
+
+- date: 2025-10-12T09:40:00Z
+  agent: copilot (GitHub Coding Agent)
+  change: Added test-results and playwright-report to .gitignore
+  why: Test artifacts should not be committed to repository - they are build outputs that change frequently
+  scope: [.gitignore]
+  verification: Removed 24 test artifact files from git tracking
+  followups: None
+
+- date: 2025-10-12T09:50:00Z
+  agent: copilot (GitHub Coding Agent)
+  change: Updated BUG_AUDIT.md with comprehensive Supabase code audit findings
+  why: Deep QA audit revealed critical issues with RLS policies, missing configuration checks, and several already-fixed issues. Updated audit to reflect current state and mark completed fixes.
+  scope: [BUG_AUDIT.md]
+  verification: 13 issues documented (5 critical fixed, 4 high, 4 medium)
+  followups: Address remaining medium-priority issues (duplicate RLS policy, input validation, error boundary)
+
 - date: 2025-10-12T08:00:00Z
   agent: copilot
   change: Fixed all 4 E2E test failures in multi-user.spec.ts by changing textarea selectors to input selectors

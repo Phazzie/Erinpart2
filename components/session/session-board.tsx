@@ -13,7 +13,7 @@ import { useTasks } from '@/hooks/use-tasks'
 import { useTaskChoices } from '@/hooks/use-task-choices'
 import { mockVibes } from '@/lib/mock-data'
 import { toast } from '@/lib/toast'
-import { supabase } from '@/lib/supabase/client'
+import { supabase, isSupabaseConfigured } from '@/lib/supabase/client'
 import LoadingSpinner from '@/components/common/loading-spinner'
 
 /**
@@ -89,6 +89,15 @@ export default function SessionBoard() {
    * @param reorderedTasks The newly ordered array of tasks for the current day.
    */
   const handleReorderTasks = async (reorderedTasks: Task[]) => {
+    if (!isSupabaseConfigured) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[SessionBoard] Supabase not configured, skipping task reorder persistence')
+      }
+      // In local-only mode, the reordered tasks are already in the correct order in state
+      // via TaskList's optimistic update, so no additional action needed
+      return
+    }
+
     // Batch update to database - save all order_index changes at once
     try {
       const updates = reorderedTasks.map((task, index) => 
