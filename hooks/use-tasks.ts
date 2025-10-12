@@ -88,7 +88,7 @@ export function useTasks(sessionId: string, userId?: string) {
         choice: '',
         comments: '',
         updated_at: new Date().toISOString(),
-        created_by: '', // Ideally, this would be the current user's ID
+        created_by: userId || '', // Set created_by from userId
       }
       return [...current, newTask]
     })
@@ -106,16 +106,17 @@ export function useTasks(sessionId: string, userId?: string) {
         console.log('[useTasks] Inserting task into Supabase...')
       }
       
+      // created_by is REQUIRED by RLS policy - must have userId
+      if (!userId) {
+        throw new Error('User ID is required to create tasks (RLS policy)')
+      }
+      
       const insertData: any = {
         text,
         is_secret,
         session_id: sessionId,
         order_index: currentLength,
-      }
-      
-      // Add created_by if userId is available (required by RLS policy)
-      if (userId) {
-        insertData.created_by = userId
+        created_by: userId,
       }
       
       const { data, error } = await supabase

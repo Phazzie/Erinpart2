@@ -1,10 +1,22 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { useTasks } from './use-tasks'
-import { supabase } from '@/lib/supabase/client'
 import { useRealtime } from '@/hooks/use-realtime'
 import { act } from 'react'
 
 jest.mock('@/hooks/use-realtime')
+
+// Mock the supabase client module
+jest.mock('@/lib/supabase/client', () => {
+  const mockSupabase = {
+    from: jest.fn(),
+  }
+  return {
+    supabase: mockSupabase,
+    isSupabaseConfigured: true, // Mock as configured for tests
+  }
+})
+
+const { supabase } = require('@/lib/supabase/client')
 
 const initialRows = [
   { id: 'a', session_id: 'session-1', text: 'Task A', is_complete: false, day: 'today', order_index: 0, choice: '', comments: '', created_by: 'user-1', is_secret: false, votes: [] },
@@ -15,10 +27,11 @@ const SESSION_ID = 'session-1'
 
 describe('useTasks', () => {
   it('should initialize with tasks for the given session', async () => {
+    const orderMock = jest.fn().mockResolvedValue({ data: initialRows, error: null })
+    const eqMock = jest.fn().mockReturnValue({ order: orderMock })
+    const selectMock = jest.fn().mockReturnValue({ eq: eqMock })
     const fromSpy = jest.spyOn(supabase, 'from').mockReturnValue({
-      select: jest.fn().mockReturnThis(),
-      order: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockResolvedValue({ data: initialRows, error: null }),
+      select: selectMock,
     } as any)
 
     const { result } = renderHook(() => useTasks(SESSION_ID))
