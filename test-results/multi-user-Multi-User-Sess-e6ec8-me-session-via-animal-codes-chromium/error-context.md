@@ -1,0 +1,56 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: ❌
+    - generic [ref=e5]: "Failed to add task: infinite recursion detected in policy for relation \"tasks\""
+  - main [ref=e7]:
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - heading "Erin's Escapades" [level=1] [ref=e11]
+        - generic [ref=e12]:
+          - button "🎭 Chaos Gremlin" [ref=e14] [cursor=pointer]:
+            - generic [ref=e15]: 🎭
+            - generic [ref=e16]: Chaos Gremlin
+            - img [ref=e17]
+          - generic [ref=e19]:
+            - generic "Erin" [ref=e20]: E
+            - generic "Friend" [ref=e21]: F
+          - button [ref=e22] [cursor=pointer]:
+            - img [ref=e23]
+          - button "Share session" [ref=e28] [cursor=pointer]:
+            - img [ref=e29]
+      - generic [ref=e36]:
+        - button "Today" [ref=e38] [cursor=pointer]: Today
+        - button "Tomorrow" [ref=e39] [cursor=pointer]
+      - generic [ref=e40]:
+        - generic [ref=e41]:
+          - generic [ref=e44]:
+            - generic [ref=e45]:
+              - generic [ref=e47]: Task
+              - generic [ref=e48]: Status
+              - img [ref=e50]
+            - generic [ref=e52]:
+              - generic [ref=e53]: 🎭
+              - paragraph [ref=e54]: No tasks yet. Add your first plot point!
+              - paragraph [ref=e55]: Your chaotic adventure awaits...
+          - generic [ref=e57]:
+            - generic [ref=e58]:
+              - textbox "Add a new chaotic task..." [ref=e59]
+              - button "Add Task" [disabled]:
+                - img
+                - text: Add Task
+            - generic [ref=e60]:
+              - checkbox "Make it a secret" [ref=e61] [cursor=pointer]
+              - checkbox
+              - generic [ref=e62] [cursor=pointer]:
+                - img [ref=e63]
+                - text: Make it a secret
+        - generic [ref=e68]:
+          - heading "Task Details" [level=3] [ref=e70]:
+            - img [ref=e71]
+            - text: Task Details
+          - paragraph [ref=e76]: Select a task to see its details.
+  - alert [ref=e77]
+```
