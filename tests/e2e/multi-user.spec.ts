@@ -23,7 +23,7 @@ test.describe('Multi-User Session Joining', () => {
     await page1.click('button:has-text("Join Session")')
     
     // Wait for session board to load - wait for task input instead
-    await page1.waitForSelector('textarea[placeholder*="Add a new chaotic task"]', { timeout: 10000 })
+    await page1.waitForSelector('input[placeholder*="Add a new chaotic task"]', { timeout: 10000 })
     
     // Get the session URL
     const sessionUrl = page1.url()
@@ -43,10 +43,10 @@ test.describe('Multi-User Session Joining', () => {
     await page2.click('button:has-text("Join Session")')
     
     // Wait for session board
-    await page2.waitForSelector('textarea[placeholder*="Add a new chaotic task"]', { timeout: 10000 })
+    await page2.waitForSelector('input[placeholder*="Add a new chaotic task"]', { timeout: 10000 })
 
     // User 1 creates a task
-    await page1.fill('textarea[placeholder*="Add a new chaotic task"]', 'Buy groceries')
+    await page1.fill('input[placeholder*="Add a new chaotic task"]', 'Buy groceries')
     await page1.click('button:has-text("Add Task")')
     
     // Wait for task to appear on User 1's page
@@ -73,7 +73,7 @@ test.describe('Multi-User Session Joining', () => {
     await page1.selectOption('#animal2', 'Dog')
     await page1.fill('#firstName', 'Charlie')
     await page1.click('button:has-text("Join Session")')
-    await page1.waitForSelector('textarea[placeholder*="Add a new chaotic task"]', { timeout: 10000 })
+    await page1.waitForSelector('input[placeholder*="Add a new chaotic task"]', { timeout: 10000 })
     
     // Get session URL
     const sessionUrl = page1.url()
@@ -90,7 +90,7 @@ test.describe('Multi-User Session Joining', () => {
       await page2.click('button:has-text("Join Session")')
     }
     
-    await page2.waitForSelector('textarea[placeholder*="Add a new chaotic task"]', { timeout: 10000 })
+    await page2.waitForSelector('input[placeholder*="Add a new chaotic task"]', { timeout: 10000 })
 
     // Verify both users are in the same session
     expect(page1.url()).toBe(page2.url())
@@ -109,7 +109,7 @@ test.describe('Multi-User Session Joining', () => {
     await page1.selectOption('#animal2', 'Narwhal')
     await page1.fill('#firstName', 'Eve')
     await page1.click('button:has-text("Join Session")')
-    await page1.waitForSelector('textarea[placeholder*="Add a new chaotic task"]', { timeout: 10000 })
+    await page1.waitForSelector('input[placeholder*="Add a new chaotic task"]', { timeout: 10000 })
     
     // Click share button using aria-label
     await page1.click('button[aria-label="Share session"]')
@@ -139,7 +139,7 @@ test.describe('Multi-User Session Joining', () => {
       await page2.click('button:has-text("Join Session")')
     }
     
-    await page2.waitForSelector('textarea[placeholder*="Add a new chaotic task"]', { timeout: 10000 })
+    await page2.waitForSelector('input[placeholder*="Add a new chaotic task"]', { timeout: 10000 })
 
     // Verify same session
     expect(page2.url()).toContain('session=unicorn-narwhal')
@@ -159,7 +159,7 @@ test.describe('Multi-User Session Joining', () => {
     await page.click('button:has-text("Join Session")')
     
     // Should automatically join with random animals and see the session board
-    await page.waitForSelector('textarea[placeholder*="Add a new chaotic task"]', { timeout: 10000 })
+    await page.waitForSelector('input[placeholder*="Add a new chaotic task"]', { timeout: 10000 })
     
     // Verify URL has session parameter
     const url = page.url()
