@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- date: 2025-10-11T19:57:00Z
+  agent: copilot
+  change: Fixed infinite recursion error when adding tasks by removing tasks.length from addTask dependency array and using functional setState
+  why: The addTask callback had tasks.length in its dependency array, causing it to be recreated every time a task was added. This caused handleAddTask to be recreated, triggering infinite re-renders. Similarly, updateTask and deleteTask used tasks for rollback but didn't include it in dependencies, creating stale closures.
+  scope: [hooks/use-tasks.ts]
+  verification: TypeScript check passes, ESLint passes, no build errors (network issue accessing Google Fonts is unrelated)
+  followups: Test in browser by adding multiple tasks - should not get infinite recursion error
+
 - date: 2025-10-11T18:45:00Z
   agent: copilot
   change: Fixed infinite recursion error when adding tasks by wrapping handler functions in useCallback
