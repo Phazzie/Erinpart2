@@ -81,23 +81,23 @@ describe('SortableTaskItem', () => {
       expect(mockOnUpdate).toHaveBeenCalledWith(normalTask.id, { text: 'Normal Task Texta' })
     })
 
-    it('should call onUpdate when a choice radio button is clicked', async () => {
-    render(
-          <SortableTaskItem
-            task={normalTask}
-            onUpdate={mockOnUpdate}
-      onSetChoice={mockOnSetChoice}
-      myChoice=""
-            onSelect={mockOnSelect}
-            onVote={mockOnVote}
-            isSelected={false}
-            currentUserId="user-1"
-          />
-        )
-        const yesRadio = screen.getByLabelText('yes')
-        await userEvent.click(yesRadio)
-    expect(mockOnSetChoice).toHaveBeenCalledWith(normalTask.id, 'yes')
-      })
+    it('should call onSetChoice when a choice button is clicked', async () => {
+      render(
+        <SortableTaskItem
+          task={normalTask}
+          onUpdate={mockOnUpdate}
+          onSetChoice={mockOnSetChoice}
+          myChoice=""
+          onSelect={mockOnSelect}
+          onVote={mockOnVote}
+          isSelected={false}
+          currentUserId="user-1"
+        />
+      )
+      const yesButton = screen.getByText('✓ Yes')
+      await userEvent.click(yesButton)
+      expect(mockOnSetChoice).toHaveBeenCalledWith(normalTask.id, 'yes')
+    })
   })
 
   describe('Secret Task View', () => {

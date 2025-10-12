@@ -1,10 +1,14 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { useTasks } from './use-tasks'
-import { supabase } from '@/lib/supabase/client'
+import { supabase, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRealtime } from '@/hooks/use-realtime'
 import { act } from 'react'
 
 jest.mock('@/hooks/use-realtime')
+jest.mock('@/lib/supabase/client', () => ({
+  ...jest.requireActual('@/lib/supabase/client'),
+  isSupabaseConfigured: true,
+}))
 
 const initialRows = [
   { id: 'a', session_id: 'session-1', text: 'Task A', is_complete: false, day: 'today', order_index: 0, choice: '', comments: '', created_by: 'user-1', is_secret: false, votes: [] },
@@ -14,11 +18,17 @@ const initialRows = [
 const SESSION_ID = 'session-1'
 
 describe('useTasks', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
   it('should initialize with tasks for the given session', async () => {
     const fromSpy = jest.spyOn(supabase, 'from').mockReturnValue({
-      select: jest.fn().mockReturnThis(),
-      order: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockResolvedValue({ data: initialRows, error: null }),
+      select: jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          order: jest.fn().mockResolvedValue({ data: initialRows, error: null }),
+        }),
+      }),
     } as any)
 
     const { result } = renderHook(() => useTasks(SESSION_ID))
@@ -36,13 +46,18 @@ describe('useTasks', () => {
     const fromSpy = jest.spyOn(supabase, 'from').mockImplementation((table) => {
       if (table === 'tasks') {
         return {
-          select: jest.fn().mockReturnThis(),
-          order: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockResolvedValue({ data: [], error: null }),
-          insert: jest.fn().mockReturnThis(),
-          single: jest.fn().mockResolvedValue({ 
-            data: { id: 'new-task', text: 'New Task', session_id: SESSION_ID, order_index: 0 }, 
-            error: null 
+          select: jest.fn().mockReturnValue({
+            eq: jest.fn().mockReturnValue({
+              order: jest.fn().mockResolvedValue({ data: [], error: null }),
+            }),
+          }),
+          insert: jest.fn().mockReturnValue({
+            select: jest.fn().mockReturnValue({
+              single: jest.fn().mockResolvedValue({ 
+                data: { id: 'new-task', text: 'New Task', session_id: SESSION_ID, order_index: 0 }, 
+                error: null 
+              }),
+            }),
           }),
         } as any
       }
