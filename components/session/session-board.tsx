@@ -14,6 +14,7 @@ import { useTaskChoices } from '@/hooks/use-task-choices'
 import { mockVibes } from '@/lib/mock-data'
 import { toast } from '@/lib/toast'
 import { supabase } from '@/lib/supabase/client'
+import { devError } from '@/lib/constants'
 import LoadingSpinner from '@/components/common/loading-spinner'
 
 /**
@@ -100,18 +101,14 @@ export default function SessionBoard() {
       // Check if any updates failed
       const errors = results.filter(r => r.error)
       if (errors.length > 0) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('[SessionBoard] Some task order updates failed:', errors)
-        }
+        devError('[SessionBoard] Some task order updates failed:', errors)
         throw new Error('Failed to save task order')
       }
       
       // Success - updates are persisted, realtime will sync the state
     } catch (error: any) {
       toast.error('Failed to save task order')
-      if (process.env.NODE_ENV === 'development') {
-        console.error('[SessionBoard] Failed to save task order:', error)
-      }
+      devError('[SessionBoard] Failed to save task order:', error)
       // On error, refetch tasks to restore correct order from database
       await refetchTasks()
     }

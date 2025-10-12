@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRealtime } from '@/hooks/use-realtime'
 import { type Task } from '@/lib/types'
+import { handleSupabaseError } from '@/lib/utils'
+import { devLog, devError, devWarn } from '@/lib/constants'
 import { toast } from '@/lib/toast'
 
 export function useTasks(sessionId: string, userId?: string) {
@@ -26,7 +28,7 @@ export function useTasks(sessionId: string, userId?: string) {
       if (error) throw error
       setTasks(data || [])
     } catch (error: any) {
-      toast.error(error.message)
+      handleSupabaseError(error, 'useTasks.fetchTasks')
     } finally {
       setLoading(false)
     }
@@ -57,16 +59,12 @@ export function useTasks(sessionId: string, userId?: string) {
 
   const addTask = useCallback(async (text: string, is_secret = false) => {
     if (!text.trim() || !sessionId) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('[useTasks] Cannot add task:', { text: text.trim(), sessionId })
-      }
+      devError('[useTasks] Cannot add task:', { text: text.trim(), sessionId })
       toast.error('Missing task text or session ID')
       return
     }
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[useTasks] Adding task:', { text, is_secret, sessionId, isSupabaseConfigured })
-    }
+    devLog('[useTasks] Adding task:', { text, is_secret, sessionId, isSupabaseConfigured })
 
     const optimisticId = `optimistic-${Date.now()}`
     
@@ -94,17 +92,13 @@ export function useTasks(sessionId: string, userId?: string) {
     })
 
     if (!isSupabaseConfigured) {
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('[useTasks] Supabase not configured, using optimistic update only')
-      }
+      devWarn('[useTasks] Supabase not configured, using optimistic update only')
       toast.success('Task added (local only - Supabase not configured)')
       return
     }
 
     try {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[useTasks] Inserting task into Supabase...')
-      }
+      devLog('[useTasks] Inserting task into Supabase...')
       
       const insertData: any = {
         text,
@@ -125,21 +119,15 @@ export function useTasks(sessionId: string, userId?: string) {
         .single()
 
       if (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('[useTasks] Supabase error:', error)
-        }
+        devError('[useTasks] Supabase error:', error)
         throw error
       }
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[useTasks] Task inserted successfully:', data)
-      }
+      devLog('[useTasks] Task inserted successfully:', data)
       setTasks(current => current.map(t => t.id === optimisticId ? { ...t, ...data } : t))
       toast.success('Task added!')
     } catch (error: any) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('[useTasks] Failed to add task:', error)
-      }
+      devError('[useTasks] Failed to add task:', error)
       toast.error(`Failed to add task: ${error.message}`)
       setTasks(current => current.filter(t => t.id !== optimisticId))
     }
@@ -157,7 +145,7 @@ export function useTasks(sessionId: string, userId?: string) {
       const { error } = await supabase.from('tasks').update(updates).eq('id', id)
       if (error) throw error
     } catch (error: any) {
-      toast.error(`Failed to update task: ${error.message}`)
+      handleSupabaseError(error, 'useTasks.updateTask', 'Failed to update task')
       setTasks(originalTasks)
     }
   }, [])
@@ -174,7 +162,7 @@ export function useTasks(sessionId: string, userId?: string) {
       const { error } = await supabase.from('tasks').delete().eq('id', id)
       if (error) throw error
     } catch (error: any) {
-      toast.error(`Failed to delete task: ${error.message}`)
+      handleSupabaseError(error, 'useTasks.deleteTask', 'Failed to delete task')
       setTasks(originalTasks)
     }
   }, [])

@@ -11,6 +11,8 @@ const customJestConfig: Config = {
   coverageProvider: 'v8',
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  // Exclude E2E tests (those should run with Playwright)
+  testPathIgnorePatterns: ['/node_modules/', '/.next/', '/tests/e2e/'],
   moduleNameMapper: {
     // Handle module aliases (this will be automatically configured for you soon)
     '^@/(.*)$': '<rootDir>/$1',
