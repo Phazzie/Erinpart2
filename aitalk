@@ -119,11 +119,22 @@ How to use (single-file protocol)
 
 State (YAML-like)
 lock:
-  holder: null
-  task: null
-  since: null
-  expires: null
-  files_to_change: []
+  holder: copilot
+  task: Deep QA Audit - Comprehensive Code Review & Bug Fixes (Supabase Priority)
+  since: 2025-10-12T08:04:00Z
+  expires: 2025-10-12T08:34:00Z
+  files_to_change:
+    - lib/supabase/client.ts
+    - hooks/use-tasks.ts
+    - hooks/use-session.ts
+    - hooks/use-realtime.ts
+    - hooks/use-task-choices.ts
+    - lib/actions.ts
+    - components/session/session-board.tsx
+    - tests/*
+    - BUG_AUDIT.md
+    - CHANGELOG.md
+    - TESTING_CHECKLIST.md
 status:
   copilot:
     state: completed
@@ -763,3 +774,10 @@ parallel_work:
     message: Enhanced DEEP_QA_AUDIT_TASK.md with critical Supabase focus - moved from priority 7 to TOP PRIORITY; added specific Supabase files to audit, RLS policy checks, schema mismatch verification
     result: Supabase audit now 🔴 CRITICAL with comprehensive checklist
     next: Push to GitHub and invoke coding agent with this task
+
+  - at: 2025-10-12T08:04:00Z
+    agent: copilot
+    event: lock_acquired
+    message: Starting Deep QA Audit with critical Supabase focus; read all Supabase files, audit all .from() calls, verify RLS policies, error handling, and type safety
+    result: pending
+    next: Systematic audit of Supabase integration, then fix bugs, run tests, update docs
