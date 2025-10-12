@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Loader2 } from 'lucide-react'
 import { toast } from '@/lib/toast'
+import { validateTextInput } from '@/lib/utils'
+import { MIN_NAME_LENGTH, MAX_NAME_LENGTH } from '@/lib/constants'
 
 const ANIMALS = [
   // Classic
@@ -49,14 +51,16 @@ export default function AnimalCodeForm() {
       return
     }
     
-    const name = firstName.trim()
-    if (name.length < 2) {
-      toast.error('Name must be at least 2 characters')
-      return
-    }
+    // Use centralized validation
+    const nameValidation = validateTextInput(
+      firstName,
+      MIN_NAME_LENGTH,
+      MAX_NAME_LENGTH,
+      'Name'
+    )
     
-    if (name.length > 20) {
-      toast.error('Name must be less than 20 characters')
+    if (!nameValidation.valid) {
+      toast.error(nameValidation.error!)
       return
     }
 
@@ -68,11 +72,11 @@ export default function AnimalCodeForm() {
     // Store session info in localStorage
     localStorage.setItem('sessionData', JSON.stringify({
       sessionId,
-      userName: name,
+      userName: firstName.trim(),
       joinedAt: new Date().toISOString()
     }))
     
-    toast.success(`Welcome ${name}! 🐾`)
+    toast.success(`Welcome ${firstName.trim()}! 🐾`)
     
     // Navigate to session with URL parameter for sharing/bookmarking
     window.location.href = `/?session=${sessionId}`
