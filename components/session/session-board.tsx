@@ -13,7 +13,7 @@ import { useTasks } from '@/hooks/use-tasks'
 import { useTaskChoices } from '@/hooks/use-task-choices'
 import { mockVibes } from '@/lib/mock-data'
 import { toast } from '@/lib/toast'
-import { supabase } from '@/lib/supabase/client'
+import { supabase, isSupabaseConfigured } from '@/lib/supabase/client'
 import LoadingSpinner from '@/components/common/loading-spinner'
 
 /**
@@ -89,10 +89,16 @@ export default function SessionBoard() {
    * @param reorderedTasks The newly ordered array of tasks for the current day.
    */
   const handleReorderTasks = async (reorderedTasks: Task[]) => {
+    // Skip if Supabase is not configured
+    if (!isSupabaseConfigured) {
+      toast.error('Task reordering requires Supabase configuration')
+      return
+    }
+    
     // Batch update to database - save all order_index changes at once
     try {
       const updates = reorderedTasks.map((task, index) => 
-        supabase.from('tasks').update({ order_index: index }).eq('id', task.id)
+        supabase.from('tasks').update({ order_index: index }).eq('id', task.id).select()
       )
       
       const results = await Promise.all(updates)

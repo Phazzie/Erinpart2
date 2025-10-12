@@ -81,7 +81,7 @@ describe('SortableTaskItem', () => {
       expect(mockOnUpdate).toHaveBeenCalledWith(normalTask.id, { text: 'Normal Task Texta' })
     })
 
-    it('should call onUpdate when a choice radio button is clicked', async () => {
+    it('should call onSetChoice when a choice button is clicked', async () => {
     render(
           <SortableTaskItem
             task={normalTask}
@@ -94,8 +94,8 @@ describe('SortableTaskItem', () => {
             currentUserId="user-1"
           />
         )
-        const yesRadio = screen.getByLabelText('yes')
-        await userEvent.click(yesRadio)
+        const yesButton = screen.getByRole('button', { name: /Yes/i })
+        await userEvent.click(yesButton)
     expect(mockOnSetChoice).toHaveBeenCalledWith(normalTask.id, 'yes')
       })
   })
