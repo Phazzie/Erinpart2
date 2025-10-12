@@ -3,12 +3,23 @@
 ## Mission
 Perform **extensive quality assurance, code auditing, and bug fixing** across the entire Erin's Escapades codebase. Your job is to be a relentless bug hunter and code quality enforcer.
 
+## 🚨 **CRITICAL: READ ALL SUPABASE CODE FIRST**
+Before anything else, read these files completely:
+1. `lib/supabase/client.ts` - How Supabase is initialized
+2. `docs/supabase-schema.sql` - The ACTUAL database schema
+3. `supabase-schema-TO-APPLY.sql` - RLS policies and constraints
+4. Search codebase for ALL `.from('tasks')` and `.from('sessions')` calls
+5. Verify EVERY Supabase call has error handling and "not configured" checks
+
+**Why this matters:** Supabase is the backend. If this is wrong, everything breaks.
+
 ## Critical Rules
 1. **CODE IS SOURCE OF TRUTH** - Do NOT rely on docs, comments, or assumptions. Read the actual implementation.
 2. **VERIFY EVERYTHING** - Test your theories by reading the actual code paths, not inferring from names.
-3. **FOLLOW THE DATA** - Trace how data flows through the app from user input → state → database → UI.
+3. **FOLLOW THE DATA** - Trace how data flows through the app from user input → state → database (Supabase) → UI.
 4. **CHECK ALL EDGE CASES** - Empty states, loading states, error states, race conditions, null/undefined handling.
 5. **NO SUPERFICIAL FIXES** - Don't just add null checks. Understand WHY something might be null and fix the root cause.
+6. **SUPABASE DOUBLE-CHECK** - Every data operation must work both WITH and WITHOUT Supabase configured.
 
 ## Audit Areas (In Priority Order)
 
@@ -98,14 +109,53 @@ Read how state is persisted and retrieved:
 - [ ] Verify localStorage is checked before `window` access (SSR safety)
 - [ ] Check if localStorage can get stale/out-of-sync with server
 
-### 7. **Supabase Integration Issues** 🟢
-Read actual Supabase client usage:
+### 7. **Supabase Integration Issues** � **CRITICAL - READ ALL SUPABASE CODE**
+Read EVERY file that touches Supabase:
 
-- [ ] Check `lib/supabase/client.ts` - is `isSupabaseConfigured` check reliable?
-- [ ] Find all places that call Supabase methods - do they handle "not configured"?
-- [ ] Verify RLS policies are satisfied (created_by field, session ownership)
-- [ ] Check if realtime subscriptions work when Supabase is disabled
-- [ ] Look for hardcoded assumptions about Supabase being available
+**Core Supabase Files (READ LINE BY LINE):**
+- [ ] `lib/supabase/client.ts` - How is client initialized? What's the `isSupabaseConfigured` logic?
+- [ ] `docs/supabase-schema.sql` - What's the ACTUAL database schema? What fields are required?
+- [ ] `docs/supabase-wiring.md` - Read the documentation but VERIFY against actual code
+
+**RLS (Row Level Security) Policies:**
+- [ ] Read `supabase-schema-TO-APPLY.sql` - What RLS policies exist?
+- [ ] Check if `created_by` field is ALWAYS set when creating tasks
+- [ ] Verify users can only access their own sessions (or sessions they joined)
+- [ ] Check if anonymous users work with RLS policies
+- [ ] Look for `auth.uid()` usage in RLS - does it match our auth flow?
+
+**Supabase Method Calls (FIND ALL OCCURRENCES):**
+- [ ] Search for `.from('tasks')` - List all places that query tasks table
+- [ ] Search for `.from('sessions')` - List all places that query sessions table  
+- [ ] Search for `.insert(` - Check if all required fields are provided
+- [ ] Search for `.update(` - Check if updates can affect wrong rows
+- [ ] Search for `.delete(` - Check if deletes are properly scoped
+- [ ] Search for `.select(` - Check if queries handle empty results
+
+**Realtime Subscriptions:**
+- [ ] Read `hooks/use-realtime.ts` completely - How does it work?
+- [ ] Check if subscriptions are cleaned up on unmount
+- [ ] Verify subscription filters match data queries
+- [ ] Check if realtime works when Supabase is not configured
+- [ ] Look for duplicate subscription setup
+
+**Error Handling:**
+- [ ] Find every Supabase query - do they all have error handling?
+- [ ] Check if Supabase errors show user-friendly messages
+- [ ] Look for `.single()` calls - what happens if no rows or multiple rows?
+- [ ] Check if network errors are handled gracefully
+
+**"Not Configured" Mode:**
+- [ ] What happens when `NEXT_PUBLIC_SUPABASE_URL` is missing?
+- [ ] Does app work in local-only mode without Supabase?
+- [ ] Check if `isSupabaseConfigured` is checked before EVERY Supabase call
+- [ ] Verify localStorage fallback works correctly
+
+**Database Schema Mismatches:**
+- [ ] Compare `lib/types.ts` Task interface to `docs/supabase-schema.sql`
+- [ ] Check if optional fields in TypeScript are nullable in database
+- [ ] Verify all required fields are always provided
+- [ ] Look for type assertions that hide schema mismatches
 
 ### 8. **Loading & Error States** 🟢
 Check every component for proper state handling:
