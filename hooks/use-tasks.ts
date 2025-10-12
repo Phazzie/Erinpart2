@@ -88,7 +88,7 @@ export function useTasks(sessionId: string, userId?: string) {
         choice: '',
         comments: '',
         updated_at: new Date().toISOString(),
-        created_by: '', // Ideally, this would be the current user's ID
+        created_by: userId || '', // Use current user ID
       }
       return [...current, newTask]
     })
@@ -98,6 +98,16 @@ export function useTasks(sessionId: string, userId?: string) {
         console.warn('[useTasks] Supabase not configured, using optimistic update only')
       }
       toast.success('Task added (local only - Supabase not configured)')
+      return
+    }
+
+    // CRITICAL: userId is REQUIRED for RLS policy
+    if (!userId) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[useTasks] Cannot add task without userId - RLS policy requires created_by')
+      }
+      toast.error('User not authenticated. Please refresh the page.')
+      setTasks(current => current.filter(t => t.id !== optimisticId))
       return
     }
 
@@ -111,11 +121,7 @@ export function useTasks(sessionId: string, userId?: string) {
         is_secret,
         session_id: sessionId,
         order_index: currentLength,
-      }
-      
-      // Add created_by if userId is available (required by RLS policy)
-      if (userId) {
-        insertData.created_by = userId
+        created_by: userId, // REQUIRED by RLS policy
       }
       
       const { data, error } = await supabase
@@ -146,6 +152,15 @@ export function useTasks(sessionId: string, userId?: string) {
   }, [sessionId, userId])
 
   const updateTask = useCallback(async (id: string, updates: Partial<Task>) => {
+    if (!isSupabaseConfigured) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[useTasks] Supabase not configured, skipping update')
+      }
+      // Still apply optimistic update for local-only mode
+      setTasks(current => current.map(t => t.id === id ? { ...t, ...updates } : t))
+      return
+    }
+
     // Store original state for rollback using functional update
     let originalTasks: Task[] = []
     setTasks(current => {
@@ -163,6 +178,15 @@ export function useTasks(sessionId: string, userId?: string) {
   }, [])
 
   const deleteTask = useCallback(async (id: string) => {
+    if (!isSupabaseConfigured) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[useTasks] Supabase not configured, skipping delete')
+      }
+      // Still apply optimistic delete for local-only mode
+      setTasks(current => current.filter(t => t.id !== id))
+      return
+    }
+
     // Store original state for rollback using functional update
     let originalTasks: Task[] = []
     setTasks(current => {
