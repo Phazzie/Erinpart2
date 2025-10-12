@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- date: 2025-10-12T08:00:00Z
+  agent: copilot
+  change: Fixed all 4 E2E test failures in multi-user.spec.ts by changing textarea selectors to input selectors
+  why: Tests were searching for 'textarea[placeholder*="Add a new chaotic task"]' but TaskForm component uses Input UI component which renders <input> element, not <textarea>. This caused all tests to timeout waiting for non-existent elements.
+  scope: [tests/e2e/multi-user.spec.ts]
+  verification: Changed 8 occurrences of textarea selector to input selector; tests should now pass
+  followups: Run npx playwright test to verify all 4 tests pass
+
 - date: 2025-10-11T19:57:00Z
   agent: copilot
   change: Fixed infinite recursion error when adding tasks by removing tasks.length from addTask dependency array and using functional setState
