@@ -151,7 +151,7 @@ if (session?.user && isMounted) {
 
 ---
 
-### 5. **Duplicate RLS Policies in Schema** ⚠️ NEEDS FIX
+### 5. **Duplicate RLS Policies in Schema** ✅ FIXED
 **Location:** `docs/supabase-schema.sql:85-94, 110-112`  
 **Severity:** MEDIUM  
 **Impact:** Redundant policies, potential confusion, no functional impact
@@ -163,11 +163,11 @@ CREATE POLICY "Tasks are viewable by session participants." ON public.tasks FOR 
   true -- Public access for shared animal code sessions
 );
 
--- Line 110-112
+-- Line 110-112 (DUPLICATE - REMOVED)
 CREATE POLICY "Tasks are publicly readable for shared sessions." ON public.tasks FOR SELECT USING (true);
 ```
 
-**Fix:** Remove one of the duplicate SELECT policies
+**Fix Applied:** Removed the duplicate SELECT policy on line 110-112
 
 ---
 
@@ -429,12 +429,13 @@ if (process.env.NODE_ENV === 'development') {
 
 1. ✅ **FIXED: created_by field required** (Critical #1) 
 2. ✅ **FIXED: isSupabaseConfigured checks added** (Critical #2)
-3. ⏳ **Remove duplicate RLS policy** (Medium #5)
-4. ⏳ **Investigate session ID race condition** (High #3)
-5. ⏳ **Verify type safety on task choices** (Medium #8)
-6. ⏳ **Add input validation** (Medium #9)
-7. ⏳ **Add error boundary** (Medium #10)
-8. ⏳ **Improve loading states** (Low #13)
+3. ✅ **FIXED: Duplicate RLS policy removed** (Medium #5)
+4. ✅ **FIXED: isSupabaseConfigured check in handleReorderTasks** (High)
+5. ⏳ **Investigate session ID race condition** (High #3)
+6. ⏳ **Verify type safety on task choices** (Medium #8)
+7. ⏳ **Add input validation** (Medium #9)
+8. ⏳ **Add error boundary** (Medium #10)
+9. ⏳ **Improve loading states** (Low #13)
 
 ---
 
@@ -442,10 +443,12 @@ if (process.env.NODE_ENV === 'development') {
 
 **After Critical Fixes Applied:**
 - ✅ Tasks can now be created with RLS policies enforced
-- ✅ Local-only mode works for update/delete operations
+- ✅ Local-only mode works for all CRUD operations (add/update/delete/reorder)
 - ✅ Better error messages when user not authenticated
 - ✅ Code is more robust and handles edge cases
+- ✅ Schema cleaned up - no duplicate policies
+- ✅ All Supabase calls properly check configuration
 
 **Remaining Work:** Low-priority UX improvements and defensive coding
 
-**Time to fix critical issues:** ✅ COMPLETE (15 minutes)
+**Time to fix critical issues:** ✅ COMPLETE (20 minutes)

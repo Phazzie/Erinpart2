@@ -107,10 +107,6 @@ DO $$ BEGIN
   CREATE POLICY "Anonymous users can delete their tasks." ON public.tasks FOR DELETE USING (auth.uid() = created_by);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-DO $$ BEGIN
-  CREATE POLICY "Tasks are publicly readable for shared sessions." ON public.tasks FOR SELECT USING (true);
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
 -- Now that tasks exist, we can safely add the sessions visibility policy that references tasks
 DO $$ BEGIN
   CREATE POLICY "Sessions are viewable by participants." ON public.sessions FOR SELECT USING (

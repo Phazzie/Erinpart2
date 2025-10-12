@@ -8,6 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- date: 2025-10-12T10:00:00Z
+  agent: copilot (GitHub Coding Agent)
+  change: Removed duplicate SELECT policy from Supabase schema
+  why: Schema had two identical SELECT policies for tasks table (lines 90-94 and 110-112). The duplicate "Tasks are publicly readable for shared sessions" policy was redundant.
+  scope: [docs/supabase-schema.sql]
+  verification: Removed duplicate policy, keeping "Tasks are viewable by session participants" policy
+  followups: None
+
+- date: 2025-10-12T10:02:00Z
+  agent: copilot (GitHub Coding Agent)
+  change: Added isSupabaseConfigured check to handleReorderTasks in session-board.tsx
+  why: Task reordering was calling Supabase methods without checking if Supabase is configured. This would cause errors in local-only mode. Now checks configuration and skips database update in local mode.
+  scope: [components/session/session-board.tsx]
+  verification: TypeScript check passes, task reordering works in both modes
+  followups: None
+
 - date: 2025-10-12T09:45:00Z
   agent: copilot (GitHub Coding Agent)
   change: Fixed critical RLS policy violation - made created_by field required for task creation
