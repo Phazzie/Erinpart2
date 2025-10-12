@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
 import AnimatedBackground from "@/components/common/animated-background";
-
-const inter = Inter({ subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
   title: "Erin's Escapades",
@@ -18,7 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.className} bg-bg-primary text-white`}>
+      <body className="font-sans bg-bg-primary text-white">
         {/* Background image layer */}
         <div 
           className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-20"
