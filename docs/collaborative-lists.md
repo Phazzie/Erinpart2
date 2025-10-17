@@ -61,17 +61,20 @@ When marking an item as inaccurate:
 
 ### Tables Created
 1. **collaborative_lists**: Stores list metadata
-   - id, session_id, title, list_type, creator_id, creator_name, timestamps
+   - id, session_id, title, list_type, creator_id, creator_name
+   - created_at, updated_at
 
 2. **list_items**: Stores individual list items
-   - id, list_id, text, order_index, timestamps
+   - id, list_id, text, order_index
+   - created_at, updated_at
 
 3. **list_item_verifications**: Stores user votes
-   - id, item_id, user_id, user_name, is_accurate, correction_text, timestamps
+   - id, item_id, user_id, user_name, is_accurate, correction_text
+   - created_at, updated_at
    - Unique constraint: one vote per user per item
 
 ### Realtime Support
-All three tables have Supabase realtime enabled for instant updates.
+All three tables have Supabase realtime enabled for instant updates. **Note**: You must manually enable realtime in the Supabase Dashboard (Database → Replication → Enable for these tables).
 
 ## Technical Implementation
 

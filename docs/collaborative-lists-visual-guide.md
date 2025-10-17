@@ -86,16 +86,7 @@ All changes sync instantly via Supabase realtime:
 ## Technical Implementation
 
 ### Database Tables
-```sql
--- Lists metadata
-collaborative_lists (id, session_id, title, list_type, creator_id, creator_name, timestamps)
-
--- Individual items
-list_items (id, list_id, text, order_index, timestamps)
-
--- User verifications/votes
-list_item_verifications (id, item_id, user_id, user_name, is_accurate, correction_text, timestamps)
-```
+See `docs/supabase-schema.sql` for complete schema definitions with all columns and constraints.
 
 ### React Hooks
 - `useCollaborativeLists`: Manage lists in session
