@@ -21,6 +21,3 @@ services:
       - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
         value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0aWNpZnZwcGVrcmdxYWVvdGpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUyNzg1MTAsImV4cCI6MjA3MDg1NDUxMH0.SluCtYLgV8CALB5ksNv1nTC3DGNMM1HTxkwTQ9fzMhs
         scope: RUN_AND_BUILD_TIME
-      - key: NEXT_PUBLIC_ENABLE_GOOGLE
-        value: "false"
-        scope: RUN_TIME
