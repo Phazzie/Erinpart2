@@ -171,6 +171,122 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 ALTER TABLE public.tasks REPLICA IDENTITY FULL;
 ALTER TABLE public.task_choices REPLICA IDENTITY FULL;
 
+-- COLLABORATIVE LISTS
+-- Table for storing collaborative lists that can be created and verified by session participants
+CREATE TABLE IF NOT EXISTS public.collaborative_lists (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id text NOT NULL, -- Using text to support animal-code sessions
+  title text NOT NULL,
+  list_type text NOT NULL CHECK (list_type IN ('bullet', 'numbered')),
+  creator_id text NOT NULL, -- User ID who created the list
+  creator_name text NOT NULL, -- Display name of creator
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.collaborative_lists ENABLE ROW LEVEL SECURITY;
+
+CREATE INDEX IF NOT EXISTS idx_collaborative_lists_session ON public.collaborative_lists(session_id);
+
+DO $$ BEGIN
+  CREATE POLICY "Lists are viewable by session participants." ON public.collaborative_lists FOR SELECT USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Authenticated users can create lists." ON public.collaborative_lists FOR INSERT WITH CHECK (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Creators can update their lists." ON public.collaborative_lists FOR UPDATE USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Creators can delete their lists." ON public.collaborative_lists FOR DELETE USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- LIST ITEMS
+-- Table for storing items within collaborative lists
+CREATE TABLE IF NOT EXISTS public.list_items (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  list_id uuid NOT NULL REFERENCES public.collaborative_lists ON DELETE CASCADE,
+  text text NOT NULL,
+  order_index integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.list_items ENABLE ROW LEVEL SECURITY;
+
+CREATE INDEX IF NOT EXISTS idx_list_items_list ON public.list_items(list_id);
+CREATE INDEX IF NOT EXISTS idx_list_items_order ON public.list_items(list_id, order_index);
+
+DO $$ BEGIN
+  CREATE POLICY "List items are viewable by all." ON public.list_items FOR SELECT USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Authenticated users can create list items." ON public.list_items FOR INSERT WITH CHECK (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Users can update list items." ON public.list_items FOR UPDATE USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Users can delete list items." ON public.list_items FOR DELETE USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- LIST ITEM VERIFICATIONS
+-- Table for storing user verifications (green/red votes) on list items
+CREATE TABLE IF NOT EXISTS public.list_item_verifications (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  item_id uuid NOT NULL REFERENCES public.list_items ON DELETE CASCADE,
+  user_id text NOT NULL,
+  user_name text NOT NULL,
+  is_accurate boolean NOT NULL, -- true = green (accurate), false = red (inaccurate)
+  correction_text text, -- Only used when is_accurate = false
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE(item_id, user_id) -- One vote per user per item
+);
+
+ALTER TABLE public.list_item_verifications ENABLE ROW LEVEL SECURITY;
+
+CREATE INDEX IF NOT EXISTS idx_verifications_item ON public.list_item_verifications(item_id);
+
+DO $$ BEGIN
+  CREATE POLICY "Verifications are viewable by all." ON public.list_item_verifications FOR SELECT USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Authenticated users can create verifications." ON public.list_item_verifications FOR INSERT WITH CHECK (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Users can update their verifications." ON public.list_item_verifications FOR UPDATE USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Users can delete their verifications." ON public.list_item_verifications FOR DELETE USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- Enable realtime on collaborative list tables
+DO $$ BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.collaborative_lists;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.list_items;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.list_item_verifications;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+ALTER TABLE public.collaborative_lists REPLICA IDENTITY FULL;
+ALTER TABLE public.list_items REPLICA IDENTITY FULL;
+ALTER TABLE public.list_item_verifications REPLICA IDENTITY FULL;
+
 -- Verify publication membership (optional to run manually)
 -- SELECT pubname, schemaname, tablename
 -- FROM pg_publication_tables

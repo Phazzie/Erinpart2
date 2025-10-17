@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- date: 2025-10-17T08:52:00Z
+  agent: copilot
+  change: Implemented collaborative list feature with multi-user verification
+  why: User requested feature allowing 3 people to collaborate on lists with green/red verification workflow
+  scope: [lib/types.ts, hooks/use-collaborative-lists.ts, components/lists/*, app/lists/page.tsx, app/page.tsx, components/ui/tabs.tsx, docs/supabase-schema.sql]
+  verification: Build PASS, typecheck PASS
+  followups: Manual testing required; database schema needs to be applied in Supabase
+  details: |
+    - Added 3 new database tables: collaborative_lists, list_items, list_item_verifications
+    - Created TypeScript types for lists and verifications
+    - Implemented real-time hooks for collaborative editing
+    - Built UI components with consensus meter gamification twist
+    - Added tab navigation to switch between Tasks and Collaborative Lists
+    - Creator can add/edit/delete list items
+    - Non-creators can verify items with green (accurate) or red (inaccurate) + correction text
+    - Consensus meter shows agreement percentage with color-coded progress bar
+    - All changes sync in real-time across all users in the session
+
 ### Fixed
 - date: 2025-10-17T07:58:00Z
   agent: copilot
