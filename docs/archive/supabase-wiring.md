@@ -1,4 +1,9 @@
-# RFC: Supabase Integration for Authentication and Task Management
+# ⚠️ DEPRECATED - RFC: Supabase Integration for Authentication and Task Management
+
+> **STATUS:** OUTDATED - This was a planning RFC from August 2025.  
+> **REASON:** OAuth authentication was replaced with animal codes; mock data removed.  
+> **SEE INSTEAD:** Current implementation in the codebase.  
+> **LAST UPDATED:** 2025-08-15
 
 **Date:** 2025-08-15
 **Author:** Gemini

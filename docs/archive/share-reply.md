@@ -1,4 +1,9 @@
-# MVP Share/Reply URL Flow
+# ⚠️ DEPRECATED - MVP Share/Reply URL Flow
+
+> **STATUS:** OUTDATED - This describes a URL-based sharing approach that was never implemented.  
+> **REASON:** Current app uses Supabase database for session sharing, not URL parameters.  
+> **SEE INSTEAD:** Current session sharing implementation in codebase.  
+> **LAST UPDATED:** 2025-08-15
 
 **Date:** 2025-08-15
 

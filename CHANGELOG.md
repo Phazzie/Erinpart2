@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- date: 2025-10-17T08:55:00Z
+  agent: copilot
+  change: Reorganized documentation - moved 8 outdated docs to archive folder with clear deprecation warnings
+  why: Original docs from August 2025 described OAuth authentication, mock data fallbacks, and planning RFCs that are no longer relevant after animal code auth implementation and production deployment
+  scope: [docs/archive/*, docs/deploy-digitalocean.md, docs/troubleshooting.md]
+  verification: Only current, accurate docs remain in docs/; archived docs clearly marked as DEPRECATED with reasons; deploy-digitalocean.md and troubleshooting.md updated to reflect current implementation (animal codes, no OAuth, production-ready)
+  followups: May delete archived docs in future if not needed for historical reference
+
 ### Fixed
 - date: 2025-10-17T07:58:00Z
   agent: copilot

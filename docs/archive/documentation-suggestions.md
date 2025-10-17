@@ -1,4 +1,9 @@
-## Documentation Suggestions
+## ⚠️ DEPRECATED - Documentation Suggestions
+
+> **STATUS:** OUTDATED - This was a task list from August 2025.  
+> **REASON:** OAuth components have been removed; many files have changed significantly.  
+> **SEE INSTEAD:** Review current code comments in the actual files.  
+> **LAST UPDATED:** 2025-08-15
 
 This document lists suggested comments and documentation additions for various files in the project.
 

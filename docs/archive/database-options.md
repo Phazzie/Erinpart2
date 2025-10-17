@@ -1,4 +1,9 @@
-# 🗄️ Database Options: What You Need to Know
+# ⚠️ DEPRECATED - Database Options: What You Need to Know
+
+> **STATUS:** OUTDATED - This was a decision-making document from early development.  
+> **REASON:** Decision made - using Supabase, project is now production-ready.  
+> **SEE INSTEAD:** Production deployment is configured for Supabase.  
+> **LAST UPDATED:** 2025-08-15
 
 ## Good News: You Already Have Supabase! ✅
 

@@ -1,4 +1,9 @@
-# DB Seed Guide
+# ⚠️ DEPRECATED - DB Seed Guide
+
+> **STATUS:** OUTDATED - Schema has evolved significantly since this was written.  
+> **REASON:** Current schema uses animal codes (no OAuth), different table structure.  
+> **SEE INSTEAD:** Check current Supabase schema in production or `supabase-schema.sql`.  
+> **LAST UPDATED:** 2025-08-15
 
 This file describes how to seed your local Supabase instance for Erin's Escapades.
 

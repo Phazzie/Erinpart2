@@ -1,4 +1,9 @@
-# Supabase SQL Schema
+# ⚠️ DEPRECATED - Supabase SQL Schema
+
+> **STATUS:** PARTIALLY OUTDATED - This schema is from August 2025.  
+> **REASON:** Schema has evolved - added user_name fields, changed auth approach to animal codes.  
+> **SEE INSTEAD:** `supabase-schema.sql` file or check production Supabase directly.  
+> **LAST UPDATED:** 2025-08-15
 
 **Date:** 2025-08-15
 **Author:** Gemini

@@ -1,4 +1,9 @@
-# Architecture Overview
+# ⚠️ DEPRECATED - Architecture Overview
+
+> **STATUS:** OUTDATED - This document was written in August 2025 and describes the initial architecture.  
+> **REASON:** Mock data fallback has been removed; OAuth has been replaced with animal code authentication.  
+> **SEE INSTEAD:** Current codebase for actual implementation.  
+> **LAST UPDATED:** 2025-08-15
 
 **Date:** 2025-08-15
 **Author:** Gemini

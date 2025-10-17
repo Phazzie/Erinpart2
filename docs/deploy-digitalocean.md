@@ -1,42 +1,30 @@
 # Deploying Erin's Escapades to Digital Ocean
 
+> **LAST UPDATED:** October 2025 - Reflects production-ready deployment with animal code authentication
+
 This guide covers deployment to **Digital Ocean App Platform** using Docker containers.
 
 ## Prerequisites
 
 - Digital Ocean account ([sign up here](https://www.digitalocean.com/))
-- Supabase project with database schema applied (see `docs/supabase-schema.sql`)
+- Supabase project with database schema applied
 - GitHub repository connected to Digital Ocean
-- Your Supabase credentials ready
+- Your Supabase credentials (URL and anon key)
 
 ---
 
 ## Option A: Deploy via Digital Ocean App Platform (Recommended)
 
-### Step 1: Prepare Your Supabase Database
+### Step 1: Verify Your Supabase Database
 
-1. **Apply Database Schema**
-   ```bash
-   # View the schema SQL
-   npm run db:print
-   ```
-   
-2. **Copy and paste the output into Supabase SQL Editor:**
-   - Go to your Supabase project
-   - Navigate to SQL Editor
-   - Run the entire schema script
-   
-3. **Enable Realtime for Tables**
-   - Go to Database → Replication → Realtime
-   - Enable realtime for:
-     - `tasks`
-     - `task_choices`
+Your Supabase database should already be configured with:
+- `sessions` table (for session management)
+- `tasks` table (for task CRUD)
+- `task_choices` table (for yes/no/maybe voting)
+- RLS policies for security
+- Realtime enabled on `tasks` and `task_choices`
 
-4. **Optional: Add Seed Data**
-   ```bash
-   # View seed data SQL
-   npm run db:seed:print
-   ```
+**If setting up fresh**, apply the schema from your Supabase SQL Editor.
 
 ### Step 2: Create App on Digital Ocean
 
@@ -65,7 +53,6 @@ In the Digital Ocean App Platform console, add these environment variables:
 | `NEXT_PUBLIC_SITE_URL` | `https://your-app.ondigitalocean.app` | Your DO app URL |
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://xxxxx.supabase.co` | From Supabase Project Settings → API |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJhbGc...` | From Supabase Project Settings → API |
-| `NEXT_PUBLIC_ENABLE_GOOGLE` | `false` | Set to `true` if using Google OAuth |
 | `NODE_ENV` | `production` | Auto-set by DO, but verify |
 
 **Where to find Supabase credentials:**
@@ -102,22 +89,22 @@ In the Digital Ocean App Platform console, add these environment variables:
      - `https://your-app.ondigitalocean.app/auth/callback`
      - `http://localhost:3000/auth/callback` (for local dev)
 
-2. **Update OAuth Redirect URLs** (if using Google OAuth)
-   - Go to Google Cloud Console → APIs & Services → Credentials
-   - Edit your OAuth 2.0 Client ID
-   - Add authorized redirect URI:
-     - `https://[YOUR_SUPABASE_URL]/auth/v1/callback`
+**Note:** This app uses **animal code authentication** (no OAuth), so no Google Cloud configuration needed.
 
 ### Step 7: Verify Deployment
 
 1. Visit your app URL: `https://your-app.ondigitalocean.app`
 2. Test the animal code authentication:
-   - Pick 3 animals and enter a username
-   - Join or create a session
-3. Test task creation and realtime updates:
-   - Open in two different browsers/incognito windows
-   - Create tasks in one window
-   - Verify they appear in the other window
+   - Pick 3 animals (e.g., 🦊🐼🦁) and enter a username
+   - Click "Join the Chaos!"
+3. Create a session:
+   - Enter a session name
+   - Add tasks to test CRUD operations
+4. Test realtime updates:
+   - Open the same session in two different browsers/incognito windows
+   - Add/edit/delete tasks in one window
+   - Verify changes appear instantly in the other window
+5. Test yes/no/maybe voting on tasks across both windows
 
 ---
 
@@ -221,13 +208,13 @@ Visit `http://localhost:3000` to test.
   2. Check browser console for WebSocket errors
   3. Verify RLS policies allow reads (should be `FOR SELECT USING (true)`)
 
-### OAuth Redirect Issues
+### Authentication Issues
 
-**Issue**: Google sign-in loops or fails
-- **Solution**:
-  1. Verify redirect URLs in Supabase match your DO app URL
-  2. Check Google Cloud Console OAuth redirect URIs
-  3. Must include `/auth/callback` path
+**Issue**: Animal code login fails or doesn't persist
+- **Solution**: 
+  1. Check browser console for errors
+  2. Verify localStorage is working (not in private browsing)
+  3. Check Supabase connection (network tab)
 
 ### Port Issues
 
