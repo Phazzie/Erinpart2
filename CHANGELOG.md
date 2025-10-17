@@ -8,6 +8,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- date: 2025-10-17T07:58:00Z
+  agent: copilot
+  change: Fixed critical deployment blocker - removed Google Fonts dependency causing build failures
+  why: Google Fonts import from next/font/google was causing "ENOTFOUND fonts.googleapis.com" errors in sandboxed/offline build environments, blocking Digital Ocean deployment
+  scope: [app/layout.tsx]
+  verification: Build now passes successfully; replaced with font-sans Tailwind class using system fonts
+  followups: Consider re-adding Google Fonts with local font files for production
+
+- date: 2025-10-17T07:58:00Z
+  agent: copilot
+  change: Fixed critical infinite re-render loop in useRealtime hook
+  why: Callback function was in useEffect dependency array, causing channel cleanup and re-subscription on every render when parent components passed unstable callback functions
+  scope: [hooks/use-realtime.ts]
+  verification: Uses useRef pattern to hold latest callback without triggering re-subscriptions
+  followups: Monitor realtime performance in production
+
+- date: 2025-10-17T07:58:00Z
+  agent: copilot
+  change: Fixed critical RLS policy violation for task creation
+  why: created_by field was conditionally added, but Supabase RLS policies require it for all INSERT operations. Missing userId would cause silent database errors in production
+  scope: [hooks/use-tasks.ts]
+  verification: Task creation now requires userId and fails fast with clear error message if missing
+  followups: Monitor task creation errors in production logs
+
+### Added
+- date: 2025-10-17T07:58:00Z
+  agent: copilot
+  change: Added health check API endpoint for Docker container monitoring
+  why: Dockerfile includes health check that requires /api/health endpoint to verify container is running
+  scope: [app/api/health/route.ts]
+  verification: Returns JSON response with status 200
+  followups: None
+
+- date: 2025-10-17T07:58:00Z
+  agent: copilot
+  change: Added test artifacts to .gitignore
+  why: Prevent test-results and playwright-report directories from being committed
+  scope: [.gitignore]
+  verification: Added /test-results and /playwright-report to gitignore
+  followups: None
+
 - date: 2025-10-12T08:00:00Z
   agent: copilot
   change: Fixed all 4 E2E test failures in multi-user.spec.ts by changing textarea selectors to input selectors
