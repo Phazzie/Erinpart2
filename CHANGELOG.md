@@ -1,5 +1,7 @@
 # Changelog
 
+# Changelog
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
@@ -7,7 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Docs
+
+- date: 2025-10-17T18:45:00Z
+  agent: copilot
+  change: Added Supabase apply guide with full instructions and AI assistant message
+  why: Make it straightforward to apply the hardened schema and enable realtime without requiring the CLI
+  scope: [docs/supabase-apply.md]
+  verification: Guide authored and committed; no code changes required
+
+- date: 2025-10-17T19:05:00Z
+  agent: copilot
+  change: Applied hardened schema, helper functions, and updated_at triggers in Supabase; verified realtime publication membership
+  why: Enable collaborative lists feature and ensure consistent timestamps and performant queries
+  scope: [Supabase cloud project]
+  verification: Validation queries confirm publication includes tasks, task_choices, collaborative_lists, list_items, list_item_verifications; helpers and triggers present
+
 ### Merged
+
 - date: 2025-01-17T18:30:00Z
   agent: copilot
   change: Merged PR #18 - collaborative lists feature with consensus meter and hardened security
@@ -16,17 +35,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   verification: Build PASS, merge conflicts resolved (CHANGELOG.md, aitalk), all checks passing on PR
   followups: Apply hardened schema in Supabase (docs/supabase-schema.sql), test collaborative lists in production
   details: |
-    PR #18 Changes (+2299 -29 lines):
-    - Tab navigation system (Tasks / Collaborative Lists)
-    - 3 new database tables (collaborative_lists, list_items, list_item_verifications)
-    - Real-time collaboration hooks with Supabase realtime
-    - Consensus meter gamification (3 verifications needed)
-    - Hardened security: 35 RLS policies (up from 20), 10 new indexes
-    - URL session detection merged with tab navigation (no conflicts)
-    - Comprehensive documentation: 4 new docs files
-    - Conflicts resolved by chronologically ordering entries from both branches
+  PR #18 Changes (+2299 -29 lines):
+  - Tab navigation system (Tasks / Collaborative Lists)
+  - 3 new database tables (collaborative_lists, list_items, list_item_verifications)
+  - Real-time collaboration hooks with Supabase realtime
+  - Consensus meter gamification (3 verifications needed)
+  - Hardened security: 35 RLS policies (up from 20), 10 new indexes
+  - URL session detection merged with tab navigation (no conflicts)
+  - Comprehensive documentation: 4 new docs files
+  - Conflicts resolved by chronologically ordering entries from both branches
 
 ### Security
+
 - date: 2025-10-17T09:15:00Z
   agent: copilot
   change: Hardened database schema with improved RLS policies based on Supabase AI security audit
@@ -35,24 +55,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   verification: Build PASS, schema validated
   followups: Apply hardened schema in Supabase before production deployment
   details: |
-    Security Improvements:
-    - Replaced generic policy names with unique descriptive names (table_operation_description pattern)
-    - Added explicit TO authenticated/PUBLIC clauses to all policies
-    - Implemented participant-based access control (session host + task creators)
-    - Added secret task privacy policy (only creator and host can view)
-    - Created 10 new performance indexes for policy evaluation (19 total)
-    - Applied security model to collaborative lists tables
-    - Preserved anonymous animal-code session support
-    
-    Results:
-    - True multi-tenant isolation (users only see their sessions)
-    - Principle of least privilege enforced
-    - No more broad USING (true) policies
-    - ~35 granular policies (up from ~20)
-    - Policy evaluation optimized with indexes
-    - Comprehensive deployment guide created
+  Security Improvements:
+  - Replaced generic policy names with unique descriptive names (table_operation_description pattern)
+  - Added explicit TO authenticated/PUBLIC clauses to all policies
+  - Implemented participant-based access control (session host + task creators)
+  - Added secret task privacy policy (only creator and host can view)
+  - Created 10 new performance indexes for policy evaluation (19 total)
+  - Applied security model to collaborative lists tables
+  - Preserved anonymous animal-code session support
+  Results:
+  - True multi-tenant isolation (users only see their sessions)
+  - Principle of least privilege enforced
+  - No more broad USING (true) policies
+  - ~35 granular policies (up from ~20)
+  - Policy evaluation optimized with indexes
+  - Comprehensive deployment guide created
 
 ### Changed
+
 - date: 2025-10-17T08:55:00Z
   agent: copilot
   change: Reorganized documentation - moved 8 outdated docs to archive folder with clear deprecation warnings
@@ -62,6 +82,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   followups: May delete archived docs in future if not needed for historical reference
 
 ### Added
+
 - date: 2025-10-17T09:05:00Z
   agent: copilot
   change: Completed collaborative list feature implementation with documentation
@@ -78,17 +99,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   verification: Build PASS, typecheck PASS
   followups: Manual testing required; database schema needs to be applied in Supabase
   details: |
-    - Added 3 new database tables: collaborative_lists, list_items, list_item_verifications
-    - Created TypeScript types for lists and verifications
-    - Implemented real-time hooks for collaborative editing
-    - Built UI components with consensus meter gamification twist
-    - Added tab navigation to switch between Tasks and Collaborative Lists
-    - Creator can add/edit/delete list items
-    - Non-creators can verify items with green (accurate) or red (inaccurate) + correction text
-    - Consensus meter shows agreement percentage with color-coded progress bar
-    - All changes sync in real-time across all users in the session
+  - Added 3 new database tables: collaborative_lists, list_items, list_item_verifications
+  - Created TypeScript types for lists and verifications
+  - Implemented real-time hooks for collaborative editing
+  - Built UI components with consensus meter gamification twist
+  - Added tab navigation to switch between Tasks and Collaborative Lists
+  - Creator can add/edit/delete list items
+  - Non-creators can verify items with green (accurate) or red (inaccurate) + correction text
+  - Consensus meter shows agreement percentage with color-coded progress bar
+  - All changes sync in real-time across all users in the session
 
 ### Fixed
+
 - date: 2025-10-17T07:58:00Z
   agent: copilot
   change: Fixed critical deployment blocker - removed Google Fonts dependency causing build failures
@@ -114,6 +136,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   followups: Monitor task creation errors in production logs
 
 ### Added
+
 - date: 2025-10-17T07:58:00Z
   agent: copilot
   change: Added health check API endpoint for Docker container monitoring
@@ -155,6 +178,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   followups: Test in browser by adding a task - should not get infinite recursion error popup
 
 ### Added
+
 - date: 2025-10-11T10:30:00Z
   agent: copilot
   change: Removed unused imports and variables from animal-code-form.tsx (useRouter import and router variable)
@@ -212,6 +236,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   followups: None
 
 ### Fixed
+
 - date: 2025-10-11T00:10:00Z
   agent: copilot
   change: Fixed loading screen permanently sticking by removing startTransition wrapper and using simple boolean state
@@ -221,6 +246,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   followups: User should test in browser to confirm loading screen resolves properly
 
 ### Fixed
+
 - date: 2025-10-11T00:10:00Z
   agent: copilot
   change: Fixed loading screen sticking after animal selection by removing startTransition() and using simple isJoining state
@@ -230,9 +256,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   followups: Monitor for any regression in loading behavior
 
 ### Added
+
 - date: 2025-10-10T14:00:00Z
 
 ### Added
+
 - date: 2025-10-10T14:00:00Z
   agent: copilot
   change: Enhanced animal code login system with 46 animals (was 16), Quick Join button, and comprehensive test coverage
@@ -345,9 +373,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   verification: build PASS, dev server running, animal form functional with localStorage persistence
   followups: Phase 3C testing and Phase 4 database schema updates
 
- - MVP client-only share/reply links and copy-to-clipboard in SessionHeader; added missing Textarea UI component.
- - SessionBoard now uses `useSession` and `useTasks` hooks; runtime pulls from Supabase when configured instead of inline mock data.
- - Documented no-debt plan for per-user choices (task_choices table + RLS + `useTaskChoices` hook) to support yes/no/maybe per recipient.
+- MVP client-only share/reply links and copy-to-clipboard in SessionHeader; added missing Textarea UI component.
+- SessionBoard now uses `useSession` and `useTasks` hooks; runtime pulls from Supabase when configured instead of inline mock data.
+- Documented no-debt plan for per-user choices (task_choices table + RLS + `useTaskChoices` hook) to support yes/no/maybe per recipient.
 
 - date: 2025-08-15
 - agent: copilot | gemini | human
@@ -356,7 +384,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - scope: Files touched
 - verification: Build/tests outcome
 - followups: Optional next actions
+
 ### Fixed
+
 - date: 2025-08-18
   agent: gemini
   change: Fixed all linting and TypeScript errors.
@@ -365,10 +395,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   verification: npm run check PASS
   followups: None
 - Resolved a critical security vulnerability by force-updating dependencies via `npm audit fix`.
- - Server actions env assertion now runs before input validation, ensuring tests correctly fail when Supabase env is missing.
- - Supabase health integration test now lazy-inits the client inside tests, preventing env errors when the test suite is skipped by default.
+- Server actions env assertion now runs before input validation, ensuring tests correctly fail when Supabase env is missing.
+- Supabase health integration test now lazy-inits the client inside tests, preventing env errors when the test suite is skipped by default.
 
 ### Changed
+
 - date: 2025-08-17T18:10:00Z
   agent: copilot
   change: Regenerated use-session hook to use anonymous Supabase authentication with localStorage session persistence
@@ -394,6 +425,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   followups: Phase 3C verification testing
 
 ### Removed
+
 - date: 2025-10-08T00:00:00Z
   agent: copilot
   change: Removed empty test files causing test suite failures
@@ -411,8 +443,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   followups: None - OAuth completely eliminated
 
 - Runtime now prefers real Supabase by default; removed rich runtime mock fallback. Added a minimal no-op stub only to prevent crashes when env is missing (tests still use explicit mocks). Verified with typecheck, tests, and production build.
- - Removed runtime mock fallback from `use-tasks`; all CRUD now flows through Supabase when configured. Unit tests mock the Supabase client.
- - Refactored `components/session/session-board.tsx` to rely on hooks, reducing direct mock usage and aligning with Supabase-first runtime.
+- Removed runtime mock fallback from `use-tasks`; all CRUD now flows through Supabase when configured. Unit tests mock the Supabase client.
+- Refactored `components/session/session-board.tsx` to rely on hooks, reducing direct mock usage and aligning with Supabase-first runtime.
 
 ---
 
@@ -423,34 +455,34 @@ This section tracks contributions made by AI assistants like Gemini and GitHub C
 ### Gemini
 
 - **2025-08-15**:
-    - Added `prettier` as a dev dependency.
-    - Created the initial GitHub Actions workflow for code quality (`.github/workflows/quality-checks.yml`).
-    - Created this `CHANGELOG.md` file.
-    - Ran `npm audit fix --force` to resolve a critical security vulnerability.
+  - Added `prettier` as a dev dependency.
+  - Created the initial GitHub Actions workflow for code quality (`.github/workflows/quality-checks.yml`).
+  - Created this `CHANGELOG.md` file.
+  - Ran `npm audit fix --force` to resolve a critical security vulnerability.
 
 ### GitHub Copilot
 
 - **2025-08-16**:
-    - change: Supabase-first pass: removed runtime mocks from `use-tasks`, refactored `SessionBoard` to hooks, and moved env assertion earlier in server actions.
-    - why: Eliminate drift between mock and real paths; ensure consistent behavior and enable DB work.
-    - scope: `hooks/use-tasks.ts`, `components/session/session-board.tsx`, `lib/actions.ts`, tests, `aitalk`, `CHANGELOG.md`.
-    - verification: Tests PASS (11/11), typecheck PASS, build PASS; branch pushed to origin.
-    - followups: Implement per-user choices with `task_choices` table, RLS, Realtime, and a `useTaskChoices` hook; wire radios to set per-user choice.
+  - change: Supabase-first pass: removed runtime mocks from `use-tasks`, refactored `SessionBoard` to hooks, and moved env assertion earlier in server actions.
+  - why: Eliminate drift between mock and real paths; ensure consistent behavior and enable DB work.
+  - scope: `hooks/use-tasks.ts`, `components/session/session-board.tsx`, `lib/actions.ts`, tests, `aitalk`, `CHANGELOG.md`.
+  - verification: Tests PASS (11/11), typecheck PASS, build PASS; branch pushed to origin.
+  - followups: Implement per-user choices with `task_choices` table, RLS, Realtime, and a `useTaskChoices` hook; wire radios to set per-user choice.
 
 - **2025-08-15**:
-    - change: Implemented client-only share link (session param) and reply link (answers param) flow; added `components/ui/textarea.tsx`; parsed URL params in `SessionBoard` and passed to header; copy-to-clipboard with toasts.
-    - why: Enable quick MVP where you can share a URL, your partner can answer and send back a reply URL without backend wiring.
-    - scope: `components/ui/textarea.tsx`, `components/session/session-header.tsx`, `components/session/session-board.tsx`, `aitalk`, `CHANGELOG.md`.
-    - verification: Typecheck/build to be run; minimal UI-only changes should compile. Next step to run `npm run build`.
-    - change: Fixed Next.js build by installing missing deps, renaming `lib/toast.ts` to `.tsx`, replacing deprecated `useActionState` with `useFormState`, fixing framer-motion props on Button, typing mock data and realtime hook, and correcting `jest.config.ts` syntax.
-    - why: Unblock build to enable mock-mode run and future Supabase integration. Kept edits minimal and localized.
-    - scope: `lib/toast.tsx`, `components/auth/*`, `components/vibes/vibe-selector.tsx`, `hooks/use-realtime.ts`, `lib/mock-data.ts`, `jest.config.ts`, `.env.example`, `aitalk`.
-    - verification: Local build invoked; errors iteratively resolved. Final green build pending after jest config fix in current session.
-    - followups: Run `npm run build` and `npm run dev` to confirm green; coordinate with Gemini via `aitalk` for next steps.
+  - change: Implemented client-only share link (session param) and reply link (answers param) flow; added `components/ui/textarea.tsx`; parsed URL params in `SessionBoard` and passed to header; copy-to-clipboard with toasts.
+  - why: Enable quick MVP where you can share a URL, your partner can answer and send back a reply URL without backend wiring.
+  - scope: `components/ui/textarea.tsx`, `components/session/session-header.tsx`, `components/session/session-board.tsx`, `aitalk`, `CHANGELOG.md`.
+  - verification: Typecheck/build to be run; minimal UI-only changes should compile. Next step to run `npm run build`.
+  - change: Fixed Next.js build by installing missing deps, renaming `lib/toast.ts` to `.tsx`, replacing deprecated `useActionState` with `useFormState`, fixing framer-motion props on Button, typing mock data and realtime hook, and correcting `jest.config.ts` syntax.
+  - why: Unblock build to enable mock-mode run and future Supabase integration. Kept edits minimal and localized.
+  - scope: `lib/toast.tsx`, `components/auth/*`, `components/vibes/vibe-selector.tsx`, `hooks/use-realtime.ts`, `lib/mock-data.ts`, `jest.config.ts`, `.env.example`, `aitalk`.
+  - verification: Local build invoked; errors iteratively resolved. Final green build pending after jest config fix in current session.
+  - followups: Run `npm run build` and `npm run dev` to confirm green; coordinate with Gemini via `aitalk` for next steps.
 
 - **2025-08-15**:
-    - change: Env-gated Supabase wiring; added browser and server clients, adapted server actions and `use-tasks` to call Supabase when configured, preserving mock fallback to keep tests/dev working.
-    - why: Allow immediate development with mocks and seamless opt-in to Supabase via env vars.
-    - scope: `lib/supabase/client.ts`, `lib/supabase/server.ts`, `lib/actions.ts`, `hooks/use-tasks.ts`, `aitalk`, `CHANGELOG.md`.
-    - verification: Pending typecheck/build/tests.
-    - followups: Add `useSession` real wiring; add SQL schema docs; verify OAuth redirect URIs.
+  - change: Env-gated Supabase wiring; added browser and server clients, adapted server actions and `use-tasks` to call Supabase when configured, preserving mock fallback to keep tests/dev working.
+  - why: Allow immediate development with mocks and seamless opt-in to Supabase via env vars.
+  - scope: `lib/supabase/client.ts`, `lib/supabase/server.ts`, `lib/actions.ts`, `hooks/use-tasks.ts`, `aitalk`, `CHANGELOG.md`.
+  - verification: Pending typecheck/build/tests.
+  - followups: Add `useSession` real wiring; add SQL schema docs; verify OAuth redirect URIs.

@@ -793,6 +793,22 @@ parallel_work:
     result: build PASS, documentation improved
     next: Release lock, feature complete and ready for deployment
 
+lock:
+  holder: copilot
+  task: Author Supabase apply guide with schema and AI message
+  since: 2025-10-17T18:40:00Z
+  expires: 2025-10-17T18:55:00Z
+  files_to_change:
+    - docs/supabase-apply.md
+    - CHANGELOG.md
+
+  - at: 2025-10-17T18:45:00Z
+    agent: copilot
+    event: step
+    message: Created docs/supabase-apply.md including full instructions and Supabase AI assistant message; updated CHANGELOG.
+    result: docs added; build unaffected
+    next: Apply schema in Supabase and enable realtime on five tables
+
   - at: 2025-01-17T18:30:00Z
     agent: copilot (chat session)
     event: pr_merged
@@ -811,4 +827,13 @@ parallel_work:
       2. Enable realtime for new tables (collaborative_lists, list_items, list_item_verifications)
       3. Test collaborative lists feature in production
       4. Monitor deployment for any issues
+
+  - at: 2025-10-17T19:05:00Z
+    agent: copilot (chat session)
+    event: docs_update
+    message: |
+      Added a single, self-contained Supabase apply guide with inline hardened schema and AI message (docs/supabase-apply.md).
+      Confirmed in Supabase: hardened schema applied, helper functions created, BEFORE UPDATE triggers added for updated_at, and realtime publication includes tasks, task_choices, collaborative_lists, list_items, list_item_verifications.
+    result: docs committed, schema verified in cloud project
+    next: Exercise the collaborative lists UI end-to-end with two browsers and verify realtime sync and RLS behaviors
 
