@@ -119,11 +119,21 @@ How to use (single-file protocol)
 
 State (YAML-like)
 lock:
-  holder: null
-  task: null
-  since: null
-  expires: null
-  files_to_change: []
+  holder: copilot
+  task: Implement collaborative list feature with 3-person sessions and verification workflow
+  since: 2025-10-17T08:44:00Z
+  expires: 2025-10-17T09:00:00Z
+  files_to_change:
+    - lib/types.ts
+    - components/lists/collaborative-list.tsx
+    - components/lists/list-item.tsx
+    - components/lists/list-creator-form.tsx
+    - hooks/use-collaborative-lists.ts
+    - app/lists/page.tsx
+    - components/layout/nav-tabs.tsx
+    - docs/supabase-schema.sql
+    - CHANGELOG.md
+    - aitalk
 status:
   copilot:
     state: completed
