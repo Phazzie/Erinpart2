@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Merged
+- date: 2025-01-17T18:30:00Z
+  agent: copilot
+  change: Merged PR #18 - collaborative lists feature with consensus meter and hardened security
+  why: Adds major feature for multi-user list collaboration with gamified verification system
+  scope: [app/page.tsx, app/lists/page.tsx, components/lists/*, hooks/use-collaborative-lists.ts, lib/types.ts, docs/supabase-schema.sql, +9 new files]
+  verification: Build PASS, merge conflicts resolved (CHANGELOG.md, aitalk), all checks passing on PR
+  followups: Apply hardened schema in Supabase (docs/supabase-schema.sql), test collaborative lists in production
+  details: |
+    PR #18 Changes (+2299 -29 lines):
+    - Tab navigation system (Tasks / Collaborative Lists)
+    - 3 new database tables (collaborative_lists, list_items, list_item_verifications)
+    - Real-time collaboration hooks with Supabase realtime
+    - Consensus meter gamification (3 verifications needed)
+    - Hardened security: 35 RLS policies (up from 20), 10 new indexes
+    - URL session detection merged with tab navigation (no conflicts)
+    - Comprehensive documentation: 4 new docs files
+    - Conflicts resolved by chronologically ordering entries from both branches
+
 ### Security
 - date: 2025-10-17T09:15:00Z
   agent: copilot
