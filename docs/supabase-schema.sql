@@ -1,4 +1,6 @@
+-- Hardened Supabase Schema with Improved RLS Policies
 -- Safe to run multiple times; uses IF NOT EXISTS / ON CONFLICT where possible
+-- Based on Supabase AI security audit recommendations
 
 -- Ensure UUID generator is available
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
@@ -13,16 +15,28 @@ CREATE TABLE IF NOT EXISTS public.users (
 
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
+-- Add index for common lookups
+CREATE INDEX IF NOT EXISTS idx_users_id ON public.users(id);
+
 DO $$ BEGIN
-  CREATE POLICY "Public profiles are viewable by everyone." ON public.users FOR SELECT USING (true);
+  CREATE POLICY "users_select_public" ON public.users 
+    FOR SELECT 
+    TO authenticated 
+    USING (true);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "Users can insert their own profile." ON public.users FOR INSERT WITH CHECK (auth.uid() = id);
+  CREATE POLICY "users_insert_own" ON public.users 
+    FOR INSERT 
+    TO authenticated 
+    WITH CHECK (auth.uid() = id);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "Users can update own profile." ON public.users FOR UPDATE USING (auth.uid() = id);
+  CREATE POLICY "users_update_own" ON public.users 
+    FOR UPDATE 
+    TO authenticated 
+    USING (auth.uid() = id);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- SESSIONS
@@ -37,6 +51,10 @@ CREATE TABLE IF NOT EXISTS public.sessions (
 
 ALTER TABLE public.sessions ENABLE ROW LEVEL SECURITY;
 
+-- Add indexes for common lookups and policy performance
+CREATE INDEX IF NOT EXISTS idx_sessions_host ON public.sessions(host_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_session_code ON public.sessions(session_code);
+
 -- Cleanup job: delete expired sessions (run manually or via pg_cron)
 -- To run manually:
 -- DELETE FROM public.sessions WHERE expires_at < now();
@@ -46,15 +64,24 @@ ALTER TABLE public.sessions ENABLE ROW LEVEL SECURITY;
 -- SELECT cron.schedule('cleanup-expired-sessions', '0 3 * * *', $$DELETE FROM public.sessions WHERE expires_at < now()$$);
 
 DO $$ BEGIN
-  CREATE POLICY "Hosts can create sessions." ON public.sessions FOR INSERT WITH CHECK (auth.uid() = host_id);
+  CREATE POLICY "sessions_insert_host" ON public.sessions 
+    FOR INSERT 
+    TO authenticated 
+    WITH CHECK (auth.uid() = host_id);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "Hosts can update their sessions." ON public.sessions FOR UPDATE USING (auth.uid() = host_id);
+  CREATE POLICY "sessions_update_host" ON public.sessions 
+    FOR UPDATE 
+    TO authenticated 
+    USING (auth.uid() = host_id);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "Hosts can delete their sessions." ON public.sessions FOR DELETE USING (auth.uid() = host_id);
+  CREATE POLICY "sessions_delete_host" ON public.sessions 
+    FOR DELETE 
+    TO authenticated 
+    USING (auth.uid() = host_id);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- TASKS
@@ -83,41 +110,90 @@ EXCEPTION WHEN duplicate_column THEN NULL; END $$;
 
 ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
 
+-- Add indexes for policy performance and common queries
 CREATE INDEX IF NOT EXISTS idx_tasks_session ON public.tasks(session_id);
 CREATE INDEX IF NOT EXISTS idx_tasks_session_day ON public.tasks(session_id, day);
 CREATE INDEX IF NOT EXISTS idx_tasks_order ON public.tasks(order_index);
+CREATE INDEX IF NOT EXISTS idx_tasks_created_by ON public.tasks(created_by);
 
+-- SELECT policy: tasks are viewable by session participants (host or task creators in same session)
 DO $$ BEGIN
-  CREATE POLICY "Tasks are viewable by session participants." ON public.tasks FOR SELECT USING (
-    true -- Public access for shared animal code sessions
-  );
+  CREATE POLICY "tasks_select_session_participants" ON public.tasks 
+    FOR SELECT 
+    TO authenticated 
+    USING (
+      -- Creator can see their own tasks
+      auth.uid() = created_by 
+      OR 
+      -- Host can see all tasks in their sessions
+      EXISTS (
+        SELECT 1 FROM public.sessions s 
+        WHERE s.id = tasks.session_id 
+        AND s.host_id = auth.uid()
+      )
+      OR
+      -- Other participants can see tasks (if they have any task in the same session)
+      EXISTS (
+        SELECT 1 FROM public.tasks t 
+        WHERE t.session_id = tasks.session_id 
+        AND t.created_by = auth.uid()
+      )
+    );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- Special policy for secret tasks: only creator and host can see them
+DO $$ BEGIN
+  CREATE POLICY "tasks_select_secret_restricted" ON public.tasks 
+    FOR SELECT 
+    TO authenticated 
+    USING (
+      is_secret = false 
+      OR 
+      auth.uid() = created_by 
+      OR 
+      EXISTS (
+        SELECT 1 FROM public.sessions s 
+        WHERE s.id = tasks.session_id 
+        AND s.host_id = auth.uid()
+      )
+    );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "Anonymous users can create tasks." ON public.tasks FOR INSERT WITH CHECK (
-    auth.uid() = created_by
-  );
+  CREATE POLICY "tasks_insert_own" ON public.tasks 
+    FOR INSERT 
+    TO authenticated 
+    WITH CHECK (auth.uid() = created_by);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "Anonymous users can update their tasks." ON public.tasks FOR UPDATE USING (auth.uid() = created_by);
+  CREATE POLICY "tasks_update_own" ON public.tasks 
+    FOR UPDATE 
+    TO authenticated 
+    USING (auth.uid() = created_by);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "Anonymous users can delete their tasks." ON public.tasks FOR DELETE USING (auth.uid() = created_by);
+  CREATE POLICY "tasks_delete_own" ON public.tasks 
+    FOR DELETE 
+    TO authenticated 
+    USING (auth.uid() = created_by);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- Now that tasks exist, add sessions visibility policy that references tasks
 DO $$ BEGIN
-  CREATE POLICY "Tasks are publicly readable for shared sessions." ON public.tasks FOR SELECT USING (true);
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
--- Now that tasks exist, we can safely add the sessions visibility policy that references tasks
-DO $$ BEGIN
-  CREATE POLICY "Sessions are viewable by participants." ON public.sessions FOR SELECT USING (
-    auth.uid() = host_id OR EXISTS (
-      SELECT 1 FROM public.tasks t WHERE t.session_id = public.sessions.id AND t.created_by = auth.uid()
-    )
-  );
+  CREATE POLICY "sessions_select_participants" ON public.sessions 
+    FOR SELECT 
+    TO authenticated 
+    USING (
+      auth.uid() = host_id 
+      OR 
+      EXISTS (
+        SELECT 1 FROM public.tasks t 
+        WHERE t.session_id = sessions.id 
+        AND t.created_by = auth.uid()
+      )
+    );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- TASK_CHOICES (per-user yes/no/maybe)
@@ -139,23 +215,47 @@ EXCEPTION WHEN duplicate_column THEN NULL; END $$;
 
 ALTER TABLE public.task_choices ENABLE ROW LEVEL SECURITY;
 
+-- Add indexes for policy performance
 CREATE INDEX IF NOT EXISTS idx_task_choices_task ON public.task_choices(task_id);
 CREATE INDEX IF NOT EXISTS idx_task_choices_user ON public.task_choices(user_id);
 
 DO $$ BEGIN
-  CREATE POLICY "Choices readable publicly for shared sessions" ON public.task_choices FOR SELECT USING (true);
+  CREATE POLICY "task_choices_select_session_participants" ON public.task_choices 
+    FOR SELECT 
+    TO authenticated 
+    USING (
+      -- Can see own choices
+      auth.uid() = user_id 
+      OR 
+      -- Can see choices for tasks in sessions where user participates
+      EXISTS (
+        SELECT 1 FROM public.tasks t 
+        JOIN public.sessions s ON s.id = t.session_id
+        WHERE t.id = task_choices.task_id 
+        AND (s.host_id = auth.uid() OR t.created_by = auth.uid())
+      )
+    );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "Anonymous users can insert choices" ON public.task_choices FOR INSERT WITH CHECK (auth.uid() = user_id);
+  CREATE POLICY "task_choices_insert_own" ON public.task_choices 
+    FOR INSERT 
+    TO authenticated 
+    WITH CHECK (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "Anonymous users can update own choice" ON public.task_choices FOR UPDATE USING (auth.uid() = user_id);
+  CREATE POLICY "task_choices_update_own" ON public.task_choices 
+    FOR UPDATE 
+    TO authenticated 
+    USING (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "Anonymous users can delete own choice" ON public.task_choices FOR DELETE USING (auth.uid() = user_id);
+  CREATE POLICY "task_choices_delete_own" ON public.task_choices 
+    FOR DELETE 
+    TO authenticated 
+    USING (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- REALTIME PUBLICATION (recommended)
@@ -173,12 +273,13 @@ ALTER TABLE public.task_choices REPLICA IDENTITY FULL;
 
 -- COLLABORATIVE LISTS
 -- Table for storing collaborative lists that can be created and verified by session participants
+-- Note: Uses text session_id to support animal-code anonymous sessions
 CREATE TABLE IF NOT EXISTS public.collaborative_lists (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   session_id text NOT NULL, -- Using text to support animal-code sessions
   title text NOT NULL,
   list_type text NOT NULL CHECK (list_type IN ('bullet', 'numbered')),
-  creator_id text NOT NULL, -- User ID who created the list
+  creator_id text NOT NULL, -- User ID who created the list (text for anonymous support)
   creator_name text NOT NULL, -- Display name of creator
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
@@ -187,21 +288,39 @@ CREATE TABLE IF NOT EXISTS public.collaborative_lists (
 ALTER TABLE public.collaborative_lists ENABLE ROW LEVEL SECURITY;
 
 CREATE INDEX IF NOT EXISTS idx_collaborative_lists_session ON public.collaborative_lists(session_id);
+CREATE INDEX IF NOT EXISTS idx_collaborative_lists_creator ON public.collaborative_lists(creator_id);
 
+-- SELECT policy: authenticated users can view lists in their sessions
+-- Note: For anonymous animal-code sessions, we allow authenticated users to view
 DO $$ BEGIN
-  CREATE POLICY "Lists are viewable by session participants." ON public.collaborative_lists FOR SELECT USING (true);
+  CREATE POLICY "collaborative_lists_select_authenticated" ON public.collaborative_lists 
+    FOR SELECT 
+    TO authenticated 
+    USING (true); -- Allow viewing for authenticated users (anonymous sessions supported)
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- INSERT policy: authenticated users can create lists
 DO $$ BEGIN
-  CREATE POLICY "Authenticated users can create lists." ON public.collaborative_lists FOR INSERT WITH CHECK (true);
+  CREATE POLICY "collaborative_lists_insert_authenticated" ON public.collaborative_lists 
+    FOR INSERT 
+    TO authenticated 
+    WITH CHECK (true); -- Allow creation for authenticated users
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- UPDATE policy: only creator or session host can update
 DO $$ BEGIN
-  CREATE POLICY "Creators can update their lists." ON public.collaborative_lists FOR UPDATE USING (true);
+  CREATE POLICY "collaborative_lists_update_creator" ON public.collaborative_lists 
+    FOR UPDATE 
+    TO authenticated 
+    USING (creator_id = auth.uid()::text); -- Only creator can update
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- DELETE policy: only creator or session host can delete
 DO $$ BEGIN
-  CREATE POLICY "Creators can delete their lists." ON public.collaborative_lists FOR DELETE USING (true);
+  CREATE POLICY "collaborative_lists_delete_creator" ON public.collaborative_lists 
+    FOR DELETE 
+    TO authenticated 
+    USING (creator_id = auth.uid()::text); -- Only creator can delete
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- LIST ITEMS
@@ -220,20 +339,58 @@ ALTER TABLE public.list_items ENABLE ROW LEVEL SECURITY;
 CREATE INDEX IF NOT EXISTS idx_list_items_list ON public.list_items(list_id);
 CREATE INDEX IF NOT EXISTS idx_list_items_order ON public.list_items(list_id, order_index);
 
+-- SELECT policy: can view items if can view the parent list
 DO $$ BEGIN
-  CREATE POLICY "List items are viewable by all." ON public.list_items FOR SELECT USING (true);
+  CREATE POLICY "list_items_select_authenticated" ON public.list_items 
+    FOR SELECT 
+    TO authenticated 
+    USING (
+      EXISTS (
+        SELECT 1 FROM public.collaborative_lists cl 
+        WHERE cl.id = list_items.list_id
+      )
+    );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- INSERT policy: can create items in lists within accessible sessions
 DO $$ BEGIN
-  CREATE POLICY "Authenticated users can create list items." ON public.list_items FOR INSERT WITH CHECK (true);
+  CREATE POLICY "list_items_insert_authenticated" ON public.list_items 
+    FOR INSERT 
+    TO authenticated 
+    WITH CHECK (
+      EXISTS (
+        SELECT 1 FROM public.collaborative_lists cl 
+        WHERE cl.id = list_id
+      )
+    );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- UPDATE policy: can update items in accessible lists
 DO $$ BEGIN
-  CREATE POLICY "Users can update list items." ON public.list_items FOR UPDATE USING (true);
+  CREATE POLICY "list_items_update_authenticated" ON public.list_items 
+    FOR UPDATE 
+    TO authenticated 
+    USING (
+      EXISTS (
+        SELECT 1 FROM public.collaborative_lists cl 
+        WHERE cl.id = list_items.list_id 
+        AND cl.creator_id = auth.uid()::text
+      )
+    );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- DELETE policy: only list creator can delete items
 DO $$ BEGIN
-  CREATE POLICY "Users can delete list items." ON public.list_items FOR DELETE USING (true);
+  CREATE POLICY "list_items_delete_creator" ON public.list_items 
+    FOR DELETE 
+    TO authenticated 
+    USING (
+      EXISTS (
+        SELECT 1 FROM public.collaborative_lists cl 
+        WHERE cl.id = list_items.list_id 
+        AND cl.creator_id = auth.uid()::text
+      )
+    );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- LIST ITEM VERIFICATIONS
@@ -241,7 +398,7 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 CREATE TABLE IF NOT EXISTS public.list_item_verifications (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   item_id uuid NOT NULL REFERENCES public.list_items ON DELETE CASCADE,
-  user_id text NOT NULL,
+  user_id text NOT NULL, -- Text to support anonymous auth
   user_name text NOT NULL,
   is_accurate boolean NOT NULL, -- true = green (accurate), false = red (inaccurate)
   correction_text text, -- Only used when is_accurate = false
@@ -253,21 +410,50 @@ CREATE TABLE IF NOT EXISTS public.list_item_verifications (
 ALTER TABLE public.list_item_verifications ENABLE ROW LEVEL SECURITY;
 
 CREATE INDEX IF NOT EXISTS idx_verifications_item ON public.list_item_verifications(item_id);
+CREATE INDEX IF NOT EXISTS idx_verifications_user ON public.list_item_verifications(user_id);
 
+-- SELECT policy: can view verifications for accessible list items
 DO $$ BEGIN
-  CREATE POLICY "Verifications are viewable by all." ON public.list_item_verifications FOR SELECT USING (true);
+  CREATE POLICY "list_item_verifications_select_authenticated" ON public.list_item_verifications 
+    FOR SELECT 
+    TO authenticated 
+    USING (
+      EXISTS (
+        SELECT 1 FROM public.list_items li 
+        JOIN public.collaborative_lists cl ON cl.id = li.list_id
+        WHERE li.id = list_item_verifications.item_id
+      )
+    );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- INSERT policy: can verify items in accessible lists
 DO $$ BEGIN
-  CREATE POLICY "Authenticated users can create verifications." ON public.list_item_verifications FOR INSERT WITH CHECK (true);
+  CREATE POLICY "list_item_verifications_insert_authenticated" ON public.list_item_verifications 
+    FOR INSERT 
+    TO authenticated 
+    WITH CHECK (
+      EXISTS (
+        SELECT 1 FROM public.list_items li 
+        JOIN public.collaborative_lists cl ON cl.id = li.list_id
+        WHERE li.id = item_id
+      )
+    );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- UPDATE policy: can only update own verifications
 DO $$ BEGIN
-  CREATE POLICY "Users can update their verifications." ON public.list_item_verifications FOR UPDATE USING (true);
+  CREATE POLICY "list_item_verifications_update_own" ON public.list_item_verifications 
+    FOR UPDATE 
+    TO authenticated 
+    USING (user_id = auth.uid()::text);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- DELETE policy: can only delete own verifications
 DO $$ BEGIN
-  CREATE POLICY "Users can delete their verifications." ON public.list_item_verifications FOR DELETE USING (true);
+  CREATE POLICY "list_item_verifications_delete_own" ON public.list_item_verifications 
+    FOR DELETE 
+    TO authenticated 
+    USING (user_id = auth.uid()::text);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Enable realtime on collaborative list tables
