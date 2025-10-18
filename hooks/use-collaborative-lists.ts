@@ -119,12 +119,6 @@ export function useCollaborativeLists(sessionId: string, userId?: string, userNa
 export function useListItems(listId: string) {
   const [items, setItems] = useState<ListItem[]>([])
   const [loading, setLoading] = useState(true)
-  const itemsRef = useRef<ListItem[]>([])
-  
-  // Keep ref in sync with state
-  useEffect(() => {
-    itemsRef.current = items
-  }, [items])
 
   const fetchItems = useCallback(async () => {
     if (!isSupabaseConfigured || !listId) {
@@ -182,11 +176,24 @@ export function useListItems(listId: string) {
       return null
     }
 
+    const optimisticId = `optimistic-${Date.now()}`
+    
+    // Use functional update to get current items length and add optimistic item
+    let orderIndex = 0
+    setItems(current => {
+      orderIndex = current.length
+      const optimisticItem: ListItem = {
+        id: optimisticId,
+        list_id: listId,
+        text: text.trim(),
+        order_index: orderIndex,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+      return [...current, optimisticItem]
+    })
+
     try {
-      // Use ref to get current items length without including items in dependencies
-      // This prevents infinite re-renders while still accessing current state
-      const orderIndex = itemsRef.current.length
-      
       const { data, error } = await supabase
         .from('list_items')
         .insert({
@@ -198,9 +205,17 @@ export function useListItems(listId: string) {
         .single()
 
       if (error) throw error
+      
+      // Replace optimistic item with real data
+      setItems(current => current.map(item => 
+        item.id === optimisticId ? { ...item, ...data } : item
+      ))
+      
       return data
     } catch (error: any) {
       toast.error(error.message)
+      // Remove optimistic item on error
+      setItems(current => current.filter(item => item.id !== optimisticId))
       return null
     }
   }, [listId])

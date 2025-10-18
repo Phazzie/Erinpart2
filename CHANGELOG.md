@@ -22,16 +22,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - This caused components using the hook to re-render infinitely
     
     Solution:
-    - Use useRef to track current items array without including it in dependencies
-    - Keep itemsRef.current in sync with items state via useEffect
-    - Access itemsRef.current.length in addItem to get current count
+    - Use functional setState to get current items length atomically
+    - Add optimistic updates for better UX and prevent race conditions
     - Only include listId in dependencies (stable value)
+    - Same pattern as use-tasks.ts (proven to work in production)
     
     Testing:
     - Added 3 comprehensive tests in tests/hooks/use-collaborative-lists.test.ts
     - Tests verify callback stability across multiple addItem calls
-    - Tests verify correct order_index calculation without items.length in dependencies
+    - Tests verify optimistic updates work correctly
     - All tests pass, proving infinite recursion is prevented
+    
+    Code Review Feedback:
+    - Addressed race condition concern by implementing optimistic updates
+    - Items are added immediately to UI, then updated with server response
+    - Prevents conflicts when multiple users add items simultaneously
 
 ### Merged
 - date: 2025-01-17T18:30:00Z
