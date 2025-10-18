@@ -176,7 +176,7 @@ export function useListItems(listId: string) {
       return null
     }
 
-    const optimisticId = `optimistic-${Date.now()}`
+    const optimisticId = `optimistic-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     
     // Use functional update to get current items length and add optimistic item
     let orderIndex = 0
@@ -206,9 +206,14 @@ export function useListItems(listId: string) {
 
       if (error) throw error
       
+      // Validate data before replacing optimistic item
+      if (!data || !data.id) {
+        throw new Error('Invalid response from server')
+      }
+      
       // Replace optimistic item with real data
       setItems(current => current.map(item => 
-        item.id === optimisticId ? { ...item, ...data } : item
+        item.id === optimisticId ? data : item
       ))
       
       return data
