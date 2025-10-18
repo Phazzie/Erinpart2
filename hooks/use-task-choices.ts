@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react'
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client'
 import type { Choice, TaskChoice } from '@/lib/types'
 
@@ -96,10 +96,16 @@ export function useTaskChoices(sessionId: string, userId: string | undefined) {
     return map
   }, [choices, userId])
 
+  // Use ref to track myChoiceByTask to prevent infinite re-renders
+  const myChoiceByTaskRef = useRef(myChoiceByTask)
+  useEffect(() => {
+    myChoiceByTaskRef.current = myChoiceByTask
+  }, [myChoiceByTask])
+
   const setMyChoice = useCallback(async (taskId: string, choice: Exclude<Choice, ''>) => {
     if (!userId) { setError(new Error('Not authenticated')); return }
     if (!isSupabaseConfigured) { setError(new Error('Supabase not configured')); return }
-    const existing = myChoiceByTask.get(taskId)
+    const existing = myChoiceByTaskRef.current.get(taskId)
     if (existing) {
       const { error } = await supabase.from('task_choices').update({ choice }).eq('id', existing.id)
       if (error) { setError(new Error(error.message)); return }
@@ -110,7 +116,7 @@ export function useTaskChoices(sessionId: string, userId: string | undefined) {
       if (error) { setError(new Error(error.message)); return }
       setChoices(curr => [...curr, data as unknown as TaskChoice])
     }
-  }, [userId, myChoiceByTask])
+  }, [userId])
 
   return { choices, byTask, myChoiceByTask, setMyChoice, loading, error }
 }

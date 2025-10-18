@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRealtime } from '@/hooks/use-realtime'
 import { type CollaborativeList, type ListItem, type ListItemVerification } from '@/lib/types'
@@ -119,6 +119,12 @@ export function useCollaborativeLists(sessionId: string, userId?: string, userNa
 export function useListItems(listId: string) {
   const [items, setItems] = useState<ListItem[]>([])
   const [loading, setLoading] = useState(true)
+  const itemsRef = useRef<ListItem[]>([])
+  
+  // Keep ref in sync with state
+  useEffect(() => {
+    itemsRef.current = items
+  }, [items])
 
   const fetchItems = useCallback(async () => {
     if (!isSupabaseConfigured || !listId) {
@@ -177,7 +183,10 @@ export function useListItems(listId: string) {
     }
 
     try {
-      const orderIndex = items.length
+      // Use ref to get current items length without including items in dependencies
+      // This prevents infinite re-renders while still accessing current state
+      const orderIndex = itemsRef.current.length
+      
       const { data, error } = await supabase
         .from('list_items')
         .insert({
@@ -194,7 +203,7 @@ export function useListItems(listId: string) {
       toast.error(error.message)
       return null
     }
-  }, [listId, items.length])
+  }, [listId])
 
   const updateItem = useCallback(async (itemId: string, text: string) => {
     if (!isSupabaseConfigured) {
