@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client'
 import { useRealtime } from '@/hooks/use-realtime'
 import { type CollaborativeList, type ListItem, type ListItemVerification } from '@/lib/types'
@@ -176,8 +176,24 @@ export function useListItems(listId: string) {
       return null
     }
 
+    const optimisticId = `optimistic-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    
+    // Use functional update to get current items length and add optimistic item
+    let orderIndex = 0
+    setItems(current => {
+      orderIndex = current.length
+      const optimisticItem: ListItem = {
+        id: optimisticId,
+        list_id: listId,
+        text: text.trim(),
+        order_index: orderIndex,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+      return [...current, optimisticItem]
+    })
+
     try {
-      const orderIndex = items.length
       const { data, error } = await supabase
         .from('list_items')
         .insert({
@@ -189,12 +205,25 @@ export function useListItems(listId: string) {
         .single()
 
       if (error) throw error
+      
+      // Validate data before replacing optimistic item
+      if (!data || !data.id) {
+        throw new Error('Invalid response from server')
+      }
+      
+      // Replace optimistic item with real data
+      setItems(current => current.map(item => 
+        item.id === optimisticId ? data : item
+      ))
+      
       return data
     } catch (error: any) {
       toast.error(error.message)
+      // Remove optimistic item on error
+      setItems(current => current.filter(item => item.id !== optimisticId))
       return null
     }
-  }, [listId, items.length])
+  }, [listId])
 
   const updateItem = useCallback(async (itemId: string, text: string) => {
     if (!isSupabaseConfigured) {
