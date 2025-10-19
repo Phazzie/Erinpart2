@@ -18,13 +18,17 @@ interface TaskFormProps {
    * @param isSecret A boolean indicating if the task should be secret.
    */
   onAddTask: (text: string, isSecret: boolean) => void
+  /**
+   * Whether the current user is a guest (viewing shared session)
+   */
+  isGuest?: boolean
 }
 
 /**
  * A form component for creating new tasks.
  * Includes an input for the task text and a checkbox to mark the task as secret.
  */
-export default function TaskForm({ onAddTask }: TaskFormProps) {
+export default function TaskForm({ onAddTask, isGuest = false }: TaskFormProps) {
   // State for the task input text
   const [text, setText] = useState('')
   // State for the "secret task" checkbox
@@ -49,6 +53,28 @@ export default function TaskForm({ onAddTask }: TaskFormProps) {
         setIsSubmitting(false)
       }
     }
+  }
+
+  // Show guest message instead of form for non-authenticated users
+  if (isGuest) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mt-6 p-6 border border-purple-300/30 rounded-lg bg-purple-950/20 backdrop-blur-sm"
+      >
+        <div className="text-center">
+          <h3 className="text-lg font-semibold text-purple-300 mb-2">Want to add tasks?</h3>
+          <p className="text-purple-200/80 mb-4">Pick 3 animals to join this session and start adding tasks!</p>
+          <Button 
+            onClick={() => window.location.href = '/'} 
+            className="bg-purple-600 hover:bg-purple-700 text-white"
+          >
+            Join Session
+          </Button>
+        </div>
+      </motion.div>
+    )
   }
 
   return (
