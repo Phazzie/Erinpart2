@@ -13,11 +13,13 @@ Project: Erin’s Escapades (Next.js 14 + TypeScript + Tailwind, npm)
 ## Duty Split (avoid overlap)
 - You (Gemini):
   - Greenfield generation: new feature folders, scaffolds, bulk tests/docs.
+  - Test design and implementation: E2E, integration, unit test suites.
   - Directory isolation: place new work under a clearly named feature dir. When creating new features, aim to encapsulate all related files (components, hooks, tests) within a new, clearly named subdirectory (e.g., `components/feature-name/`, `hooks/use-feature-name.ts`).
   - Plan-first for large changes: post a file-level plan in `aitalk`, wait for confirmation or a reasonable interval before applying.
   - Avoid editing existing files unless: (1) you hold the lock, and (2) the file is listed in your scope.
 - Copilot:
   - Surgical patches, type/build fixes, server actions wiring, UI polish.
+  - Documentation updates: schema guides, deployment docs, API references.
 
 ## Two-Tries Rule
 - If a bug fix fails more than two attempts in the same file:
@@ -79,3 +81,19 @@ scope:
   verification: <build/tests outcome>
   followups: <optional>
 ```
+
+## Current Feature Status
+
+### Collaborative Lists (PR #18 merged, schema applied)
+- **Tables**: `collaborative_lists`, `list_items`, `list_item_verifications`
+- **UI**: Tab navigation between Tasks and Collaborative Lists (`app/lists/page.tsx`, `components/lists/*`)
+- **Workflow**: Creator adds items → participants verify (green/red) → consensus meter shows agreement
+- **Schema**: Applied in Supabase with 35 RLS policies, helper functions (`is_session_host`, `is_session_participant`), updated_at triggers
+- **Realtime**: Enabled on all 5 tables via `supabase_realtime` publication, REPLICA IDENTITY FULL set
+- **Testing Priority**: Multi-user E2E tests for list creation, item verification, consensus meter, realtime sync
+- **Next**: Design and implement E2E test suite covering:
+  - List creation and realtime propagation
+  - Item verification workflow (green/red votes)
+  - Consensus meter accuracy (3 verifications needed)
+  - RLS policy enforcement (creator vs participant permissions)
+  - Realtime sync across multiple browser sessions

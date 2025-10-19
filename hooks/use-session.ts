@@ -113,9 +113,13 @@ export const useSession = (): SessionHook => {
       if (stored) {
         const parsed = JSON.parse(stored) as SessionData
         setSessionData(parsed)
-        // Trigger re-init of auth
+        // Re-init auth without full page reload to avoid infinite loops
         setLoading(true)
-        window.location.reload()
+        setUser({
+          id: 'local-' + Math.random().toString(36).substring(7),
+          name: parsed.userName
+        })
+        setLoading(false)
       }
     }
 

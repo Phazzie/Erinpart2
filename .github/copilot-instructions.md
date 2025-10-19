@@ -12,8 +12,10 @@ Project: Erin’s Escapades (Next.js 14 + TypeScript + Tailwind, npm)
 - You (Copilot):
   - Small, surgical patches; fix build/type errors; server actions wiring; UI polish.
   - After 3–5 edits or >3 files changed, checkpoint in `aitalk` (what changed, next).
+  - Documentation updates: schema guides, deployment docs, API references.
 - Gemini:
   - New feature scaffolds, bulk content (tests/docs), large codegen in isolated dirs.
+  - Test design and implementation: E2E, integration, unit test suites.
 
 ## Two-Tries Rule
 - If a specific bug takes more than two attempts in a file:
@@ -37,6 +39,13 @@ Project: Erin’s Escapades (Next.js 14 + TypeScript + Tailwind, npm)
 - Preserve component APIs and exported types unless approved.
 - Maintain TypeScript strict mode; avoid `any` unless necessary—document when used.
 - No external network calls or service changes without approval.
+
+## Database Schema Changes
+- Schema migrations are applied in Supabase cloud project via SQL Editor.
+- After schema changes, update `docs/supabase-apply.md` if the schema evolved.
+- Document helper functions, triggers, and indexes in the apply guide.
+- Verify realtime publication membership after adding new tables.
+- Log schema application in `CHANGELOG.md` and `aitalk` with verification details.
 
 ## Templates
 
@@ -74,3 +83,13 @@ scope:
   verification: <build/tests outcome>
   followups: <optional>
 ```
+
+## Current Feature Status
+
+### Collaborative Lists (PR #18 merged, schema applied)
+- **Tables**: `collaborative_lists`, `list_items`, `list_item_verifications`
+- **UI**: Tab navigation between Tasks and Collaborative Lists
+- **Workflow**: Creator adds items → participants verify (green/red) → consensus meter shows agreement
+- **Schema**: Applied in Supabase with 35 RLS policies, helper functions, updated_at triggers
+- **Realtime**: Enabled on all 5 tables (tasks, task_choices, collaborative_lists, list_items, list_item_verifications)
+- **Next**: E2E testing with multiple users, monitor realtime sync and RLS behaviors
