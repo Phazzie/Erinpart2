@@ -21,11 +21,12 @@ export default function ListCreatorForm({ sessionId, userId, userName, onListCre
   const { createList } = useCollaborativeLists(sessionId, userId, userName)
 
   const handleCreateList = async () => {
-    if (!title.trim()) return
+    const trimmedTitle = title.trim()
+    if (!trimmedTitle) return
 
     setIsCreating(true)
     try {
-      const result = await createList(title, listType)
+      const result = await createList(trimmedTitle, listType)
       if (result) {
         setTitle('')
         onListCreated?.()

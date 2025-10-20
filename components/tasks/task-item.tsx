@@ -125,6 +125,7 @@ export function SortableTaskItem({ task, onUpdate, onSetChoice, myChoice = '', o
             e.stopPropagation()
             onSetChoice?.(task.id, 'yes')
           }}
+          aria-label="yes"
           className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
             myChoice === 'yes'
               ? 'bg-green-500 text-white shadow-lg shadow-green-500/50 scale-105'
@@ -138,6 +139,7 @@ export function SortableTaskItem({ task, onUpdate, onSetChoice, myChoice = '', o
             e.stopPropagation()
             onSetChoice?.(task.id, 'maybe')
           }}
+          aria-label="maybe"
           className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
             myChoice === 'maybe'
               ? 'bg-yellow-500 text-white shadow-lg shadow-yellow-500/50 scale-105'
@@ -151,6 +153,7 @@ export function SortableTaskItem({ task, onUpdate, onSetChoice, myChoice = '', o
             e.stopPropagation()
             onSetChoice?.(task.id, 'no')
           }}
+          aria-label="no"
           className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
             myChoice === 'no'
               ? 'bg-red-500 text-white shadow-lg shadow-red-500/50 scale-105'

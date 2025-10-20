@@ -19,12 +19,13 @@ type SessionHook = {
 export const useSession = (): SessionHook => {
   const [sessionData, setSessionData] = useState<SessionData | null>(null)
   const [user, setUser] = useState<{ id: string; name: string } | null>(null)
-  const [loading, setLoading] = useState<boolean>(true)
+  const [loading, setLoading] = useState<boolean>(false)
 
   useEffect(() => {
     let isMounted = true
     
     const initSession = async (urlSessionId?: string) => {
+      setLoading(true)
       try {
         // Check localStorage for session data
         const stored = localStorage.getItem('sessionData')

@@ -151,24 +151,26 @@ export default function ListItemComponent({
                 </div>
               )}
 
-              {/* Verification Actions (for non-creators) */}
-              {!isCreator && (
+              {/* Verification Actions (for non-creators who haven't verified) */}
+              {!isCreator && !myVerification && (
                 <div className="mt-3 space-y-2">
                   <div className="flex gap-2">
                     <Button
                       size="sm"
-                      variant={myVerification?.is_accurate === true ? 'default' : 'outline'}
+                      variant="outline"
                       onClick={() => handleVerify(true)}
                       className="flex-1"
+                      data-testid="verify-accurate"
                     >
                       <CheckCircle2 className="w-4 h-4 mr-1" />
                       Accurate
                     </Button>
                     <Button
                       size="sm"
-                      variant={myVerification?.is_accurate === false ? 'destructive' : 'outline'}
+                      variant="outline"
                       onClick={() => handleVerify(false)}
                       className="flex-1"
+                      data-testid="verify-inaccurate"
                     >
                       <XCircle className="w-4 h-4 mr-1" />
                       Inaccurate
