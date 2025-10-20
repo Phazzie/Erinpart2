@@ -24,7 +24,7 @@ export const useSession = (): SessionHook => {
   useEffect(() => {
     let isMounted = true
     
-    const initSession = async () => {
+    const initSession = async (urlSessionId?: string) => {
       try {
         // Check localStorage for session data
         const stored = localStorage.getItem('sessionData')
@@ -79,9 +79,23 @@ export const useSession = (): SessionHook => {
               }
             }
           }
+        } else if (urlSessionId) {
+          // URL session without localStorage - create guest user for read-only access
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[useSession] Using URL session without localStorage:', urlSessionId)
+          }
+          setSessionData({
+            sessionId: urlSessionId,
+            userName: 'Guest',
+            joinedAt: new Date().toISOString()
+          })
+          setUser({
+            id: 'guest-' + Math.random().toString(36).substring(7),
+            name: 'Guest'
+          })
         } else {
           if (process.env.NODE_ENV === 'development') {
-            console.log('[useSession] No sessionData in localStorage')
+            console.log('[useSession] No sessionData in localStorage and no URL session')
           }
         }
       } catch (error) {
@@ -99,7 +113,14 @@ export const useSession = (): SessionHook => {
       }
     }
 
-    initSession()
+    // Get URL params to check for session parameter
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href)
+      const urlSessionId = url.searchParams.get('session')
+      initSession(urlSessionId || undefined)
+    } else {
+      initSession()
+    }
 
     return () => {
       isMounted = false

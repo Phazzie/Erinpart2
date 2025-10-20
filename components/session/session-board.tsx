@@ -163,7 +163,7 @@ export default function SessionBoard() {
 
   // Show loading spinner while session is initializing
   // Allow guests to view shared sessions even without login
-  if (sessionLoading && !urlSessionId) {
+  if (sessionLoading && !sessionId) {
     return <LoadingSpinner variant="cosmic" />
   }
 
@@ -191,7 +191,7 @@ export default function SessionBoard() {
             onVote={handleVoteToReveal}
             currentUserId={user?.id || 'user-1'}
           />
-          <TaskForm onAddTask={handleAddTask} isGuest={!user} />
+          <TaskForm onAddTask={handleAddTask} />
         </div>
         <div className="lg:col-span-1">
           <div className="sticky top-8">
