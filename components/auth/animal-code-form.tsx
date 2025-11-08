@@ -30,8 +30,12 @@ export default function AnimalCodeForm() {
   const [isJoining, setIsJoining] = useState(false)
 
   const handleQuickJoin = () => {
-    // Generate two random different animals
-    const shuffled = [...ANIMALS].sort(() => Math.random() - 0.5)
+    // Generate two random different animals using crypto for better randomness
+    const shuffled = [...ANIMALS].sort(() => {
+      const randomBuffer = new Uint32Array(1)
+      crypto.getRandomValues(randomBuffer)
+      return (randomBuffer[0] / 0xFFFFFFFF) - 0.5
+    })
     setAnimal1(shuffled[0])
     setAnimal2(shuffled[1])
     toast.success(`Random animals selected: ${shuffled[0]} & ${shuffled[1]}! 🎲`)

@@ -1,0 +1,6 @@
+# robots.txt for Erin's Escapades
+User-agent: *
+Allow: /
+
+# Sitemap (update with your actual domain)
+# Sitemap: https://your-domain.com/sitemap.xml

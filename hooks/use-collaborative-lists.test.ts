@@ -130,7 +130,7 @@ describe('useCollaborativeLists', () => {
       expect(result.current.loading).toBe(false)
     })
 
-    let newList
+    let newList: any = null
     await act(async () => {
       newList = await result.current.createList('New List', 'bullet')
     })
@@ -287,7 +287,7 @@ describe('useListItems', () => {
       expect(result.current.loading).toBe(false)
     })
 
-    let newItem
+    let newItem: any = null
     await act(async () => {
       newItem = await result.current.addItem('Eggs')
     })
