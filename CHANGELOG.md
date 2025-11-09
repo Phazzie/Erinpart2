@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- date: 2025-11-09T19:00:00Z
+  agent: claude
+  change: Restored security headers in vercel.json for static asset protection
+  why: Headers in next.config.mjs only apply to Next.js server responses, not static files served by Vercel's CDN (public/, _next/static/). Removing headers from vercel.json left static assets unprotected against XSS, clickjacking, and MIME-type attacks
+  scope: [vercel.json]
+  verification: Security headers now applied to all responses including static assets (favicon.svg, robots.txt, JS bundles)
+  followups: Headers are now defined in both vercel.json (for static assets) and next.config.mjs (for server responses) - this is intentional and necessary
+
 - date: 2025-10-20T11:00:00Z
   agent: copilot
   change: Improved component implementations - list verification UI, task choice accessibility, session loading states, and form input handling
