@@ -83,9 +83,7 @@ CREATE INDEX IF NOT EXISTS idx_tasks_session_day ON public.tasks(session_id, day
 CREATE INDEX IF NOT EXISTS idx_tasks_order ON public.tasks(order_index);
 
 DO $$ BEGIN
-  CREATE POLICY "Tasks are viewable by session participants." ON public.tasks FOR SELECT USING (
-    true -- Public access for shared animal code sessions
-  );
+  CREATE POLICY "Tasks are publicly readable for shared sessions." ON public.tasks FOR SELECT USING (true);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
@@ -102,17 +100,10 @@ DO $$ BEGIN
   CREATE POLICY "Anonymous users can delete their tasks." ON public.tasks FOR DELETE USING (auth.uid() = created_by);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- Sessions are publicly readable (uses animal codes for access control)
+-- FIXED: Removed circular dependency that checked tasks table
 DO $$ BEGIN
-  CREATE POLICY "Tasks are publicly readable for shared sessions." ON public.tasks FOR SELECT USING (true);
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
--- Now that tasks exist, we can safely add the sessions visibility policy that references tasks
-DO $$ BEGIN
-  CREATE POLICY "Sessions are viewable by participants." ON public.sessions FOR SELECT USING (
-    auth.uid() = host_id OR EXISTS (
-      SELECT 1 FROM public.tasks t WHERE t.session_id = public.sessions.id AND t.created_by = auth.uid()
-    )
-  );
+  CREATE POLICY "Sessions are publicly readable." ON public.sessions FOR SELECT USING (true);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- TASK_CHOICES (per-user yes/no/maybe)

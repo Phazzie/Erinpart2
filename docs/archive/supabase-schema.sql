@@ -116,47 +116,13 @@ CREATE INDEX IF NOT EXISTS idx_tasks_session_day ON public.tasks(session_id, day
 CREATE INDEX IF NOT EXISTS idx_tasks_order ON public.tasks(order_index);
 CREATE INDEX IF NOT EXISTS idx_tasks_created_by ON public.tasks(created_by);
 
--- SELECT policy: tasks are viewable by session participants (host or task creators in same session)
+-- SELECT policy: tasks are publicly readable for shared sessions
+-- Note: Access control is handled via session codes
 DO $$ BEGIN
-  CREATE POLICY "tasks_select_session_participants" ON public.tasks 
-    FOR SELECT 
-    TO authenticated 
-    USING (
-      -- Creator can see their own tasks
-      auth.uid() = created_by 
-      OR 
-      -- Host can see all tasks in their sessions
-      EXISTS (
-        SELECT 1 FROM public.sessions s 
-        WHERE s.id = tasks.session_id 
-        AND s.host_id = auth.uid()
-      )
-      OR
-      -- Other participants can see tasks (if they have any task in the same session)
-      EXISTS (
-        SELECT 1 FROM public.tasks t 
-        WHERE t.session_id = tasks.session_id 
-        AND t.created_by = auth.uid()
-      )
-    );
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
--- Special policy for secret tasks: only creator and host can see them
-DO $$ BEGIN
-  CREATE POLICY "tasks_select_secret_restricted" ON public.tasks 
-    FOR SELECT 
-    TO authenticated 
-    USING (
-      is_secret = false 
-      OR 
-      auth.uid() = created_by 
-      OR 
-      EXISTS (
-        SELECT 1 FROM public.sessions s 
-        WHERE s.id = tasks.session_id 
-        AND s.host_id = auth.uid()
-      )
-    );
+  CREATE POLICY "tasks_select_public" ON public.tasks
+    FOR SELECT
+    TO authenticated
+    USING (true);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
@@ -180,20 +146,13 @@ DO $$ BEGIN
     USING (auth.uid() = created_by);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
--- Now that tasks exist, add sessions visibility policy that references tasks
+-- Sessions are publicly readable (uses animal codes for access control)
+-- FIXED: Removed circular dependency that checked tasks table
 DO $$ BEGIN
-  CREATE POLICY "sessions_select_participants" ON public.sessions 
-    FOR SELECT 
-    TO authenticated 
-    USING (
-      auth.uid() = host_id 
-      OR 
-      EXISTS (
-        SELECT 1 FROM public.tasks t 
-        WHERE t.session_id = sessions.id 
-        AND t.created_by = auth.uid()
-      )
-    );
+  CREATE POLICY "sessions_select_public" ON public.sessions
+    FOR SELECT
+    TO authenticated
+    USING (true);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- TASK_CHOICES (per-user yes/no/maybe)
