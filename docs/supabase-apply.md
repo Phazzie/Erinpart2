@@ -10,7 +10,8 @@ This guide walks you through applying the hardened database schema and enabling 
 
 ## Files to use
 
-- Schema: `docs/archive/supabase-schema.sql` (safe to run multiple times)
+- **Schema: `supabase-schema-TO-APPLY.sql`** (safe to run multiple times)
+- **⚠️ IMPORTANT: Use the root-level file, NOT the archived version which contains outdated policies**
 
 ## Option A — Supabase Dashboard (recommended)
 
@@ -19,10 +20,12 @@ This guide walks you through applying the hardened database schema and enabling 
 - Navigate to your project dashboard
 - Go to SQL → New Query
 
-2. Paste the contents of `docs/archive/supabase-schema.sql`
+2. Paste the contents of `supabase-schema-TO-APPLY.sql`
 
-- Copy from the repo and paste into the SQL editor
+- Copy the **entire contents** from the root-level `supabase-schema-TO-APPLY.sql` file
+- Paste into the SQL editor
 - Click Run
+- ⚠️ **DO NOT use the archived version** - it contains old circular dependencies
 
 3. Verify realtime is enabled
 
@@ -41,7 +44,7 @@ If you prefer staying in VS Code but not using the Supabase CLI:
 
 - Install a Postgres client extension (SQLTools + PostgreSQL, or Microsoft PostgreSQL)
 - Get your connection string from Supabase → Settings → Database (use SSL)
-- Connect and run the contents of `docs/archive/supabase-schema.sql`
+- Connect and run the contents of `supabase-schema-TO-APPLY.sql`
 
 ## Option C — Supabase CLI (local dev, optional)
 
@@ -89,9 +92,22 @@ ORDER BY tablename;
 
 ## Full SQL (copy/paste)
 
-Paste the following SQL into the Supabase SQL Editor. It’s idempotent (safe to re-run):
+⚠️ **IMPORTANT UPDATE**: The SQL below is OUTDATED and contains the old circular dependency bug!
+
+**DO NOT USE THIS SECTION** - instead, copy the contents directly from `supabase-schema-TO-APPLY.sql` in the root directory.
+
+The correct schema:
+- Removes circular RLS policies
+- Uses simplified public access (`USING (true)`) for sessions and tasks
+- Fixed infinite recursion issue
+
+---
+
+<details>
+<summary>❌ OLD SQL (DO NOT USE - kept for reference only)</summary>
 
 ```sql
+-- ❌ THIS VERSION HAS BUGS - DO NOT USE ❌
 -- Hardened Supabase Schema with Improved RLS Policies
 -- Safe to run multiple times; uses IF NOT EXISTS / ON CONFLICT where possible
 -- Based on Supabase AI security audit recommendations
@@ -690,3 +706,13 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 CREATE INDEX IF NOT EXISTS idx_tasks_session_created_by
   ON public.tasks(session_id, created_by);
 ```
+
+</details>
+
+---
+
+## ✅ How to Apply the FIXED Schema
+
+**Use `supabase-schema-TO-APPLY.sql` from the root directory!**
+
+This file contains the corrected schema that fixes the infinite recursion issue.
