@@ -162,7 +162,7 @@ describe('ListItemComponent', () => {
     )
 
     await userEvent.click(screen.getByRole('button', { name: /edit/i }))
-    
+
     const input = screen.getByDisplayValue('Buy milk')
     await userEvent.clear(input)
     await userEvent.type(input, 'Buy almond milk')
@@ -187,7 +187,7 @@ describe('ListItemComponent', () => {
     )
 
     await userEvent.click(screen.getByRole('button', { name: /edit/i }))
-    
+
     const input = screen.getByDisplayValue('Buy milk')
     await userEvent.clear(input)
     await userEvent.type(input, 'Changed text')
@@ -271,7 +271,7 @@ describe('ListItemComponent', () => {
     )
 
     await userEvent.click(screen.getByRole('button', { name: /inaccurate/i }))
-    
+
     const correctionInput = screen.getByPlaceholderText(/suggest a correction/i)
     await userEvent.type(correctionInput, 'Should be Almond Milk')
 
@@ -373,7 +373,7 @@ describe('ListItemComponent', () => {
     )
 
     await userEvent.click(screen.getByRole('button', { name: /edit/i }))
-    
+
     const input = screen.getByDisplayValue('Buy milk')
     await userEvent.clear(input)
     await userEvent.type(input, 'Buy oat milk{Enter}')
@@ -398,7 +398,7 @@ describe('ListItemComponent', () => {
     )
 
     await userEvent.click(screen.getByRole('button', { name: /edit/i }))
-    
+
     const input = screen.getByDisplayValue('Buy milk')
     await userEvent.clear(input)
     await userEvent.type(input, 'Changed{Escape}')

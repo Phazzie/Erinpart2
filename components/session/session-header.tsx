@@ -19,14 +19,14 @@ interface SessionHeaderProps {
   passphrase?: string // optional passphrase if session created via magic word
 }
 
-export default function SessionHeader({ 
-  name, 
-  sessionId = 'session-1', 
+export default function SessionHeader({
+  name,
+  sessionId = 'session-1',
   answersEncoded,
   vibes = [],
   currentVibe = 'default',
   onVibeChange,
-  passphrase
+  passphrase,
 }: SessionHeaderProps) {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
 
@@ -48,11 +48,7 @@ export default function SessionHeader({
       <h1 className="text-4xl font-bold text-rainbow">{name}</h1>
       <div className="flex items-center gap-4">
         {vibes.length > 0 && onVibeChange && (
-          <VibeDropdown 
-            vibes={vibes} 
-            currentVibe={currentVibe} 
-            onVibeChange={onVibeChange} 
-          />
+          <VibeDropdown vibes={vibes} currentVibe={currentVibe} onVibeChange={onVibeChange} />
         )}
         <PresenceIndicator />
         <Button variant="ghost" size="icon" className="hover-glow">

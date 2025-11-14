@@ -53,6 +53,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```
 
 **Get Your Keys:**
+
 - **Clerk**: [dashboard.clerk.com](https://dashboard.clerk.com) → API Keys
 - **Supabase**: Your project → Settings → API
 

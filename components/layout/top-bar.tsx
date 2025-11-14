@@ -1,8 +1,8 @@
 'use client'
 
-import Link from "next/link"
-import NeonTitle from "../common/neon-title"
-import { Button } from "../ui/button"
+import Link from 'next/link'
+import NeonTitle from '../common/neon-title'
+import { Button } from '../ui/button'
 
 export default function TopBar() {
   return (

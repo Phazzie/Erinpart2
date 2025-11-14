@@ -18,13 +18,7 @@ describe('ListCreatorForm', () => {
   })
 
   it('should render all form elements', () => {
-    render(
-      <ListCreatorForm
-        sessionId="session-1"
-        userId="user-1"
-        userName="Alice"
-      />
-    )
+    render(<ListCreatorForm sessionId="session-1" userId="user-1" userName="Alice" />)
 
     expect(screen.getByLabelText(/list title/i)).toBeInTheDocument()
     expect(screen.getByText(/bullet list/i)).toBeInTheDocument()
@@ -33,13 +27,7 @@ describe('ListCreatorForm', () => {
   })
 
   it('should enable create button only when title is entered', async () => {
-    render(
-      <ListCreatorForm
-        sessionId="session-1"
-        userId="user-1"
-        userName="Alice"
-      />
-    )
+    render(<ListCreatorForm sessionId="session-1" userId="user-1" userName="Alice" />)
 
     const createButton = screen.getByRole('button', { name: /create list/i })
     const titleInput = screen.getByLabelText(/list title/i)
@@ -54,13 +42,7 @@ describe('ListCreatorForm', () => {
   })
 
   it('should toggle between bullet and numbered list types', async () => {
-    render(
-      <ListCreatorForm
-        sessionId="session-1"
-        userId="user-1"
-        userName="Alice"
-      />
-    )
+    render(<ListCreatorForm sessionId="session-1" userId="user-1" userName="Alice" />)
 
     const bulletButton = screen.getByRole('button', { name: /bullet list/i })
     const numberedButton = screen.getByRole('button', { name: /numbered list/i })
@@ -70,7 +52,7 @@ describe('ListCreatorForm', () => {
 
     await userEvent.click(numberedButton)
     // Numbered should now be selected (implementation uses variant prop)
-    
+
     await userEvent.click(bulletButton)
     // Back to bullet
   })
@@ -78,13 +60,7 @@ describe('ListCreatorForm', () => {
   it('should call createList with correct parameters', async () => {
     mockCreateList.mockResolvedValue({ id: 'list-1', title: 'Test List' })
 
-    render(
-      <ListCreatorForm
-        sessionId="session-1"
-        userId="user-1"
-        userName="Alice"
-      />
-    )
+    render(<ListCreatorForm sessionId="session-1" userId="user-1" userName="Alice" />)
 
     const titleInput = screen.getByLabelText(/list title/i)
     const createButton = screen.getByRole('button', { name: /create list/i })
@@ -100,13 +76,7 @@ describe('ListCreatorForm', () => {
   it('should call createList with numbered type when selected', async () => {
     mockCreateList.mockResolvedValue({ id: 'list-1', title: 'Numbered List' })
 
-    render(
-      <ListCreatorForm
-        sessionId="session-1"
-        userId="user-1"
-        userName="Alice"
-      />
-    )
+    render(<ListCreatorForm sessionId="session-1" userId="user-1" userName="Alice" />)
 
     const titleInput = screen.getByLabelText(/list title/i)
     const numberedButton = screen.getByRole('button', { name: /numbered list/i })
@@ -124,13 +94,7 @@ describe('ListCreatorForm', () => {
   it('should clear the form after successful creation', async () => {
     mockCreateList.mockResolvedValue({ id: 'list-1', title: 'Test List' })
 
-    render(
-      <ListCreatorForm
-        sessionId="session-1"
-        userId="user-1"
-        userName="Alice"
-      />
-    )
+    render(<ListCreatorForm sessionId="session-1" userId="user-1" userName="Alice" />)
 
     const titleInput = screen.getByLabelText(/list title/i) as HTMLInputElement
     const createButton = screen.getByRole('button', { name: /create list/i })
@@ -170,13 +134,7 @@ describe('ListCreatorForm', () => {
   it('should handle Enter key to submit', async () => {
     mockCreateList.mockResolvedValue({ id: 'list-1', title: 'Test List' })
 
-    render(
-      <ListCreatorForm
-        sessionId="session-1"
-        userId="user-1"
-        userName="Alice"
-      />
-    )
+    render(<ListCreatorForm sessionId="session-1" userId="user-1" userName="Alice" />)
 
     const titleInput = screen.getByLabelText(/list title/i)
 
@@ -190,17 +148,9 @@ describe('ListCreatorForm', () => {
 
   it('should show loading state while creating', async () => {
     let resolveCreate: any
-    mockCreateList.mockImplementation(
-      () => new Promise(resolve => (resolveCreate = resolve))
-    )
+    mockCreateList.mockImplementation(() => new Promise(resolve => (resolveCreate = resolve)))
 
-    render(
-      <ListCreatorForm
-        sessionId="session-1"
-        userId="user-1"
-        userName="Alice"
-      />
-    )
+    render(<ListCreatorForm sessionId="session-1" userId="user-1" userName="Alice" />)
 
     const titleInput = screen.getByLabelText(/list title/i)
     const createButton = screen.getByRole('button', { name: /create list/i })
@@ -223,13 +173,7 @@ describe('ListCreatorForm', () => {
   it('should trim whitespace from title', async () => {
     mockCreateList.mockResolvedValue({ id: 'list-1', title: 'Test List' })
 
-    render(
-      <ListCreatorForm
-        sessionId="session-1"
-        userId="user-1"
-        userName="Alice"
-      />
-    )
+    render(<ListCreatorForm sessionId="session-1" userId="user-1" userName="Alice" />)
 
     const titleInput = screen.getByLabelText(/list title/i)
     const createButton = screen.getByRole('button', { name: /create list/i })

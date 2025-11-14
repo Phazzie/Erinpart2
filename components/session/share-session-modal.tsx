@@ -21,7 +21,7 @@ export default function ShareSessionModal({
   onClose,
   shareUrl,
   sessionId,
-  passphrase
+  passphrase,
 }: ShareSessionModalProps) {
   const [activeTab, setActiveTab] = useState<'qr' | 'link' | 'code'>('qr')
   const [copied, setCopied] = useState(false)
@@ -53,19 +53,14 @@ export default function ShareSessionModal({
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
           className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 max-w-md w-full border-2 border-purple-500/30 shadow-2xl"
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
         >
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
               Share Session
             </h2>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="hover:bg-gray-700/50"
-            >
+            <Button variant="ghost" size="icon" onClick={onClose} className="hover:bg-gray-700/50">
               <X className="h-5 w-5 text-gray-400" />
             </Button>
           </div>
@@ -116,12 +111,7 @@ export default function ShareSessionModal({
                 className="flex flex-col items-center space-y-4"
               >
                 <div className="bg-white p-4 rounded-xl shadow-lg">
-                  <QRCodeSVG
-                    value={shareUrl}
-                    size={200}
-                    level="H"
-                    includeMargin={true}
-                  />
+                  <QRCodeSVG value={shareUrl} size={200} level="H" includeMargin={true} />
                 </div>
                 <p className="text-sm text-gray-400 text-center">
                   Scan this QR code with your phone camera to join the session
@@ -160,7 +150,7 @@ export default function ShareSessionModal({
                       value={shareUrl}
                       readOnly
                       className="bg-gray-800/50 border-cyan-500/50 text-white font-mono text-sm"
-                      onClick={(e) => e.currentTarget.select()}
+                      onClick={e => e.currentTarget.select()}
                     />
                     <Button
                       onClick={() => copyToClipboard(shareUrl, 'Link')}
@@ -177,8 +167,8 @@ export default function ShareSessionModal({
                 </div>
                 <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg p-4">
                   <p className="text-sm text-gray-300">
-                    <span className="font-semibold text-cyan-400">💡 Tip:</span>{' '}
-                    Anyone with this link can join your session and collaborate in real-time!
+                    <span className="font-semibold text-cyan-400">💡 Tip:</span> Anyone with this
+                    link can join your session and collaborate in real-time!
                   </p>
                 </div>
               </motion.div>
@@ -191,15 +181,13 @@ export default function ShareSessionModal({
                 className="space-y-4"
               >
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-pink-400">
-                    Session Code:
-                  </label>
+                  <label className="text-sm font-semibold text-pink-400">Session Code:</label>
                   <div className="flex gap-2">
                     <Input
                       value={sessionId}
                       readOnly
                       className="bg-gray-800/50 border-pink-500/50 text-white font-bold text-lg text-center"
-                      onClick={(e) => e.currentTarget.select()}
+                      onClick={e => e.currentTarget.select()}
                     />
                     <Button
                       onClick={() => copyToClipboard(sessionId, 'Session code')}
@@ -217,15 +205,13 @@ export default function ShareSessionModal({
 
                 {passphrase && (
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-pink-400">
-                      Magic Passphrase:
-                    </label>
+                    <label className="text-sm font-semibold text-pink-400">Magic Passphrase:</label>
                     <div className="flex gap-2">
                       <Input
                         value={passphrase}
                         readOnly
                         className="bg-gray-800/50 border-pink-500/50 text-white font-mono"
-                        onClick={(e) => e.currentTarget.select()}
+                        onClick={e => e.currentTarget.select()}
                       />
                       <Button
                         onClick={() => copyToClipboard(passphrase, 'Passphrase')}

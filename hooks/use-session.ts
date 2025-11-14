@@ -47,7 +47,7 @@ export const useSession = (): SessionHook => {
             setSessionData({
               sessionId: urlSessionId,
               userName: 'Guest',
-              joinedAt: new Date().toISOString()
+              joinedAt: new Date().toISOString(),
             })
           }
         } else {

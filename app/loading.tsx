@@ -1,5 +1,5 @@
-import LoadingSpinner from "@/components/common/loading-spinner";
+import LoadingSpinner from '@/components/common/loading-spinner'
 
 export default function Loading() {
-  return <LoadingSpinner variant="cosmic" />;
+  return <LoadingSpinner variant="cosmic" />
 }

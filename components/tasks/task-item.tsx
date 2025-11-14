@@ -26,15 +26,19 @@ interface TaskItemProps {
  * A component representing a single, sortable task item in the list.
  * It handles displaying regular tasks, as well as the special UI for secret tasks.
  */
-export function SortableTaskItem({ task, onUpdate, onSetChoice, myChoice = '', onSelect, onVote, isSelected, currentUserId }: TaskItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: task.id })
+export function SortableTaskItem({
+  task,
+  onUpdate,
+  onSetChoice,
+  myChoice = '',
+  onSelect,
+  onVote,
+  isSelected,
+  currentUserId,
+}: TaskItemProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: task.id,
+  })
 
   // Draggable item styles
   const style = {
@@ -43,7 +47,7 @@ export function SortableTaskItem({ task, onUpdate, onSetChoice, myChoice = '', o
     opacity: isDragging ? 0.5 : 1,
   }
 
-  const hasVoted = task.votes.includes(currentUserId);
+  const hasVoted = task.votes.includes(currentUserId)
 
   // Render the secret task view if the task is secret
   if (task.is_secret) {
@@ -57,7 +61,11 @@ export function SortableTaskItem({ task, onUpdate, onSetChoice, myChoice = '', o
       >
         {/* Drag handle */}
         <div className="col-span-1 flex justify-center">
-          <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing hover-glow">
+          <div
+            {...attributes}
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing hover-glow"
+          >
             <GripVertical className="h-4 w-4 text-gray-500 hover:text-purple-400 transition-colors" />
           </div>
         </div>
@@ -95,7 +103,11 @@ export function SortableTaskItem({ task, onUpdate, onSetChoice, myChoice = '', o
     >
       {/* Drag handle */}
       <div className="col-span-1 flex justify-center">
-        <div {...attributes} {...listeners} className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing hover-glow">
+        <div
+          {...attributes}
+          {...listeners}
+          className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing hover-glow"
+        >
           <GripVertical className="h-4 w-4 text-gray-500 hover:text-cyan-400 transition-colors" />
         </div>
       </div>
@@ -105,15 +117,13 @@ export function SortableTaskItem({ task, onUpdate, onSetChoice, myChoice = '', o
         <div className="space-y-1">
           <Input
             value={task.text}
-            onChange={(e) => onUpdate(task.id, { text: e.target.value })}
+            onChange={e => onUpdate(task.id, { text: e.target.value })}
             className="input-neon bg-transparent border-none p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             placeholder="Enter your chaotic plan..."
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           />
           {task.user_name && (
-            <div className="text-xs text-cyan-400/70 font-mono">
-              {task.user_name}
-            </div>
+            <div className="text-xs text-cyan-400/70 font-mono">{task.user_name}</div>
           )}
         </div>
       </div>
@@ -121,7 +131,7 @@ export function SortableTaskItem({ task, onUpdate, onSetChoice, myChoice = '', o
       {/* Yes/No/Maybe styled buttons */}
       <div className="col-span-5 flex items-center gap-2 justify-center flex-wrap">
         <button
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation()
             onSetChoice?.(task.id, 'yes')
           }}
@@ -135,7 +145,7 @@ export function SortableTaskItem({ task, onUpdate, onSetChoice, myChoice = '', o
           ✓ Yes
         </button>
         <button
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation()
             onSetChoice?.(task.id, 'maybe')
           }}
@@ -149,7 +159,7 @@ export function SortableTaskItem({ task, onUpdate, onSetChoice, myChoice = '', o
           ? Maybe
         </button>
         <button
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation()
             onSetChoice?.(task.id, 'no')
           }}

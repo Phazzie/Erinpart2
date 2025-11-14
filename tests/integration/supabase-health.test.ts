@@ -21,7 +21,9 @@ const skipReason = !enabled
     if (error) {
       // Provide clearer hints for common setup issues
       if (/relation .*users.* does not exist/i.test(error.message)) {
-        throw new Error('Schema not applied: public.users missing. Run docs/supabase-schema.sql in Supabase.')
+        throw new Error(
+          'Schema not applied: public.users missing. Run docs/supabase-schema.sql in Supabase.'
+        )
       }
       throw error
     }
@@ -38,7 +40,7 @@ const skipReason = !enabled
       .eq('pubname', 'supabase_realtime')
 
     if (error) throw error
-    const tables = (data as any[]).map((r) => r.tablename)
+    const tables = (data as any[]).map(r => r.tablename)
     expect(tables).toEqual(expect.arrayContaining(['tasks', 'task_choices']))
   })
 })

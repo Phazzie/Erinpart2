@@ -47,7 +47,9 @@ export default function VibeDropdown({ vibes, currentVibe, onVibeChange }: VibeD
         <span className="hidden sm:inline text-sm font-medium text-cyan-400">
           {currentVibeData.display_name}
         </span>
-        <ChevronDown className={`h-4 w-4 text-cyan-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown
+          className={`h-4 w-4 text-cyan-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+        />
       </button>
 
       <AnimatePresence>
@@ -59,7 +61,7 @@ export default function VibeDropdown({ vibes, currentVibe, onVibeChange }: VibeD
             className="absolute right-0 mt-2 w-72 bg-slate-900 border border-cyan-500/30 rounded-lg shadow-xl shadow-cyan-500/10 overflow-hidden z-50"
           >
             <div className="p-2 max-h-96 overflow-y-auto">
-              {vibes.map((vibe) => {
+              {vibes.map(vibe => {
                 const vibeEmoji = categoryEmojis[vibe.category] || '✨'
                 return (
                   <button

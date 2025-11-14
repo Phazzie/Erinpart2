@@ -1,17 +1,17 @@
 'use client'
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card";
-import { Sparkles } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card'
+import { Sparkles } from 'lucide-react'
 
 interface Vibe {
-  id: string;
-  name: string;
-  display_name: string;
-  description?: string;
+  id: string
+  name: string
+  display_name: string
+  description?: string
 }
 
 interface VibeCardProps {
-  vibe: Vibe;
+  vibe: Vibe
 }
 
 export default function VibeCard({ vibe }: VibeCardProps) {

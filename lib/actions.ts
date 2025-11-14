@@ -8,7 +8,9 @@ import { auth } from '@clerk/nextjs/server'
 // Helper to ensure Supabase is configured for server actions
 function assertSupabaseConfigured() {
   if (!isSupabaseConfigured || !supabaseServer) {
-    throw new Error('Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.')
+    throw new Error(
+      'Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.'
+    )
   }
 }
 
@@ -29,7 +31,7 @@ export async function createTask(sessionId: string, taskData: any, userName?: st
     ...taskData,
     session_id: sessionId,
     user_name: userName || 'Anonymous',
-    ...(clerkUserId && { created_by: clerkUserId })
+    ...(clerkUserId && { created_by: clerkUserId }),
   }
 
   const { data, error } = await supabaseServer.from('tasks').insert(taskWithUser).select().single()
@@ -53,7 +55,7 @@ export async function updateTask(taskId: string, updates: any, userName?: string
   const updatesWithUser = {
     ...updates,
     ...(userName && { user_name: userName }),
-    ...(clerkUserId && { updated_by: clerkUserId })
+    ...(clerkUserId && { updated_by: clerkUserId }),
   }
 
   const { error } = await supabaseServer.from('tasks').update(updatesWithUser).eq('id', taskId)

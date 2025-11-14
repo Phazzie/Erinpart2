@@ -32,7 +32,7 @@ export default function ListItemComponent({
   const [editText, setEditText] = useState(item.text)
   const [showCorrectionField, setShowCorrectionField] = useState(false)
   const [correctionText, setCorrectionText] = useState('')
-  
+
   const { verifications, myVerification, submitVerification } = useListItemVerifications(
     item.id,
     userId,
@@ -63,7 +63,8 @@ export default function ListItemComponent({
   const totalVerifications = verifications.length
   const accurateCount = verifications.filter(v => v.is_accurate).length
   const inaccurateCount = totalVerifications - accurateCount
-  const consensusPercentage = totalVerifications > 0 ? (accurateCount / totalVerifications) * 100 : 0
+  const consensusPercentage =
+    totalVerifications > 0 ? (accurateCount / totalVerifications) * 100 : 0
 
   // Get consensus color
   const getConsensusColor = () => {
@@ -76,17 +77,26 @@ export default function ListItemComponent({
   const prefix = listType === 'numbered' ? `${index + 1}.` : '•'
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-3 border-l-4" style={{ borderLeftColor: myVerification?.is_accurate ? '#22c55e' : myVerification?.is_accurate === false ? '#ef4444' : '#d1d5db' }}>
+    <div
+      className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-3 border-l-4"
+      style={{
+        borderLeftColor: myVerification?.is_accurate
+          ? '#22c55e'
+          : myVerification?.is_accurate === false
+            ? '#ef4444'
+            : '#d1d5db',
+      }}
+    >
       <div className="flex items-start gap-3">
         <span className="font-bold text-gray-600 dark:text-gray-300 mt-1">{prefix}</span>
-        
+
         <div className="flex-1">
           {isEditing ? (
             <div className="space-y-2">
               <Input
                 value={editText}
-                onChange={(e) => setEditText(e.target.value)}
-                onKeyDown={(e) => {
+                onChange={e => setEditText(e.target.value)}
+                onKeyDown={e => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault()
                     handleSave()
@@ -99,17 +109,25 @@ export default function ListItemComponent({
                 autoFocus
               />
               <div className="flex gap-2">
-                <Button size="sm" onClick={handleSave}>Save</Button>
-                <Button size="sm" variant="outline" onClick={() => {
-                  setIsEditing(false)
-                  setEditText(item.text)
-                }}>Cancel</Button>
+                <Button size="sm" onClick={handleSave}>
+                  Save
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditing(false)
+                    setEditText(item.text)
+                  }}
+                >
+                  Cancel
+                </Button>
               </div>
             </div>
           ) : (
             <>
               <p className="text-gray-800 dark:text-gray-200">{item.text}</p>
-              
+
               {/* Consensus Bar */}
               {totalVerifications > 0 && (
                 <div className="mt-3">
@@ -131,7 +149,10 @@ export default function ListItemComponent({
               {verifications.length > 0 && (
                 <div className="mt-3 space-y-2">
                   {verifications.map(v => (
-                    <div key={v.id} className="text-xs bg-white dark:bg-gray-800 rounded p-2 flex items-start gap-2">
+                    <div
+                      key={v.id}
+                      className="text-xs bg-white dark:bg-gray-800 rounded p-2 flex items-start gap-2"
+                    >
                       {v.is_accurate ? (
                         <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
                       ) : (
@@ -182,8 +203,8 @@ export default function ListItemComponent({
                       <Input
                         placeholder="Suggest a correction..."
                         value={correctionText}
-                        onChange={(e) => setCorrectionText(e.target.value)}
-                        onKeyDown={(e) => {
+                        onChange={e => setCorrectionText(e.target.value)}
+                        onKeyDown={e => {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault()
                             handleVerify(false)
@@ -206,19 +227,11 @@ export default function ListItemComponent({
               {/* Edit/Delete Actions (for creator) */}
               {isCreator && (
                 <div className="flex gap-2 mt-3">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setIsEditing(true)}
-                  >
+                  <Button size="sm" variant="outline" onClick={() => setIsEditing(true)}>
                     <Edit2 className="w-3 h-3 mr-1" />
                     Edit
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onDelete(item.id)}
-                  >
+                  <Button size="sm" variant="outline" onClick={() => onDelete(item.id)}>
                     <Trash2 className="w-3 h-3 mr-1" />
                     Delete
                   </Button>

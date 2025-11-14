@@ -2,49 +2,49 @@
  * Represents a single task item within a session.
  */
 export interface Task {
-  id: string;
-  session_id: string;
-  text: string;
-  is_complete: boolean;
+  id: string
+  session_id: string
+  text: string
+  is_complete: boolean
   /**
    * Deprecated: Per-user choices moved to task_choices table. This field is no longer used by UI logic.
    */
-  choice: 'yes' | 'no' | 'maybe' | '';
-  day: 'today' | 'tomorrow';
-  order_index: number;
-  comments: string;
-  created_at: string;
-  updated_at: string;
-  created_by: string;
+  choice: 'yes' | 'no' | 'maybe' | ''
+  day: 'today' | 'tomorrow'
+  order_index: number
+  comments: string
+  created_at: string
+  updated_at: string
+  created_by: string
 
   // New fields for the Secret Task feature
-  is_secret: boolean; // If true, the task text is hidden until revealed
-  votes: string[]; // Array of user IDs who have voted to reveal the task
-  
+  is_secret: boolean // If true, the task text is hidden until revealed
+  votes: string[] // Array of user IDs who have voted to reveal the task
+
   // User identification for logging
-  user_name?: string; // The display name of the user who created/modified this task
+  user_name?: string // The display name of the user who created/modified this task
 }
 
 /**
  * Represents a "Vibe" or a template of tasks for a session.
  */
 export interface Vibe {
-  id: string;
-  name: string;
-  display_name: string;
-  description?: string;
-  tasks: string[];
-  category: string;
-  is_default: boolean;
+  id: string
+  name: string
+  display_name: string
+  description?: string
+  tasks: string[]
+  category: string
+  is_default: boolean
 }
 
 /**
  * Represents a user profile.
  */
 export interface UserProfile {
-  id: string;
-  email: string;
-  avatar_url?: string;
+  id: string
+  email: string
+  avatar_url?: string
 }
 
 /**
@@ -53,50 +53,50 @@ export interface UserProfile {
 export type Choice = 'yes' | 'no' | 'maybe' | ''
 
 export interface TaskChoice {
-  id: string;
-  task_id: string;
-  user_id: string;
-  choice: Exclude<Choice, ''>;
-  created_at: string;
-  updated_at: string;
+  id: string
+  task_id: string
+  user_id: string
+  choice: Exclude<Choice, ''>
+  created_at: string
+  updated_at: string
 }
 
 /**
  * Represents a collaborative list that can be created and verified by multiple users
  */
 export interface CollaborativeList {
-  id: string;
-  session_id: string;
-  title: string;
-  list_type: 'bullet' | 'numbered';
-  creator_id: string;
-  creator_name: string;
-  created_at: string;
-  updated_at: string;
+  id: string
+  session_id: string
+  title: string
+  list_type: 'bullet' | 'numbered'
+  creator_id: string
+  creator_name: string
+  created_at: string
+  updated_at: string
 }
 
 /**
  * Represents an item in a collaborative list with verification states
  */
 export interface ListItem {
-  id: string;
-  list_id: string;
-  text: string;
-  order_index: number;
-  created_at: string;
-  updated_at: string;
+  id: string
+  list_id: string
+  text: string
+  order_index: number
+  created_at: string
+  updated_at: string
 }
 
 /**
  * Represents a verification/vote on a list item
  */
 export interface ListItemVerification {
-  id: string;
-  item_id: string;
-  user_id: string;
-  user_name: string;
-  is_accurate: boolean; // true = green, false = red
-  correction_text?: string; // Only present when is_accurate = false
-  created_at: string;
-  updated_at: string;
+  id: string
+  item_id: string
+  user_id: string
+  user_name: string
+  is_accurate: boolean // true = green, false = red
+  correction_text?: string // Only present when is_accurate = false
+  created_at: string
+  updated_at: string
 }

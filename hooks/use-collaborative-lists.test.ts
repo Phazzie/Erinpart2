@@ -1,5 +1,9 @@
 import { renderHook, waitFor, act } from '@testing-library/react'
-import { useCollaborativeLists, useListItems, useListItemVerifications } from './use-collaborative-lists'
+import {
+  useCollaborativeLists,
+  useListItems,
+  useListItemVerifications,
+} from './use-collaborative-lists'
 import { supabase } from '@/lib/supabase/client'
 import { useRealtime } from '@/hooks/use-realtime'
 
@@ -142,7 +146,6 @@ describe('useCollaborativeLists', () => {
 
   it('should handle realtime INSERT events', async () => {
     let realtimeCallback: any
-
     ;(useRealtime as jest.Mock).mockImplementation(({ callback }) => {
       realtimeCallback = callback
     })
@@ -176,7 +179,6 @@ describe('useCollaborativeLists', () => {
 
   it('should handle realtime UPDATE events', async () => {
     let realtimeCallback: any
-
     ;(useRealtime as jest.Mock).mockImplementation(({ callback }) => {
       realtimeCallback = callback
     })
@@ -208,7 +210,6 @@ describe('useCollaborativeLists', () => {
 
   it('should handle realtime DELETE events', async () => {
     let realtimeCallback: any
-
     ;(useRealtime as jest.Mock).mockImplementation(({ callback }) => {
       realtimeCallback = callback
     })
@@ -265,7 +266,7 @@ describe('useListItems', () => {
   })
 
   it('should add a new item', async () => {
-    const fromSpy = jest.spyOn(supabase, 'from').mockImplementation((table) => {
+    const fromSpy = jest.spyOn(supabase, 'from').mockImplementation(table => {
       if (table === 'list_items') {
         return {
           select: jest.fn().mockReturnThis(),
@@ -300,7 +301,6 @@ describe('useListItems', () => {
 
   it('should handle realtime INSERT and maintain sort order', async () => {
     let realtimeCallback: any
-
     ;(useRealtime as jest.Mock).mockImplementation(({ callback }) => {
       realtimeCallback = callback
     })
@@ -332,7 +332,7 @@ describe('useListItems', () => {
   })
 
   it('should update an item', async () => {
-    const fromSpy = jest.spyOn(supabase, 'from').mockImplementation((table) => {
+    const fromSpy = jest.spyOn(supabase, 'from').mockImplementation(table => {
       if (table === 'list_items') {
         return {
           select: jest.fn().mockReturnThis(),
@@ -359,7 +359,7 @@ describe('useListItems', () => {
   })
 
   it('should delete an item', async () => {
-    const fromSpy = jest.spyOn(supabase, 'from').mockImplementation((table) => {
+    const fromSpy = jest.spyOn(supabase, 'from').mockImplementation(table => {
       if (table === 'list_items') {
         return {
           select: jest.fn().mockReturnThis(),
@@ -409,7 +409,7 @@ describe('useListItemVerifications', () => {
   })
 
   it('should submit a new verification', async () => {
-    const fromSpy = jest.spyOn(supabase, 'from').mockImplementation((table) => {
+    const fromSpy = jest.spyOn(supabase, 'from').mockImplementation(table => {
       if (table === 'list_item_verifications') {
         return {
           select: jest.fn().mockReturnThis(),
@@ -435,7 +435,7 @@ describe('useListItemVerifications', () => {
   })
 
   it('should update an existing verification', async () => {
-    const fromSpy = jest.spyOn(supabase, 'from').mockImplementation((table) => {
+    const fromSpy = jest.spyOn(supabase, 'from').mockImplementation(table => {
       if (table === 'list_item_verifications') {
         return {
           select: jest.fn().mockReturnThis(),
@@ -467,7 +467,6 @@ describe('useListItemVerifications', () => {
 
   it('should handle realtime verification events', async () => {
     let realtimeCallback: any
-
     ;(useRealtime as jest.Mock).mockImplementation(({ callback }) => {
       realtimeCallback = callback
     })

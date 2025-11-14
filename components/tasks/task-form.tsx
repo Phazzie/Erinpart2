@@ -65,9 +65,11 @@ export default function TaskForm({ onAddTask, isGuest = false }: TaskFormProps) 
       >
         <div className="text-center">
           <h3 className="text-lg font-semibold text-purple-300 mb-2">Want to add tasks?</h3>
-          <p className="text-purple-200/80 mb-4">Pick 3 animals to join this session and start adding tasks!</p>
-          <Button 
-            onClick={() => window.location.href = '/'} 
+          <p className="text-purple-200/80 mb-4">
+            Pick 3 animals to join this session and start adding tasks!
+          </p>
+          <Button
+            onClick={() => (window.location.href = '/')}
             className="bg-purple-600 hover:bg-purple-700 text-white"
           >
             Join Session
@@ -88,13 +90,13 @@ export default function TaskForm({ onAddTask, isGuest = false }: TaskFormProps) 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <Input
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={e => setText(e.target.value)}
             placeholder="Add a new chaotic task..."
             className="input-neon flex-grow"
           />
-          <Button 
-            type="submit" 
-            className="btn-neon whitespace-nowrap" 
+          <Button
+            type="submit"
+            className="btn-neon whitespace-nowrap"
             disabled={!text.trim() || isSubmitting}
           >
             <PlusCircle className="h-4 w-4 mr-2" />
@@ -105,7 +107,7 @@ export default function TaskForm({ onAddTask, isGuest = false }: TaskFormProps) 
           <Checkbox
             id="secret-task"
             checked={isSecret}
-            onCheckedChange={(checked) => setIsSecret(!!checked)}
+            onCheckedChange={checked => setIsSecret(!!checked)}
             className="border-pink-500"
           />
           <Label

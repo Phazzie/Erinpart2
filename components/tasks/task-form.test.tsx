@@ -71,4 +71,4 @@ describe('TaskForm', () => {
 
     expect(mockOnAddTask).toHaveBeenCalledWith(longText, false)
   })
-});
+})
