@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import DayToggle from '@/components/layout/day-toggle'
 import SessionHeader from './session-header'
 import TaskList from '../tasks/task-list'
-import VibeSelector from '../vibes/vibe-selector'
 import SessionDetails from './session-details'
 import TaskForm from '../tasks/task-form'
 import { Task, Vibe } from '@/lib/types'
@@ -13,7 +12,6 @@ import { useTasks } from '@/hooks/use-tasks'
 import { useTaskChoices } from '@/hooks/use-task-choices'
 import { mockVibes } from '@/lib/mock-data'
 import { toast } from '@/lib/toast'
-import { supabase } from '@/lib/supabase/client'
 import LoadingSpinner from '@/components/common/loading-spinner'
 
 /**
@@ -66,11 +64,25 @@ export default function SessionBoard() {
     if (s) setUrlSessionId(s)
     if (a) {
       try {
-        const decoded = JSON.parse(decodeURIComponent(atob(a))) as Record<string, 'yes'|'no'|'maybe'|''>
-        setGuestAnswers(decoded)
-        setAnswersEncoded(a)
-      } catch {
-        // ignore bad payload
+        const decoded = JSON.parse(decodeURIComponent(atob(a)))
+        // Validate the decoded structure to prevent XSS
+        if (decoded && typeof decoded === 'object' && !Array.isArray(decoded)) {
+          // Validate that all values are safe choice strings
+          const isValid = Object.values(decoded).every(
+            val => val === 'yes' || val === 'no' || val === 'maybe' || val === ''
+          )
+          if (isValid) {
+            setGuestAnswers(decoded as Record<string, 'yes'|'no'|'maybe'|''>)
+            setAnswersEncoded(a)
+          } else {
+            console.warn('[SessionBoard] Invalid answers parameter - invalid choice values')
+          }
+        } else {
+          console.warn('[SessionBoard] Invalid answers parameter - not a valid object')
+        }
+      } catch (error) {
+        console.error('[SessionBoard] Failed to decode answers:', error)
+        // Don't set invalid data
       }
     }
   }, [])
@@ -91,21 +103,13 @@ export default function SessionBoard() {
   const handleReorderTasks = async (reorderedTasks: Task[]) => {
     // Batch update to database - save all order_index changes at once
     try {
-      const updates = reorderedTasks.map((task, index) => 
-        supabase.from('tasks').update({ order_index: index }).eq('id', task.id)
+      // Use updateTask from the hook for each order change
+      const updates = reorderedTasks.map((task, index) =>
+        updateTask(task.id, { order_index: index })
       )
-      
-      const results = await Promise.all(updates)
-      
-      // Check if any updates failed
-      const errors = results.filter(r => r.error)
-      if (errors.length > 0) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('[SessionBoard] Some task order updates failed:', errors)
-        }
-        throw new Error('Failed to save task order')
-      }
-      
+
+      await Promise.all(updates)
+
       // Success - updates are persisted, realtime will sync the state
     } catch (error: any) {
       toast.error('Failed to save task order')
@@ -136,9 +140,9 @@ export default function SessionBoard() {
     const target = tasks.find(t => t.id === taskId)
     if (!target) return
     if (target.votes.includes(uid)) return
-    
+
     const newVotes = [...target.votes, uid]
-    const updates: Partial<Task> = { votes: newVotes as any }
+    const updates: Partial<Task> = { votes: newVotes }
     // Reveal task if threshold met (client heuristic only for now)
     const thresholdMet = newVotes.length >= 2
     if (thresholdMet) updates.is_secret = false

@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { supabaseServer, isSupabaseConfigured } from '@/lib/supabase/server'
+import { auth } from '@clerk/nextjs/server'
 
 // Helper to ensure Supabase is configured for server actions
 function assertSupabaseConfigured() {
@@ -13,11 +14,24 @@ function assertSupabaseConfigured() {
 
 export async function createTask(sessionId: string, taskData: any, userName?: string) {
   assertSupabaseConfigured()
-  const taskWithUser = { 
-    ...taskData, 
-    session_id: sessionId,
-    user_name: userName || 'Anonymous'
+
+  // Optionally get authenticated user ID from Clerk
+  // This supports both authenticated users and anonymous animal code sessions
+  let clerkUserId: string | null = null
+  try {
+    const authResult = await auth()
+    clerkUserId = authResult.userId
+  } catch (error) {
+    // No auth is fine - animal code sessions don't require authentication
   }
+
+  const taskWithUser = {
+    ...taskData,
+    session_id: sessionId,
+    user_name: userName || 'Anonymous',
+    ...(clerkUserId && { created_by: clerkUserId })
+  }
+
   const { data, error } = await supabaseServer.from('tasks').insert(taskWithUser).select().single()
   if (error) return { success: false, error: error.message }
   revalidatePath('/')
@@ -26,7 +40,22 @@ export async function createTask(sessionId: string, taskData: any, userName?: st
 
 export async function updateTask(taskId: string, updates: any, userName?: string) {
   assertSupabaseConfigured()
-  const updatesWithUser = userName ? { ...updates, user_name: userName } : updates
+
+  // Optionally get authenticated user ID from Clerk
+  let clerkUserId: string | null = null
+  try {
+    const authResult = await auth()
+    clerkUserId = authResult.userId
+  } catch (error) {
+    // No auth is fine - animal code sessions don't require authentication
+  }
+
+  const updatesWithUser = {
+    ...updates,
+    ...(userName && { user_name: userName }),
+    ...(clerkUserId && { updated_by: clerkUserId })
+  }
+
   const { error } = await supabaseServer.from('tasks').update(updatesWithUser).eq('id', taskId)
   if (error) return { success: false, error: error.message }
   revalidatePath('/')
@@ -57,29 +86,8 @@ export async function createShareableSession(sessionId: string) {
   return { success: true, shareUrl }
 }
 
-export async function signIn(prevState: { error?: string } | null, formData: FormData) {
-  assertSupabaseConfigured()
-
-  const email = formData.get('email') as string
-  const password = formData.get('password') as string
-
-  if (!email || !password) {
-    return { error: 'Email and password are required.' }
-  }
-
-  const { error } = await supabaseServer.auth.signInWithPassword({
-    email,
-    password,
-  })
-
-  if (error) {
-    // Supabase returns a generic error for invalid credentials, so we'll make it more specific.
-    if (error.message === 'Invalid login credentials') {
-      return { error: 'Invalid email or password.' }
-    }
-    return { error: error.message }
-  }
-
-  revalidatePath('/')
-  redirect('/')
-}
+/**
+ * Authentication is now handled by Clerk.
+ * The signIn function has been removed - users should use Clerk's sign-in UI instead.
+ * See: /app/sign-in/[[...sign-in]]/page.tsx
+ */

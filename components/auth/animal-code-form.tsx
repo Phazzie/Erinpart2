@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,6 +25,7 @@ const ANIMALS = [
 ]
 
 export default function AnimalCodeForm() {
+  const router = useRouter()
   const [animal1, setAnimal1] = useState('')
   const [animal2, setAnimal2] = useState('')
   const [firstName, setFirstName] = useState('')
@@ -47,39 +49,49 @@ export default function AnimalCodeForm() {
       toast.error('Please fill in all fields')
       return
     }
-    
+
     if (animal1 === animal2) {
       toast.error('Please choose two different animals')
       return
     }
-    
+
     const name = firstName.trim()
     if (name.length < 2) {
       toast.error('Name must be at least 2 characters')
       return
     }
-    
-    if (name.length > 20) {
-      toast.error('Name must be less than 20 characters')
+
+    if (name.length > 50) {
+      toast.error('Name must be less than 50 characters')
       return
     }
 
     // Set loading state
     setIsJoining(true)
-    
+
     const sessionId = `${animal1.toLowerCase()}-${animal2.toLowerCase()}`
-    
-    // Store session info in localStorage
-    localStorage.setItem('sessionData', JSON.stringify({
+
+    // Prepare session data with validation
+    const sessionData = {
       sessionId,
       userName: name,
       joinedAt: new Date().toISOString()
-    }))
-    
-    toast.success(`Welcome ${name}! 🐾`)
-    
+    }
+
+    // Sanitize to prevent XSS if ever rendered without encoding
+    const sanitizedData = {
+      ...sessionData,
+      userName: sessionData.userName.replace(/[<>]/g, '') // Basic sanitization
+    }
+
+    // Store session info in localStorage
+    localStorage.setItem('sessionData', JSON.stringify(sanitizedData))
+
+    toast.success(`Welcome ${sanitizedData.userName}! 🐾`)
+
     // Navigate to session with URL parameter for sharing/bookmarking
-    window.location.href = `/?session=${sessionId}`
+    // Using router.push with encodeURIComponent to prevent XSS
+    router.push(`/?session=${encodeURIComponent(sessionId)}`)
   }
 
   return (

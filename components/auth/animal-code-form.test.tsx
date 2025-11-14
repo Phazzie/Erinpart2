@@ -5,7 +5,11 @@ import { toast } from '@/lib/toast'
 
 // Mock dependencies
 jest.mock('next/navigation', () => ({
-  useRouter: jest.fn(),
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn(),
+  })),
 }))
 
 jest.mock('@/lib/toast', () => ({

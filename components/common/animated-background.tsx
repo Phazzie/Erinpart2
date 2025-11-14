@@ -41,6 +41,8 @@ export default function AnimatedBackground({
         })
       }
 
+      let animationFrameId: number
+
       const animate = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
 
@@ -78,7 +80,7 @@ export default function AnimatedBackground({
           })
         })
 
-        requestAnimationFrame(animate)
+        animationFrameId = requestAnimationFrame(animate)
       }
 
       animate()
@@ -89,7 +91,12 @@ export default function AnimatedBackground({
       }
 
       window.addEventListener('resize', handleResize)
-      return () => window.removeEventListener('resize', handleResize)
+      return () => {
+        window.removeEventListener('resize', handleResize)
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId)
+        }
+      }
     }
   }, [variant, intensity])
 
@@ -131,7 +138,7 @@ export default function AnimatedBackground({
           style={{
             backgroundImage: `
               linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, a-transparent 1px)
+              linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px)
             `,
             backgroundSize: '50px 50px',
           }}

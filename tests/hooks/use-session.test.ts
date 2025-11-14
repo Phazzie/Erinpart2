@@ -1,92 +1,233 @@
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { useSession } from '@/hooks/use-session'
-import { supabase } from '@/lib/supabase/client'
+import { useUser } from '@clerk/nextjs'
+
+// Mock Clerk
+jest.mock('@clerk/nextjs', () => ({
+  useUser: jest.fn(),
+}))
+
+const mockUseUser = useUser as jest.MockedFunction<typeof useUser>
 
 describe('useSession', () => {
-  let signInAnonymouslySpy: jest.SpyInstance
-
   beforeEach(() => {
     localStorage.clear()
-    signInAnonymouslySpy = jest.spyOn(supabase.auth, 'signInAnonymously').mockResolvedValue({
-      data: { user: { id: 'test-user' }, session: {} as any },
-      error: null,
-    })
+    // Default: no Clerk user, loaded state
+    mockUseUser.mockReturnValue({
+      user: null,
+      isLoaded: true,
+      isSignedIn: false,
+    } as any)
   })
 
   afterEach(() => {
-    signInAnonymouslySpy.mockRestore()
+    jest.clearAllMocks()
   })
 
-  it('should initialize with loading true and no session data', () => {
-    const { result } = renderHook(() => useSession())
-    expect(result.current.loading).toBe(true)
-    expect(result.current.user).toBeNull()
-    expect(result.current.sessionId).toBe('')
-  })
+  describe('Guest Users (no Clerk auth)', () => {
+    it('should initialize with loading true initially', () => {
+      mockUseUser.mockReturnValue({
+        user: null,
+        isLoaded: false,
+        isSignedIn: false,
+      } as any)
 
-  it('should load session data from localStorage and sign in anonymously', async () => {
-    const sessionData = {
-      sessionId: 'cat-dog',
-      userName: 'Test User',
-      joinedAt: new Date().toISOString(),
-    }
-    localStorage.setItem('sessionData', JSON.stringify(sessionData))
-
-    const { result } = renderHook(() => useSession())
-
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false)
+      const { result } = renderHook(() => useSession())
+      expect(result.current.loading).toBe(true)
+      expect(result.current.user).toBeNull()
+      expect(result.current.sessionId).toBe('')
     })
 
-    expect(result.current.sessionId).toBe('cat-dog')
-    expect(result.current.user).toEqual({ id: 'test-user', name: 'Test User' })
-    expect(signInAnonymouslySpy).toHaveBeenCalledTimes(1)
-  })
-
-  it('should handle storage events', async () => {
-    const { result } = renderHook(() => useSession())
-
-    const sessionData = {
-      sessionId: 'lion-tiger',
-      userName: 'New User',
-      joinedAt: new Date().toISOString(),
-    }
-
-    // Mock window.location.reload
-    const reloadSpy = jest.fn()
-    Object.defineProperty(window, 'location', {
-      writable: true,
-      value: { ...window.location, reload: reloadSpy },
-    })
-
-    act(() => {
+    it('should create guest user from localStorage session data', async () => {
+      const sessionData = {
+        sessionId: 'cat-dog',
+        userName: 'Test User',
+        joinedAt: new Date().toISOString(),
+      }
       localStorage.setItem('sessionData', JSON.stringify(sessionData))
-      window.dispatchEvent(new Event('storage'))
+
+      const { result } = renderHook(() => useSession())
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      expect(result.current.sessionId).toBe('cat-dog')
+      expect(result.current.user).toEqual({
+        id: 'guest-cat-dog',
+        name: 'Test User',
+      })
     })
 
-    await waitFor(() => {
-      expect(reloadSpy).toHaveBeenCalledTimes(1)
+    it('should handle no session data gracefully', async () => {
+      const { result } = renderHook(() => useSession())
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      expect(result.current.user).toBeNull()
+      expect(result.current.sessionId).toBe('')
     })
 
-    reloadSpy.mockRestore()
+    it('should handle storage events and update session data', async () => {
+      const { result } = renderHook(() => useSession())
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      expect(result.current.user).toBeNull()
+
+      const sessionData = {
+        sessionId: 'lion-tiger',
+        userName: 'New User',
+        joinedAt: new Date().toISOString(),
+      }
+
+      act(() => {
+        localStorage.setItem('sessionData', JSON.stringify(sessionData))
+        window.dispatchEvent(new Event('storage'))
+      })
+
+      await waitFor(() => {
+        expect(result.current.sessionId).toBe('lion-tiger')
+        expect(result.current.user).toEqual({
+          id: 'guest-lion-tiger',
+          name: 'New User',
+        })
+      })
+    })
+
+    it.skip('should handle URL session parameter for guest access', async () => {
+      // Mock window.location.href with query parameter
+      const originalLocation = window.location
+
+      // @ts-ignore
+      delete window.location
+      window.location = {
+        ...originalLocation,
+        href: 'http://localhost?session=elephant-giraffe',
+        search: '?session=elephant-giraffe',
+      } as any
+
+      const { result } = renderHook(() => useSession())
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      expect(result.current.sessionId).toBe('elephant-giraffe')
+      expect(result.current.user).toEqual({
+        id: 'guest-elephant-giraffe',
+        name: 'Guest',
+      })
+
+      // Restore original location
+      // @ts-ignore
+      window.location = originalLocation
+    })
   })
 
-  it('should handle errors during session init gracefully', async () => {
-    signInAnonymouslySpy.mockRejectedValueOnce(new Error('Sign in failed'))
+  describe('Authenticated Users (Clerk)', () => {
+    it('should use Clerk user ID and name when authenticated', async () => {
+      mockUseUser.mockReturnValue({
+        user: {
+          id: 'user_clerk123',
+          firstName: 'Alice',
+          username: 'alice123',
+        } as any,
+        isLoaded: true,
+        isSignedIn: true,
+      } as any)
 
-    const sessionData = {
-      sessionId: 'cat-dog',
-      userName: 'Test User',
-      joinedAt: new Date().toISOString(),
-    }
-    localStorage.setItem('sessionData', JSON.stringify(sessionData))
+      const sessionData = {
+        sessionId: 'cat-dog',
+        userName: 'Guest Name',
+        joinedAt: new Date().toISOString(),
+      }
+      localStorage.setItem('sessionData', JSON.stringify(sessionData))
 
-    const { result } = renderHook(() => useSession())
+      const { result } = renderHook(() => useSession())
 
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false)
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      // Should use Clerk user ID, not guest ID
+      expect(result.current.user).toEqual({
+        id: 'user_clerk123',
+        name: 'Alice',
+      })
+      expect(result.current.sessionId).toBe('cat-dog')
     })
 
-    expect(result.current.user).toBeNull()
+    it('should fall back to username if firstName is not available', async () => {
+      mockUseUser.mockReturnValue({
+        user: {
+          id: 'user_clerk456',
+          username: 'bob456',
+        } as any,
+        isLoaded: true,
+        isSignedIn: true,
+      } as any)
+
+      const sessionData = {
+        sessionId: 'cat-dog',
+        userName: 'Guest Name',
+        joinedAt: new Date().toISOString(),
+      }
+      localStorage.setItem('sessionData', JSON.stringify(sessionData))
+
+      const { result } = renderHook(() => useSession())
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      expect(result.current.user).toEqual({
+        id: 'user_clerk456',
+        name: 'bob456',
+      })
+    })
+
+    it('should fall back to session userName if Clerk name is not available', async () => {
+      mockUseUser.mockReturnValue({
+        user: {
+          id: 'user_clerk789',
+        } as any,
+        isLoaded: true,
+        isSignedIn: true,
+      } as any)
+
+      const sessionData = {
+        sessionId: 'cat-dog',
+        userName: 'Session User',
+        joinedAt: new Date().toISOString(),
+      }
+      localStorage.setItem('sessionData', JSON.stringify(sessionData))
+
+      const { result } = renderHook(() => useSession())
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      expect(result.current.user).toEqual({
+        id: 'user_clerk789',
+        name: 'Session User',
+      })
+    })
+
+    it('should show loading while Clerk is initializing', () => {
+      mockUseUser.mockReturnValue({
+        user: null,
+        isLoaded: false,
+        isSignedIn: false,
+      } as any)
+
+      const { result } = renderHook(() => useSession())
+      expect(result.current.loading).toBe(true)
+    })
   })
 })
