@@ -12,25 +12,32 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
  * - Supports async/await patterns
  * - More granular control over route protection
  *
- * Public Routes:
- * - Homepage (/)
+ * Public Routes (Guest Access Allowed):
+ * - Homepage (/) - Shows login or session board for guests
+ * - Lists page (/lists) - Accessible to guests with animal code sessions
  * - Sign-in pages (/sign-in, /sign-in/*)
  * - Sign-up pages (/sign-up, /sign-up/*)
  * - Health check endpoint (/api/health)
  *
- * Protected Routes:
- * - All other routes require authentication
- * - Future: Will integrate with animal-code session validation
+ * Animal Code Sessions:
+ * - Guests can access the app without authentication using animal codes
+ * - Session/user validation is handled at the component level
+ * - Authentication is optional for collaborative features
  *
- * To extend for animal-code sessions:
- * 1. Add session validation logic after auth.protect()
- * 2. Check for valid animal-code in request
- * 3. Validate against Supabase session data
- * 4. Redirect to session creation if needed
+ * Protected Routes:
+ * - Currently none, as all features support guest access
+ * - Future: Add routes that require authentication if needed
  */
 
 // Define public routes that don't require authentication
-const isPublicRoute = createRouteMatcher(['/', '/sign-in(.*)', '/sign-up(.*)', '/api/health'])
+// All main app routes are public to support guest users with animal code sessions
+const isPublicRoute = createRouteMatcher([
+  '/',
+  '/lists',
+  '/sign-in(.*)',
+  '/sign-up(.*)',
+  '/api/health',
+])
 
 export default clerkMiddleware(async (auth, request) => {
   // Protect all routes except public ones

@@ -99,7 +99,7 @@ describe('useSession', () => {
       })
     })
 
-    it.skip('should handle URL session parameter for guest access', async () => {
+    it('should handle URL session parameter for guest access', async () => {
       // Mock window.location.href with query parameter
       const originalLocation = window.location
 

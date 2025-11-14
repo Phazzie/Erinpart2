@@ -103,28 +103,32 @@ export default function AnimalCodeForm() {
       return
     }
 
+    // Validate name contains only safe characters (letters, numbers, spaces, hyphens, apostrophes)
+    // This prevents XSS and ensures clean data storage
+    const namePattern = /^[a-zA-Z0-9\s\-']+$/
+    if (!namePattern.test(name)) {
+      toast.error("Name can only contain letters, numbers, spaces, hyphens, and apostrophes")
+      return
+    }
+
     // Set loading state
     setIsJoining(true)
 
     const sessionId = `${animal1.toLowerCase()}-${animal2.toLowerCase()}`
 
-    // Prepare session data with validation
+    // Prepare session data
+    // Note: React automatically escapes text content, preventing XSS
+    // Input validation above ensures only safe characters are stored
     const sessionData = {
       sessionId,
       userName: name,
       joinedAt: new Date().toISOString(),
     }
 
-    // Sanitize to prevent XSS if ever rendered without encoding
-    const sanitizedData = {
-      ...sessionData,
-      userName: sessionData.userName.replace(/[<>]/g, ''), // Basic sanitization
-    }
-
     // Store session info in localStorage
-    localStorage.setItem('sessionData', JSON.stringify(sanitizedData))
+    localStorage.setItem('sessionData', JSON.stringify(sessionData))
 
-    toast.success(`Welcome ${sanitizedData.userName}! 🐾`)
+    toast.success(`Welcome ${sessionData.userName}! 🐾`)
 
     // Navigate to session with URL parameter for sharing/bookmarking
     // Using router.push with encodeURIComponent to prevent XSS

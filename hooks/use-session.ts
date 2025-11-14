@@ -107,8 +107,9 @@ export const useSession = (): SessionHook => {
 
   if (clerkUser) {
     // Authenticated with Clerk - use Clerk user ID and name
+    // Only use Clerk data to avoid confusion from previous guest sessions
     userId = clerkUser.id
-    userName = clerkUser.firstName || clerkUser.username || sessionData?.userName || 'User'
+    userName = clerkUser.firstName || clerkUser.username || clerkUser.emailAddresses[0]?.emailAddress || 'User'
 
     if (process.env.NODE_ENV === 'development') {
       console.log('[useSession] Clerk user authenticated:', { userId, userName })

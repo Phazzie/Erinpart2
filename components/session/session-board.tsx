@@ -65,13 +65,30 @@ export default function SessionBoard() {
     if (a) {
       try {
         const decoded = JSON.parse(decodeURIComponent(atob(a)))
-        // Validate the decoded structure to prevent XSS
+        // Validate the decoded structure to prevent XSS and DoS attacks
         if (decoded && typeof decoded === 'object' && !Array.isArray(decoded)) {
+          const keys = Object.keys(decoded)
+
+          // Limit number of keys to prevent DoS (max 1000 tasks per session is generous)
+          if (keys.length > 1000) {
+            console.warn('[SessionBoard] Invalid answers parameter - too many keys (DoS prevention)')
+            return
+          }
+
+          // Validate each key is a valid UUID (task IDs are UUIDs)
+          const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+          const allKeysValid = keys.every(key => uuidRegex.test(key))
+          if (!allKeysValid) {
+            console.warn('[SessionBoard] Invalid answers parameter - keys must be valid UUIDs')
+            return
+          }
+
           // Validate that all values are safe choice strings
-          const isValid = Object.values(decoded).every(
+          const allValuesValid = Object.values(decoded).every(
             val => val === 'yes' || val === 'no' || val === 'maybe' || val === ''
           )
-          if (isValid) {
+
+          if (allValuesValid) {
             setGuestAnswers(decoded as Record<string, 'yes' | 'no' | 'maybe' | ''>)
             setAnswersEncoded(a)
           } else {
@@ -101,10 +118,25 @@ export default function SessionBoard() {
 
   /**
    * Reorders tasks within the current day's list after a drag-and-drop action.
+   *
+   * Performance Note: This currently sends N parallel requests (one per task).
+   * Promise.all batches them in parallel, which is better than sequential,
+   * but still creates multiple HTTP round trips.
+   *
+   * Optimization Options:
+   * 1. Create a batch update API endpoint: POST /api/tasks/batch-update
+   * 2. Create a Supabase stored procedure for batch updates
+   * 3. Use Supabase's upsert with multiple records
+   *
+   * Current approach is acceptable for typical use cases (<100 tasks),
+   * but should be optimized if sessions regularly have >50 tasks.
+   *
    * @param reorderedTasks The newly ordered array of tasks for the current day.
    */
   const handleReorderTasks = async (reorderedTasks: Task[]) => {
-    // Batch update to database - save all order_index changes at once
+    // TODO: Optimize with batch update endpoint for large task lists (>50 tasks)
+    // Current: N parallel requests via Promise.all (acceptable for most cases)
+    // Ideal: Single batch update API call
     try {
       // Use updateTask from the hook for each order change
       const updates = reorderedTasks.map((task, index) =>

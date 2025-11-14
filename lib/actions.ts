@@ -25,6 +25,10 @@ export async function createTask(sessionId: string, taskData: any, userName?: st
     clerkUserId = authResult.userId
   } catch (error) {
     // No auth is fine - animal code sessions don't require authentication
+    // Log in development to help debug auth service issues
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[createTask] Failed to get Clerk auth (this is OK for guest sessions):', error)
+    }
   }
 
   const taskWithUser = {
@@ -50,6 +54,10 @@ export async function updateTask(taskId: string, updates: any, userName?: string
     clerkUserId = authResult.userId
   } catch (error) {
     // No auth is fine - animal code sessions don't require authentication
+    // Log in development to help debug auth service issues
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[updateTask] Failed to get Clerk auth (this is OK for guest sessions):', error)
+    }
   }
 
   const updatesWithUser = {

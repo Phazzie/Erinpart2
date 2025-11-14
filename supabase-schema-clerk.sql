@@ -22,6 +22,37 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 -- Clerk sets the 'sub' claim to the user ID (e.g., "user_2xxx...")
 -- In development/testing, you can manually set the user ID:
 --   SET request.jwt.claims = '{"sub": "user_2xxxTestID"}';
+--
+-- ⚠️  SECURITY DEFINER USAGE WARNING ⚠️
+-- This function uses SECURITY DEFINER, which runs with the privileges of the
+-- function creator (typically a superuser or database owner).
+--
+-- WHY SECURITY DEFINER IS REQUIRED:
+-- - Accessing request.jwt.claims requires elevated privileges
+-- - Row-Level Security (RLS) policies need to read JWT claims
+-- - Standard users don't have permission to read current_setting() for JWT data
+--
+-- SECURITY CONSIDERATIONS:
+-- - This function ONLY performs READ operations (no INSERT/UPDATE/DELETE)
+-- - It ONLY accesses JWT claims data (no sensitive database data)
+-- - The function is STABLE (cannot modify database state)
+-- - RLS policies using this function still properly restrict access
+-- - The returned user ID is used for authorization, not authentication
+--
+-- ⚠️  CRITICAL: DO NOT MODIFY THIS FUNCTION ⚠️
+-- - Do NOT add write operations (INSERT/UPDATE/DELETE)
+-- - Do NOT add logic that bypasses RLS policies
+-- - Do NOT expose sensitive data beyond the user ID
+-- - Verify any changes with a security review
+-- - Test thoroughly with RLS policies enabled
+--
+-- SAFE PATTERN:
+--   CREATE POLICY "name" ON table USING (current_user_id() = user_column);
+--
+-- UNSAFE PATTERNS (DO NOT DO THIS):
+--   - Using SECURITY DEFINER to bypass RLS checks
+--   - Reading/writing sensitive data in this function
+--   - Adding business logic that should be in policies
 -- ============================================================================
 CREATE OR REPLACE FUNCTION public.current_user_id()
 RETURNS text
@@ -33,7 +64,7 @@ AS $$
 $$;
 
 COMMENT ON FUNCTION public.current_user_id() IS
-'Returns the current Clerk user ID from JWT claims. Replaces auth.uid() for Clerk integration.';
+'Returns the current Clerk user ID from JWT claims. Replaces auth.uid() for Clerk integration. Uses SECURITY DEFINER to access JWT data - see schema file for security warnings.';
 
 -- ============================================================================
 -- USERS TABLE (Profile)
