@@ -101,26 +101,66 @@ export const useSession = (): SessionHook => {
     return () => window.removeEventListener('storage', handleStorageChange)
   }, [])
 
-  // Determine user ID and name based on Clerk auth + session data
+  /**
+   * Determine user ID and name based on authentication state and session data.
+   *
+   * Username Fallback Strategy:
+   * 1. For authenticated users (Clerk):
+   *    - Try clerkUser.firstName
+   *    - Fall back to clerkUser.username
+   *    - Fall back to clerkUser.emailAddresses[0]?.emailAddress
+   *    - Fall back to sessionData.userName (if available)
+   *    - Fall back to 'Anonymous'
+   *
+   * 2. For guest users (no Clerk auth):
+   *    - Use sessionData.userName
+   *    - Fall back to 'Anonymous'
+   *
+   * This fallback chain ensures users always have a display name while
+   * preferring authenticated identity over session data.
+   */
   let userId: string | null = null
   let userName = 'Anonymous'
+  let usernameSource = 'default' // Track source for debugging
 
   if (clerkUser) {
-    // Authenticated with Clerk - use Clerk user ID and name
-    // Only use Clerk data to avoid confusion from previous guest sessions
+    // Authenticated with Clerk - use Clerk user ID
     userId = clerkUser.id
-    userName = clerkUser.firstName || clerkUser.username || clerkUser.emailAddresses[0]?.emailAddress || 'User'
+
+    // Apply username fallback chain for Clerk users
+    if (clerkUser.firstName) {
+      userName = clerkUser.firstName
+      usernameSource = 'clerk.firstName'
+    } else if (clerkUser.username) {
+      userName = clerkUser.username
+      usernameSource = 'clerk.username'
+    } else if (clerkUser.emailAddresses?.[0]?.emailAddress) {
+      userName = clerkUser.emailAddresses[0].emailAddress
+      usernameSource = 'clerk.email'
+    } else if (sessionData?.userName) {
+      userName = sessionData.userName
+      usernameSource = 'session.userName'
+    }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('[useSession] Clerk user authenticated:', { userId, userName })
+      console.log('[useSession] Clerk user authenticated:', {
+        userId,
+        userName,
+        source: usernameSource
+      })
     }
   } else if (sessionData) {
     // Guest with animal code session - create guest ID
     userId = `guest-${sessionData.sessionId}`
     userName = sessionData.userName
+    usernameSource = 'session.userName'
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('[useSession] Guest user with session:', { userId, userName })
+      console.log('[useSession] Guest user with session:', {
+        userId,
+        userName,
+        source: usernameSource
+      })
     }
   }
 
