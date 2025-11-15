@@ -10,7 +10,7 @@ interface AnimatedBackgroundProps {
 
 export default function AnimatedBackground({
   variant = 'particles',
-  intensity = 'medium'
+  intensity = 'medium',
 }: AnimatedBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -37,9 +37,11 @@ export default function AnimatedBackground({
           vy: (Math.random() - 0.5) * 2,
           size: Math.random() * 3 + 1,
           color: ['#00ffff', '#ff4fd8', '#a26bff'][Math.floor(Math.random() * 3)],
-          opacity: Math.random() * 0.5 + 0.2
+          opacity: Math.random() * 0.5 + 0.2,
         })
       }
+
+      let animationFrameId: number
 
       const animate = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -71,14 +73,14 @@ export default function AnimatedBackground({
               ctx.moveTo(particle.x, particle.y)
               ctx.lineTo(otherParticle.x, otherParticle.y)
               ctx.strokeStyle = particle.color
-              ctx.globalAlpha = (100 - distance) / 100 * 0.2
+              ctx.globalAlpha = ((100 - distance) / 100) * 0.2
               ctx.lineWidth = 1
               ctx.stroke()
             }
           })
         })
 
-        requestAnimationFrame(animate)
+        animationFrameId = requestAnimationFrame(animate)
       }
 
       animate()
@@ -89,7 +91,12 @@ export default function AnimatedBackground({
       }
 
       window.addEventListener('resize', handleResize)
-      return () => window.removeEventListener('resize', handleResize)
+      return () => {
+        window.removeEventListener('resize', handleResize)
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId)
+        }
+      }
     }
   }, [variant, intensity])
 
@@ -115,7 +122,7 @@ export default function AnimatedBackground({
             }}
           >
             {Array.from({ length: 20 }, () =>
-              String.fromCharCode(0x30A0 + Math.random() * 96)
+              String.fromCharCode(0x30a0 + Math.random() * 96)
             ).join('')}
           </motion.div>
         ))}
@@ -131,7 +138,7 @@ export default function AnimatedBackground({
           style={{
             backgroundImage: `
               linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, a-transparent 1px)
+              linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px)
             `,
             backgroundSize: '50px 50px',
           }}

@@ -12,11 +12,11 @@ type UseRealtimeProps = {
 export const useRealtime = ({ channelName, table, filter, callback }: UseRealtimeProps) => {
   // Use a ref to hold the latest callback without triggering re-subscriptions
   const callbackRef = useRef(callback)
-  
+
   useEffect(() => {
     callbackRef.current = callback
   }, [callback])
-  
+
   useEffect(() => {
     if (!isSupabaseConfigured || !channelName) return
 
@@ -31,7 +31,7 @@ export const useRealtime = ({ channelName, table, filter, callback }: UseRealtim
           table,
           filter,
         },
-        (payload) => callbackRef.current(payload)
+        payload => callbackRef.current(payload)
       )
       .subscribe()
 

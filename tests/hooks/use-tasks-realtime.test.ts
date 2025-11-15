@@ -23,7 +23,7 @@ jest.mock('@/lib/supabase/client', () => {
         })),
       })),
     },
-    __mock: { subscribeMock, removeChannelMock, channelOnMock }
+    __mock: { subscribeMock, removeChannelMock, channelOnMock },
   }
 })
 
@@ -36,19 +36,25 @@ describe('useTasks realtime merge', () => {
   })
 
   it('merges INSERT/UPDATE/DELETE events for same session', () => {
-  const { result, unmount } = renderHook(() => useTasks(SESSION_ID))
+    const { result, unmount } = renderHook(() => useTasks(SESSION_ID))
 
     // Start with empty tasks to make assertions simpler
     act(() => {
       // Simulate INSERT for this session
-      changeHandler?.({ eventType: 'INSERT', new: { id: 't1', session_id: SESSION_ID, text: 'A', is_complete: false } })
+      changeHandler?.({
+        eventType: 'INSERT',
+        new: { id: 't1', session_id: SESSION_ID, text: 'A', is_complete: false },
+      })
       // Should add task
     })
     expect(result.current.tasks.find(t => t.id === 't1')?.text).toBe('A')
 
     act(() => {
       // UPDATE same task
-      changeHandler?.({ eventType: 'UPDATE', new: { id: 't1', session_id: SESSION_ID, text: 'A2', is_complete: true } })
+      changeHandler?.({
+        eventType: 'UPDATE',
+        new: { id: 't1', session_id: SESSION_ID, text: 'A2', is_complete: true },
+      })
     })
     expect(result.current.tasks.find(t => t.id === 't1')?.text).toBe('A2')
     expect(result.current.tasks.find(t => t.id === 't1')?.is_complete).toBe(true)
@@ -59,9 +65,9 @@ describe('useTasks realtime merge', () => {
     })
     expect(result.current.tasks.find(t => t.id === 't1')).toBeUndefined()
 
-  unmount()
-  const { __mock } = jest.requireMock('@/lib/supabase/client') as any
-  expect(__mock.removeChannelMock).toHaveBeenCalled()
+    unmount()
+    const { __mock } = jest.requireMock('@/lib/supabase/client') as any
+    expect(__mock.removeChannelMock).toHaveBeenCalled()
   })
 
   it('ignores events from different sessions', () => {

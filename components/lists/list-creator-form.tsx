@@ -14,7 +14,12 @@ interface ListCreatorFormProps {
   onListCreated?: () => void
 }
 
-export default function ListCreatorForm({ sessionId, userId, userName, onListCreated }: ListCreatorFormProps) {
+export default function ListCreatorForm({
+  sessionId,
+  userId,
+  userName,
+  onListCreated,
+}: ListCreatorFormProps) {
   const [title, setTitle] = useState('')
   const [listType, setListType] = useState<'bullet' | 'numbered'>('bullet')
   const [isCreating, setIsCreating] = useState(false)
@@ -39,7 +44,7 @@ export default function ListCreatorForm({ sessionId, userId, userName, onListCre
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
       <h2 className="text-xl font-bold mb-4">Create New Collaborative List</h2>
-      
+
       <div className="space-y-4">
         <div>
           <Label htmlFor="list-title">List Title</Label>
@@ -48,8 +53,8 @@ export default function ListCreatorForm({ sessionId, userId, userName, onListCre
             type="text"
             placeholder="e.g., Steps to Complete Project, Event Timeline..."
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onKeyDown={(e) => {
+            onChange={e => setTitle(e.target.value)}
+            onKeyDown={e => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault()
                 handleCreateList()

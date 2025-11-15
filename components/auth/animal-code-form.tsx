@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,20 +11,58 @@ import { toast } from '@/lib/toast'
 
 const ANIMALS = [
   // Classic
-  'Cat', 'Dog', 'Fish', 'Bird', 'Tiger', 'Dolphin', 'Lion', 'Eagle',
-  'Bear', 'Wolf', 'Fox', 'Owl', 'Shark', 'Whale', 'Elephant', 'Monkey',
+  'Cat',
+  'Dog',
+  'Fish',
+  'Bird',
+  'Tiger',
+  'Dolphin',
+  'Lion',
+  'Eagle',
+  'Bear',
+  'Wolf',
+  'Fox',
+  'Owl',
+  'Shark',
+  'Whale',
+  'Elephant',
+  'Monkey',
   // Quirky & Fun
-  'Platypus', 'Axolotl', 'Narwhal', 'Capybara', 'Pangolin', 'Quokka', 
-  'Otter', 'Penguin', 'Red Panda', 'Sloth', 'Koala', 'Octopus',
+  'Platypus',
+  'Axolotl',
+  'Narwhal',
+  'Capybara',
+  'Pangolin',
+  'Quokka',
+  'Otter',
+  'Penguin',
+  'Red Panda',
+  'Sloth',
+  'Koala',
+  'Octopus',
   // Mythical
-  'Dragon', 'Phoenix', 'Unicorn', 'Kraken',
+  'Dragon',
+  'Phoenix',
+  'Unicorn',
+  'Kraken',
   // Exotic
-  'Lemur', 'Toucan', 'Chameleon', 'Flamingo', 'Peacock', 'Mantis',
+  'Lemur',
+  'Toucan',
+  'Chameleon',
+  'Flamingo',
+  'Peacock',
+  'Mantis',
   // Extra Fun
-  'Raccoon', 'Hedgehog', 'Puffin', 'Manatee', 'Jellyfish', 'Starfish'
+  'Raccoon',
+  'Hedgehog',
+  'Puffin',
+  'Manatee',
+  'Jellyfish',
+  'Starfish',
 ]
 
 export default function AnimalCodeForm() {
+  const router = useRouter()
   const [animal1, setAnimal1] = useState('')
   const [animal2, setAnimal2] = useState('')
   const [firstName, setFirstName] = useState('')
@@ -34,7 +73,7 @@ export default function AnimalCodeForm() {
     const shuffled = [...ANIMALS].sort(() => {
       const randomBuffer = new Uint32Array(1)
       crypto.getRandomValues(randomBuffer)
-      return (randomBuffer[0] / 0xFFFFFFFF) - 0.5
+      return randomBuffer[0] / 0xffffffff - 0.5
     })
     setAnimal1(shuffled[0])
     setAnimal2(shuffled[1])
@@ -47,39 +86,53 @@ export default function AnimalCodeForm() {
       toast.error('Please fill in all fields')
       return
     }
-    
+
     if (animal1 === animal2) {
       toast.error('Please choose two different animals')
       return
     }
-    
+
     const name = firstName.trim()
     if (name.length < 2) {
       toast.error('Name must be at least 2 characters')
       return
     }
-    
-    if (name.length > 20) {
-      toast.error('Name must be less than 20 characters')
+
+    if (name.length > 50) {
+      toast.error('Name must be less than 50 characters')
+      return
+    }
+
+    // Validate name contains only safe characters (letters, numbers, spaces, hyphens, apostrophes)
+    // This prevents XSS and ensures clean data storage
+    const namePattern = /^[a-zA-Z0-9\s\-']+$/
+    if (!namePattern.test(name)) {
+      toast.error("Name can only contain letters, numbers, spaces, hyphens, and apostrophes")
       return
     }
 
     // Set loading state
     setIsJoining(true)
-    
+
     const sessionId = `${animal1.toLowerCase()}-${animal2.toLowerCase()}`
-    
-    // Store session info in localStorage
-    localStorage.setItem('sessionData', JSON.stringify({
+
+    // Prepare session data
+    // Note: React automatically escapes text content, preventing XSS
+    // Input validation above ensures only safe characters are stored
+    const sessionData = {
       sessionId,
       userName: name,
-      joinedAt: new Date().toISOString()
-    }))
-    
-    toast.success(`Welcome ${name}! 🐾`)
-    
+      joinedAt: new Date().toISOString(),
+    }
+
+    // Store session info in localStorage
+    localStorage.setItem('sessionData', JSON.stringify(sessionData))
+
+    toast.success(`Welcome ${sessionData.userName}! 🐾`)
+
     // Navigate to session with URL parameter for sharing/bookmarking
-    window.location.href = `/?session=${sessionId}`
+    // Using router.push with encodeURIComponent to prevent XSS
+    router.push(`/?session=${encodeURIComponent(sessionId)}`)
   }
 
   return (
@@ -89,9 +142,7 @@ export default function AnimalCodeForm() {
       className="space-y-6 p-6 bg-gradient-to-r from-purple-900/20 to-pink-900/20 rounded-lg border border-purple-500/20 max-w-md mx-auto"
     >
       <div className="text-center">
-        <h3 className="text-purple-400 font-bold text-xl text-glow-purple">
-          🐾 Join Session
-        </h3>
+        <h3 className="text-purple-400 font-bold text-xl text-glow-purple">🐾 Join Session</h3>
         <p className="text-sm text-gray-300 mt-2">
           Pick two animals and enter your name to join or create a session
         </p>
@@ -118,12 +169,14 @@ export default function AnimalCodeForm() {
           <select
             id="animal1"
             value={animal1}
-            onChange={(e) => setAnimal1(e.target.value)}
+            onChange={e => setAnimal1(e.target.value)}
             className="w-full mt-1 bg-gray-700/50 border-2 border-purple-500/50 text-white rounded-md px-3 py-2 focus:border-pink-500 focus:ring-2 focus:ring-pink-500/50 transition-all duration-300"
           >
             <option value="">Choose first animal...</option>
             {ANIMALS.map(animal => (
-              <option key={animal} value={animal}>{animal}</option>
+              <option key={animal} value={animal}>
+                {animal}
+              </option>
             ))}
           </select>
         </div>
@@ -135,12 +188,14 @@ export default function AnimalCodeForm() {
           <select
             id="animal2"
             value={animal2}
-            onChange={(e) => setAnimal2(e.target.value)}
+            onChange={e => setAnimal2(e.target.value)}
             className="w-full mt-1 bg-gray-700/50 border-2 border-pink-500/50 text-white rounded-md px-3 py-2 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/50 transition-all duration-300"
           >
             <option value="">Choose second animal...</option>
             {ANIMALS.filter(animal => animal !== animal1).map(animal => (
-              <option key={animal} value={animal}>{animal}</option>
+              <option key={animal} value={animal}>
+                {animal}
+              </option>
             ))}
           </select>
         </div>
@@ -153,16 +208,13 @@ export default function AnimalCodeForm() {
             id="firstName"
             placeholder="Sarah"
             value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
+            onChange={e => setFirstName(e.target.value)}
             className="bg-gray-700/50 border-2 border-cyan-500/50 text-white placeholder-gray-400 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/50 transition-all duration-300"
           />
         </div>
       </div>
 
-      <motion.div
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-      >
+      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
         <Button
           onClick={handleJoinSession}
           disabled={!animal1.trim() || !animal2.trim() || !firstName.trim() || isJoining}
@@ -188,10 +240,7 @@ export default function AnimalCodeForm() {
         </div>
       </div>
 
-      <motion.div
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-      >
+      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
         <Button
           onClick={handleQuickJoin}
           disabled={isJoining}
@@ -203,7 +252,10 @@ export default function AnimalCodeForm() {
       </motion.div>
 
       <p className="text-xs text-gray-400 text-center">
-        Session code: {animal1 && animal2 ? `${animal1.toLowerCase()}-${animal2.toLowerCase()}` : 'Select animals to see code'}
+        Session code:{' '}
+        {animal1 && animal2
+          ? `${animal1.toLowerCase()}-${animal2.toLowerCase()}`
+          : 'Select animals to see code'}
       </p>
     </motion.div>
   )

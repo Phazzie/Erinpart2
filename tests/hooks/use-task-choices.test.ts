@@ -15,26 +15,33 @@ jest.mock('@/lib/supabase/client', () => {
         if (table !== 'task_choices') throw new Error('unexpected table')
         return {
           select: jest.fn(() => ({
-            eq: jest.fn((_col: string, _val: string) => Promise.resolve({ data: choices, error: null }))
+            eq: jest.fn((_col: string, _val: string) =>
+              Promise.resolve({ data: choices, error: null })
+            ),
           })),
           insert: jest.fn((payload: any) => ({
-            select: () => ({ single: async () => {
-              const row = { id: `id-${Date.now()}`, ...payload, created_at: '', updated_at: '' }
-              choices.push(row)
-              return { data: row, error: null }
-            }})
+            select: () => ({
+              single: async () => {
+                const row = { id: `id-${Date.now()}`, ...payload, created_at: '', updated_at: '' }
+                choices.push(row)
+                return { data: row, error: null }
+              },
+            }),
           })),
           update: jest.fn((updates: any) => ({
             eq: jest.fn((_col: string, val: string) => {
-              choices = choices.map(c => (c as any).id === val ? { ...c, ...updates } : c)
+              choices = choices.map(c => ((c as any).id === val ? { ...c, ...updates } : c))
               return Promise.resolve({ data: null, error: null })
-            })
+            }),
           })),
         }
       }),
-      channel: jest.fn(() => ({ on: jest.fn(() => ({ subscribe: jest.fn() })), subscribe: jest.fn() })),
-      removeChannel: jest.fn()
-    }
+      channel: jest.fn(() => ({
+        on: jest.fn(() => ({ subscribe: jest.fn() })),
+        subscribe: jest.fn(),
+      })),
+      removeChannel: jest.fn(),
+    },
   }
 })
 

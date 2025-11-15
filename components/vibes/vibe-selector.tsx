@@ -25,36 +25,54 @@ interface VibeSelectorProps {
 
 const getVibeIcon = (category: string) => {
   switch (category) {
-    case 'chaos': return Zap
-    case 'romantic': return Heart
-    case 'dark': return Skull
-    default: return Sparkles
+    case 'chaos':
+      return Zap
+    case 'romantic':
+      return Heart
+    case 'dark':
+      return Skull
+    default:
+      return Sparkles
   }
 }
 
 const getVibeColor = (category: string) => {
   switch (category) {
-    case 'chaos': return 'from-red-500 to-orange-500'
-    case 'romantic': return 'from-pink-500 to-purple-500'
-    case 'dark': return 'from-purple-500 to-black'
-    case 'academic': return 'from-blue-500 to-cyan-500'
-    case 'corporate': return 'from-gray-500 to-slate-500'
-    default: return 'from-cyan-500 to-pink-500'
+    case 'chaos':
+      return 'from-red-500 to-orange-500'
+    case 'romantic':
+      return 'from-pink-500 to-purple-500'
+    case 'dark':
+      return 'from-purple-500 to-black'
+    case 'academic':
+      return 'from-blue-500 to-cyan-500'
+    case 'corporate':
+      return 'from-gray-500 to-slate-500'
+    default:
+      return 'from-cyan-500 to-pink-500'
   }
 }
 
-export default function VibeSelector({ vibes, currentVibe, onVibeChange, isOwner }: VibeSelectorProps) {
+export default function VibeSelector({
+  vibes,
+  currentVibe,
+  onVibeChange,
+  isOwner,
+}: VibeSelectorProps) {
   const [hoveredVibe, setHoveredVibe] = useState<string | null>(null)
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
 
   // Group vibes by category
-  const vibesByCategory = vibes.reduce((acc, vibe) => {
-    if (!acc[vibe.category]) {
-      acc[vibe.category] = []
-    }
-    acc[vibe.category].push(vibe)
-    return acc
-  }, {} as Record<string, Vibe[]>)
+  const vibesByCategory = vibes.reduce(
+    (acc, vibe) => {
+      if (!acc[vibe.category]) {
+        acc[vibe.category] = []
+      }
+      acc[vibe.category].push(vibe)
+      return acc
+    },
+    {} as Record<string, Vibe[]>
+  )
 
   const handleVibeChange = (vibeName: string) => {
     onVibeChange(vibeName)
@@ -80,7 +98,8 @@ export default function VibeSelector({ vibes, currentVibe, onVibeChange, isOwner
         <div className="space-y-4">
           {Object.entries(vibesByCategory).map(([category, categoryVibes]) => {
             const Icon = getVibeIcon(category)
-            const isExpanded = expandedCategory === category || categoryVibes.some(v => v.name === currentVibe)
+            const isExpanded =
+              expandedCategory === category || categoryVibes.some(v => v.name === currentVibe)
 
             return (
               <motion.div
@@ -155,11 +174,12 @@ export default function VibeSelector({ vibes, currentVibe, onVibeChange, isOwner
                               )}
 
                               <span className="relative z-10">
-                                {vibe.display_name || vibe.name.charAt(0).toUpperCase() +
-                                  vibe.name
-                                    .slice(1)
-                                    .replace(/([A-Z])|_/g, ' $1')
-                                    .trim()}
+                                {vibe.display_name ||
+                                  vibe.name.charAt(0).toUpperCase() +
+                                    vibe.name
+                                      .slice(1)
+                                      .replace(/([A-Z])|_/g, ' $1')
+                                      .trim()}
                               </span>
 
                               {/* Particle Effect for Active Vibe */}
@@ -173,13 +193,13 @@ export default function VibeSelector({ vibes, currentVibe, onVibeChange, isOwner
                                         x: '10%',
                                         y: '50%',
                                         scale: 0,
-                                        opacity: 1
+                                        opacity: 1,
                                       }}
                                       animate={{
                                         x: '90%',
                                         y: `${50 + (Math.random() - 0.5) * 40}%`,
                                         scale: [0, 1, 0],
-                                        opacity: [1, 1, 0]
+                                        opacity: [1, 1, 0],
                                       }}
                                       transition={{
                                         duration: 1.5,
@@ -248,7 +268,7 @@ export default function VibeSelector({ vibes, currentVibe, onVibeChange, isOwner
               <div className="text-sm text-cyan-400 font-semibold mb-1">Preview:</div>
               <div className="text-xs text-gray-300">
                 {vibes.find(v => v.name === hoveredVibe)?.description ||
-                 `${vibes.find(v => v.name === hoveredVibe)?.tasks.length || 0} tasks in this vibe`}
+                  `${vibes.find(v => v.name === hoveredVibe)?.tasks.length || 0} tasks in this vibe`}
               </div>
             </motion.div>
           )}

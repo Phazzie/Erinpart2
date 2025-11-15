@@ -7,8 +7,32 @@ import { act } from 'react'
 jest.mock('@/hooks/use-realtime')
 
 const initialRows = [
-  { id: 'a', session_id: 'session-1', text: 'Task A', is_complete: false, day: 'today', order_index: 0, choice: '', comments: '', created_by: 'user-1', is_secret: false, votes: [] },
-  { id: 'b', session_id: 'session-1', text: 'Task B', is_complete: false, day: 'today', order_index: 1, choice: '', comments: '', created_by: 'user-1', is_secret: false, votes: [] },
+  {
+    id: 'a',
+    session_id: 'session-1',
+    text: 'Task A',
+    is_complete: false,
+    day: 'today',
+    order_index: 0,
+    choice: '',
+    comments: '',
+    created_by: 'user-1',
+    is_secret: false,
+    votes: [],
+  },
+  {
+    id: 'b',
+    session_id: 'session-1',
+    text: 'Task B',
+    is_complete: false,
+    day: 'today',
+    order_index: 1,
+    choice: '',
+    comments: '',
+    created_by: 'user-1',
+    is_secret: false,
+    votes: [],
+  },
 ]
 
 const SESSION_ID = 'session-1'
@@ -33,16 +57,16 @@ describe('useTasks', () => {
 
   it('should maintain stable callback references after adding tasks', async () => {
     // Mock Supabase to return initial tasks and handle inserts
-    const fromSpy = jest.spyOn(supabase, 'from').mockImplementation((table) => {
+    const fromSpy = jest.spyOn(supabase, 'from').mockImplementation(table => {
       if (table === 'tasks') {
         return {
           select: jest.fn().mockReturnThis(),
           order: jest.fn().mockReturnThis(),
           eq: jest.fn().mockResolvedValue({ data: [], error: null }),
           insert: jest.fn().mockReturnThis(),
-          single: jest.fn().mockResolvedValue({ 
-            data: { id: 'new-task', text: 'New Task', session_id: SESSION_ID, order_index: 0 }, 
-            error: null 
+          single: jest.fn().mockResolvedValue({
+            data: { id: 'new-task', text: 'New Task', session_id: SESSION_ID, order_index: 0 },
+            error: null,
           }),
         } as any
       }

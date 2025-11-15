@@ -18,11 +18,10 @@ export default function Error({
   return (
     <div className="flex flex-col items-center justify-center min-h-screen text-center card-neon p-8 m-8">
       <h2 className="text-3xl font-bold text-red-500 mb-4 text-glitch">Something went wrong!</h2>
-      <p className="text-lg text-red-300 mb-6">{error.message || "A glitch in the matrix occurred."}</p>
-      <button
-        onClick={() => reset()}
-        className="btn-neon"
-      >
+      <p className="text-lg text-red-300 mb-6">
+        {error.message || 'A glitch in the matrix occurred.'}
+      </p>
+      <button onClick={() => reset()} className="btn-neon">
         Try to reload the page
       </button>
     </div>

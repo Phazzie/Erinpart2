@@ -46,9 +46,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         <div className="min-h-screen flex items-center justify-center p-4">
           <div className="max-w-md w-full bg-gradient-to-br from-red-900/20 to-pink-900/20 rounded-lg border border-red-500/30 p-8 text-center">
             <AlertTriangle className="h-16 w-16 text-red-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-red-400 mb-2">
-              Oops! Something went wrong
-            </h2>
+            <h2 className="text-2xl font-bold text-red-400 mb-2">Oops! Something went wrong</h2>
             <p className="text-gray-400 mb-6">
               The cosmic vibes got a little too chaotic. Let&apos;s try again.
             </p>
@@ -64,10 +62,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 </pre>
               </details>
             )}
-            <Button
-              onClick={this.handleReset}
-              className="bg-red-500 hover:bg-red-600 text-white"
-            >
+            <Button onClick={this.handleReset} className="bg-red-500 hover:bg-red-600 text-white">
               <RefreshCw className="h-4 w-4 mr-2" />
               Reset App
             </Button>

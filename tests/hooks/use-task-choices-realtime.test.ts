@@ -20,12 +20,12 @@ jest.mock('@/lib/supabase/client', () => {
         if (table !== 'task_choices') throw new Error('unexpected table')
         return {
           select: jest.fn(() => ({
-            eq: jest.fn(() => Promise.resolve({ data: [], error: null }))
+            eq: jest.fn(() => Promise.resolve({ data: [], error: null })),
           })),
         }
-      })
+      }),
     },
-    __mock: { subscribeMock, removeChannelMock, channelOnMock }
+    __mock: { subscribeMock, removeChannelMock, channelOnMock },
   }
 })
 
@@ -43,19 +43,42 @@ describe('useTaskChoices realtime merge', () => {
 
     // INSERT
     act(() => {
-      changeHandler?.({ eventType: 'INSERT', new: { id: 'c1', task_id: 't1', user_id: USER_ID, choice: 'yes', created_at: '', updated_at: '' } })
+      changeHandler?.({
+        eventType: 'INSERT',
+        new: {
+          id: 'c1',
+          task_id: 't1',
+          user_id: USER_ID,
+          choice: 'yes',
+          created_at: '',
+          updated_at: '',
+        },
+      })
     })
     expect(result.current.myChoiceByTask.get('t1')?.choice).toBe('yes')
 
     // UPDATE
     act(() => {
-      changeHandler?.({ eventType: 'UPDATE', new: { id: 'c1', task_id: 't1', user_id: USER_ID, choice: 'no', created_at: '', updated_at: '' } })
+      changeHandler?.({
+        eventType: 'UPDATE',
+        new: {
+          id: 'c1',
+          task_id: 't1',
+          user_id: USER_ID,
+          choice: 'no',
+          created_at: '',
+          updated_at: '',
+        },
+      })
     })
     expect(result.current.myChoiceByTask.get('t1')?.choice).toBe('no')
 
     // DELETE
     act(() => {
-      changeHandler?.({ eventType: 'DELETE', old: { id: 'c1', task_id: 't1', user_id: USER_ID, choice: 'no' } })
+      changeHandler?.({
+        eventType: 'DELETE',
+        old: { id: 'c1', task_id: 't1', user_id: USER_ID, choice: 'no' },
+      })
     })
     expect(result.current.myChoiceByTask.get('t1')).toBeUndefined()
 

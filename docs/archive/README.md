@@ -13,17 +13,17 @@ This folder contains documentation from the initial development phase (August 20
 
 ## What's In Here
 
-| File | Status | Reason for Archival |
-|------|--------|---------------------|
-| `architecture.md` | ❌ OUTDATED | Describes mock fallback system that no longer exists |
-| `database-options.md` | ❌ OUTDATED | Decision-making doc; decision made (Supabase) |
-| `db-seed.md` / `db-seed.sql` | ❌ OUTDATED | Schema has changed significantly |
-| `deploy-vercel.md` | ⚠️ PARTIALLY OUTDATED | OAuth references removed; basic steps still valid |
-| `documentation-suggestions.md` | ❌ OUTDATED | References deleted OAuth components |
-| `share-reply.md` | ❌ OUTDATED | URL-based sharing was never implemented |
-| `supabase-paused-guide.md` | ❌ OUTDATED | One-time troubleshooting guide |
-| `supabase-schema.md` | ⚠️ PARTIALLY OUTDATED | Schema evolved with animal codes |
-| `supabase-wiring.md` | ❌ OUTDATED | Planning RFC; implementation complete |
+| File                           | Status                | Reason for Archival                                  |
+| ------------------------------ | --------------------- | ---------------------------------------------------- |
+| `architecture.md`              | ❌ OUTDATED           | Describes mock fallback system that no longer exists |
+| `database-options.md`          | ❌ OUTDATED           | Decision-making doc; decision made (Supabase)        |
+| `db-seed.md` / `db-seed.sql`   | ❌ OUTDATED           | Schema has changed significantly                     |
+| `deploy-vercel.md`             | ⚠️ PARTIALLY OUTDATED | OAuth references removed; basic steps still valid    |
+| `documentation-suggestions.md` | ❌ OUTDATED           | References deleted OAuth components                  |
+| `share-reply.md`               | ❌ OUTDATED           | URL-based sharing was never implemented              |
+| `supabase-paused-guide.md`     | ❌ OUTDATED           | One-time troubleshooting guide                       |
+| `supabase-schema.md`           | ⚠️ PARTIALLY OUTDATED | Schema evolved with animal codes                     |
+| `supabase-wiring.md`           | ❌ OUTDATED           | Planning RFC; implementation complete                |
 
 ## Current Documentation
 
@@ -42,6 +42,7 @@ See the parent `docs/` folder for current documentation:
 - ❌ Planning and decision-making docs (decisions made)
 
 **Instead:**
+
 - Check the actual codebase for current implementation
 - Review `CHANGELOG.md` for recent changes
 - Use current docs in parent `docs/` folder
@@ -49,6 +50,7 @@ See the parent `docs/` folder for current documentation:
 ## Deletion Policy
 
 These files are kept temporarily for:
+
 - Historical reference during support/debugging
 - Understanding architectural decisions
 - Learning from the evolution of the project

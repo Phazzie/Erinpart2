@@ -27,8 +27,8 @@ import { Task } from '@/lib/types'
 interface TaskListProps {
   tasks: Task[]
   onUpdateTask: (taskId: string, updates: Partial<Task>) => void
-  onSetChoice?: (taskId: string, choice: 'yes'|'no'|'maybe') => void
-  myChoiceByTask?: Map<string, { choice: 'yes'|'no'|'maybe' } | undefined>
+  onSetChoice?: (taskId: string, choice: 'yes' | 'no' | 'maybe') => void
+  myChoiceByTask?: Map<string, { choice: 'yes' | 'no' | 'maybe' } | undefined>
   onReorderTasks: (tasks: Task[]) => void
   selectedTask: Task | null
   onSelectTask: (task: Task) => void
@@ -65,12 +65,12 @@ export default function TaskList({
     const { active, over } = event
 
     if (over && active.id !== over.id) {
-      const oldIndex = tasks.findIndex((task) => task.id === active.id)
-      const newIndex = tasks.findIndex((task) => task.id === over.id)
+      const oldIndex = tasks.findIndex(task => task.id === active.id)
+      const newIndex = tasks.findIndex(task => task.id === over.id)
 
       const reorderedTasks = arrayMove(tasks, oldIndex, newIndex).map((task, index) => ({
         ...task,
-        order_index: index
+        order_index: index,
       }))
 
       onReorderTasks(reorderedTasks)
@@ -99,34 +99,36 @@ export default function TaskList({
           {tasks.length === 0 ? (
             <div className="p-12 text-center animate-fade-in-up">
               <div className="animate-float text-6xl mb-4">🎭</div>
-              <p className="text-lg text-gray-400 font-medium">No tasks yet. Add your first plot point!</p>
+              <p className="text-lg text-gray-400 font-medium">
+                No tasks yet. Add your first plot point!
+              </p>
               <p className="text-sm text-gray-500 mt-2">Your chaotic adventure awaits...</p>
             </div>
           ) : (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-              {tasks.map((task) => (
-                <SortableTaskItem
-                  key={task.id}
-                  task={task}
-                  onUpdate={onUpdateTask}
-                  onSetChoice={onSetChoice}
-                  myChoice={myChoiceByTask?.get(task.id)?.choice || ''}
-                  onSelect={onSelectTask}
-                  isSelected={selectedTask?.id === task.id}
-                  onVote={onVote}
-                  currentUserId={currentUserId}
-                />
-              ))}
-            </SortableContext>
-          </DndContext>
-        )}
-      </CardContent>
-    </Card>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+                {tasks.map(task => (
+                  <SortableTaskItem
+                    key={task.id}
+                    task={task}
+                    onUpdate={onUpdateTask}
+                    onSetChoice={onSetChoice}
+                    myChoice={myChoiceByTask?.get(task.id)?.choice || ''}
+                    onSelect={onSelectTask}
+                    isSelected={selectedTask?.id === task.id}
+                    onVote={onVote}
+                    currentUserId={currentUserId}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
+          )}
+        </CardContent>
+      </Card>
     </motion.div>
   )
 }

@@ -7,7 +7,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 -- SESSIONS table (replaces localStorage)
 CREATE TABLE IF NOT EXISTS public.sessions (
   id text PRIMARY KEY,                    -- "cat-dog" style IDs
-  created_by uuid,                        -- who created it (nullable for anonymous)
+  created_by text,                        -- who created it (nullable for anonymous) - Clerk user ID
   participant_limit integer DEFAULT 4,   -- max people allowed
   created_at timestamptz DEFAULT now(),
   expires_at timestamptz DEFAULT (now() + interval '7 days'), -- auto-expire old sessions
@@ -21,7 +21,7 @@ CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON public.sessions(expires_at
 -- SESSION_PARTICIPANTS (who's in each session)
 CREATE TABLE IF NOT EXISTS public.session_participants (
   session_id text NOT NULL REFERENCES public.sessions(id) ON DELETE CASCADE,
-  user_id uuid NOT NULL,
+  user_id text NOT NULL,  -- Clerk user ID (e.g., "user_2xxx...")
   user_name text NOT NULL,
   joined_at timestamptz DEFAULT now(),
   last_seen timestamptz DEFAULT now(),
@@ -48,9 +48,9 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "sessions_update_creator" ON public.sessions 
-    FOR UPDATE 
-    USING (created_by = auth.uid() OR created_by IS NULL); -- Creator or anonymous can update
+  CREATE POLICY "sessions_update_creator" ON public.sessions
+    FOR UPDATE
+    USING (true); -- Allow updates (Clerk auth replaces Supabase auth.uid())
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
@@ -60,21 +60,21 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "session_participants_insert_own" ON public.session_participants 
-    FOR INSERT 
-    WITH CHECK (user_id = auth.uid() OR auth.uid() IS NULL); -- Users can join sessions
+  CREATE POLICY "session_participants_insert_own" ON public.session_participants
+    FOR INSERT
+    WITH CHECK (true); -- Allow inserts (Clerk auth replaces Supabase auth.uid())
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "session_participants_update_own" ON public.session_participants 
-    FOR UPDATE 
-    USING (user_id = auth.uid() OR auth.uid() IS NULL); -- Users can update their own participation
+  CREATE POLICY "session_participants_update_own" ON public.session_participants
+    FOR UPDATE
+    USING (true); -- Allow updates (Clerk auth replaces Supabase auth.uid())
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "session_participants_delete_own" ON public.session_participants 
-    FOR DELETE 
-    USING (user_id = auth.uid() OR auth.uid() IS NULL); -- Users can leave sessions
+  CREATE POLICY "session_participants_delete_own" ON public.session_participants
+    FOR DELETE
+    USING (true); -- Allow deletes (Clerk auth replaces Supabase auth.uid())
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Helper function to check if session is full
@@ -107,7 +107,7 @@ $$;
 -- Helper function to join a session (with limit checking)
 CREATE OR REPLACE FUNCTION join_session(
   session_id_param text,
-  user_id_param uuid,
+  user_id_param text,  -- Changed to text for Clerk user IDs (e.g., "user_2xxx...")
   user_name_param text
 )
 RETURNS jsonb

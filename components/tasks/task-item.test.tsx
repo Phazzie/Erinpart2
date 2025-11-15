@@ -82,22 +82,22 @@ describe('SortableTaskItem', () => {
     })
 
     it('should call onUpdate when a choice radio button is clicked', async () => {
-    render(
-          <SortableTaskItem
-            task={normalTask}
-            onUpdate={mockOnUpdate}
-      onSetChoice={mockOnSetChoice}
-      myChoice=""
-            onSelect={mockOnSelect}
-            onVote={mockOnVote}
-            isSelected={false}
-            currentUserId="user-1"
-          />
-        )
-        const yesRadio = screen.getByLabelText('yes')
-        await userEvent.click(yesRadio)
-    expect(mockOnSetChoice).toHaveBeenCalledWith(normalTask.id, 'yes')
-      })
+      render(
+        <SortableTaskItem
+          task={normalTask}
+          onUpdate={mockOnUpdate}
+          onSetChoice={mockOnSetChoice}
+          myChoice=""
+          onSelect={mockOnSelect}
+          onVote={mockOnVote}
+          isSelected={false}
+          currentUserId="user-1"
+        />
+      )
+      const yesRadio = screen.getByLabelText('yes')
+      await userEvent.click(yesRadio)
+      expect(mockOnSetChoice).toHaveBeenCalledWith(normalTask.id, 'yes')
+    })
   })
 
   describe('Secret Task View', () => {
@@ -119,37 +119,37 @@ describe('SortableTaskItem', () => {
     })
 
     it('should call onVote when the vote button is clicked', async () => {
-        render(
-          <SortableTaskItem
-            task={secretTask}
-            onUpdate={mockOnUpdate}
-            onSelect={mockOnSelect}
-            onVote={mockOnVote}
-            isSelected={false}
-            currentUserId="user-1"
-          />
-        )
-        const voteButton = screen.getByRole('button', { name: /Vote to Reveal/i })
-        await userEvent.click(voteButton)
-        expect(mockOnVote).toHaveBeenCalledWith(secretTask.id)
-      })
+      render(
+        <SortableTaskItem
+          task={secretTask}
+          onUpdate={mockOnUpdate}
+          onSelect={mockOnSelect}
+          onVote={mockOnVote}
+          isSelected={false}
+          currentUserId="user-1"
+        />
+      )
+      const voteButton = screen.getByRole('button', { name: /Vote to Reveal/i })
+      await userEvent.click(voteButton)
+      expect(mockOnVote).toHaveBeenCalledWith(secretTask.id)
+    })
 
-      it('should show a disabled "Voted" button if the user has already voted', () => {
-        render(
-          <SortableTaskItem
-            task={{ ...secretTask, votes: ['user-1'] }} // Current user has voted
-            onUpdate={mockOnUpdate}
-            onSetChoice={mockOnSetChoice}
-            myChoice=""
-            onSelect={mockOnSelect}
-            onVote={mockOnVote}
-            isSelected={false}
-            currentUserId="user-1"
-          />
-        )
-        const voteButton = screen.getByRole('button', { name: /Voted/i })
-        expect(voteButton).toBeInTheDocument()
-        expect(voteButton).toBeDisabled()
-      })
+    it('should show a disabled "Voted" button if the user has already voted', () => {
+      render(
+        <SortableTaskItem
+          task={{ ...secretTask, votes: ['user-1'] }} // Current user has voted
+          onUpdate={mockOnUpdate}
+          onSetChoice={mockOnSetChoice}
+          myChoice=""
+          onSelect={mockOnSelect}
+          onVote={mockOnVote}
+          isSelected={false}
+          currentUserId="user-1"
+        />
+      )
+      const voteButton = screen.getByRole('button', { name: /Voted/i })
+      expect(voteButton).toBeInTheDocument()
+      expect(voteButton).toBeDisabled()
+    })
   })
 })
