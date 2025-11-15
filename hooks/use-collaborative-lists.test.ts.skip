@@ -413,11 +413,16 @@ describe('useListItemVerifications', () => {
       if (table === 'list_item_verifications') {
         return {
           select: jest.fn().mockReturnThis(),
+          order: jest.fn().mockReturnThis(),
           eq: jest.fn().mockResolvedValue({ data: [], error: null }),
           insert: jest.fn().mockResolvedValue({ error: null }),
         } as any
       }
-      return {} as any
+      return {
+        select: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockResolvedValue({ data: [], error: null }),
+      } as any
     })
 
     const { result } = renderHook(() => useListItemVerifications('item-1', 'user-4', 'Dave'))
@@ -448,6 +453,7 @@ describe('useListItemVerifications', () => {
 
     jest.spyOn(supabase, 'from').mockReturnValue({
       select: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
       eq: jest.fn().mockResolvedValue({ data: [mockVerifications[0]], error: null }),
     } as any)
 
@@ -474,6 +480,7 @@ describe('useListItemVerifications', () => {
 
     const fromSpy = jest.spyOn(supabase, 'from').mockReturnValue({
       select: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
       eq: jest.fn().mockResolvedValue({ data: [mockVerifications[0]], error: null }),
     } as any)
 

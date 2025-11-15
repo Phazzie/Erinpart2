@@ -4,11 +4,18 @@ import { supabase } from '@/lib/supabase/client'
 
 describe('useSession', () => {
   let signInAnonymouslySpy: jest.SpyInstance
+  let getSessionSpy: jest.SpyInstance
 
   beforeEach(() => {
     localStorage.clear()
+
     signInAnonymouslySpy = jest.spyOn(supabase.auth, 'signInAnonymously').mockResolvedValue({
       data: { user: { id: 'test-user' }, session: {} as any },
+      error: null,
+    })
+
+    getSessionSpy = jest.spyOn(supabase.auth, 'getSession').mockResolvedValue({
+      data: { session: null },
       error: null,
     })
   })
@@ -17,11 +24,17 @@ describe('useSession', () => {
     signInAnonymouslySpy.mockRestore()
   })
 
-  it('should initialize with loading true and no session data', () => {
+  it('should initialize with loading true and transition to false', async () => {
     const { result } = renderHook(() => useSession())
+    // It should start in a loading state
     expect(result.current.loading).toBe(true)
     expect(result.current.user).toBeNull()
     expect(result.current.sessionId).toBe('')
+
+    // And then transition to not loading
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
   })
 
   it('should load session data from localStorage and sign in anonymously', async () => {
@@ -44,7 +57,10 @@ describe('useSession', () => {
   })
 
   it('should handle storage events', async () => {
-    const { result } = renderHook(() => useSession())
+    const { result, rerender } = renderHook(() => useSession())
+
+    // Wait for initial load to complete
+    await waitFor(() => expect(result.current.loading).toBe(false))
 
     const sessionData = {
       sessionId: 'lion-tiger',
@@ -52,23 +68,20 @@ describe('useSession', () => {
       joinedAt: new Date().toISOString(),
     }
 
-    // Mock window.location.reload
-    const reloadSpy = jest.fn()
-    Object.defineProperty(window, 'location', {
-      writable: true,
-      value: { ...window.location, reload: reloadSpy },
-    })
-
     act(() => {
       localStorage.setItem('sessionData', JSON.stringify(sessionData))
-      window.dispatchEvent(new Event('storage'))
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'sessionData',
+        newValue: JSON.stringify(sessionData),
+      }))
     })
+
+    rerender()
 
     await waitFor(() => {
-      expect(reloadSpy).toHaveBeenCalledTimes(1)
+      expect(result.current.sessionId).toBe('lion-tiger')
+      expect(result.current.user?.name).toBe('New User')
     })
-
-    reloadSpy.mockRestore()
   })
 
   it('should handle errors during session init gracefully', async () => {

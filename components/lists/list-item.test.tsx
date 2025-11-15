@@ -120,8 +120,8 @@ describe('ListItemComponent', () => {
       />
     )
 
-    expect(screen.getByRole('button', { name: /accurate/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /inaccurate/i })).toBeInTheDocument()
+    expect(screen.getByTestId('verify-accurate')).toBeInTheDocument()
+    expect(screen.getByTestId('verify-inaccurate')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /edit/i })).not.toBeInTheDocument()
   })
 
@@ -231,7 +231,7 @@ describe('ListItemComponent', () => {
       />
     )
 
-    await userEvent.click(screen.getByRole('button', { name: /accurate/i }))
+    await userEvent.click(screen.getByTestId('verify-accurate'))
 
     expect(mockSubmitVerification).toHaveBeenCalledWith(true, undefined)
   })
@@ -250,7 +250,7 @@ describe('ListItemComponent', () => {
       />
     )
 
-    await userEvent.click(screen.getByRole('button', { name: /inaccurate/i }))
+    await userEvent.click(screen.getByTestId('verify-inaccurate'))
 
     expect(screen.getByPlaceholderText(/suggest a correction/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /submit correction/i })).toBeInTheDocument()
@@ -270,7 +270,7 @@ describe('ListItemComponent', () => {
       />
     )
 
-    await userEvent.click(screen.getByRole('button', { name: /inaccurate/i }))
+    await userEvent.click(screen.getByTestId('verify-inaccurate'))
     
     const correctionInput = screen.getByPlaceholderText(/suggest a correction/i)
     await userEvent.type(correctionInput, 'Should be Almond Milk')
@@ -332,20 +332,20 @@ describe('ListItemComponent', () => {
     expect(screen.getByText(/50% consensus/i)).toBeInTheDocument()
   })
 
-  it('should highlight accurate button when user verified as accurate', () => {
+  it('should not show verification buttons when user has already verified', () => {
     ;(useListItemVerifications as jest.Mock).mockReturnValue({
       verifications: [mockVerifications[0]],
-      myVerification: mockVerifications[0],
+      myVerification: mockVerifications[0], // User "Bob" has verified
       loading: false,
       submitVerification: mockSubmitVerification,
     })
 
-    render(
+    const { container } = render(
       <ListItemComponent
         item={mockItem}
         index={0}
         listType="bullet"
-        userId="user-2"
+        userId="user-2" // Current user is Bob
         userName="Bob"
         isCreator={false}
         onUpdate={mockOnUpdate}
@@ -353,9 +353,13 @@ describe('ListItemComponent', () => {
       />
     )
 
-    const accurateButton = screen.getByRole('button', { name: /accurate/i })
-    // Button should have default variant class (implementation detail)
-    expect(accurateButton).toBeInTheDocument()
+    // Buttons should not be visible
+    expect(screen.queryByTestId('verify-accurate')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('verify-inaccurate')).not.toBeInTheDocument()
+
+    // The entire component should have a green left border
+    const mainDiv = container.querySelector('.bg-gray-50')
+    expect(mainDiv).toHaveStyle('border-left-color: #22c55e')
   })
 
   it('should save edit when Enter key is pressed', async () => {

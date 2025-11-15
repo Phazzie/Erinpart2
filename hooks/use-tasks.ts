@@ -11,6 +11,7 @@ export function useTasks(sessionId: string, userId?: string) {
   const [loading, setLoading] = useState(true)
 
   const fetchTasks = useCallback(async () => {
+    setTasks([])
     if (!isSupabaseConfigured || !sessionId) {
       setLoading(false)
       return
