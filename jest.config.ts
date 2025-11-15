@@ -15,6 +15,15 @@ const customJestConfig: Config = {
     // Handle module aliases (this will be automatically configured for you soon)
     '^@/(.*)$': '<rootDir>/$1',
   },
+  // Transform ESM modules from @clerk
+  transformIgnorePatterns: [
+    'node_modules/(?!(@clerk)/)',
+  ],
+  // Exclude Playwright e2e tests from Jest (they run with playwright test command)
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/tests/e2e/',
+  ],
 }
  
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

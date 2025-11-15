@@ -35,8 +35,7 @@ describe('AnimalCodeForm', () => {
     Storage.prototype.getItem = jest.fn()
     
     // Mock window.location to prevent navigation errors
-    delete (window as any).location
-    ;(window as any).location = { href: '' }
+    // Note: We don't actually need to mock location since Next.js router is already mocked
   })
 
   describe('Rendering', () => {
@@ -142,13 +141,13 @@ describe('AnimalCodeForm', () => {
       
       fireEvent.change(animal1Select, { target: { value: 'Dragon' } })
       fireEvent.change(animal2Select, { target: { value: 'Phoenix' } })
-      fireEvent.change(nameInput, { target: { value: 'A'.repeat(21) } })
+      fireEvent.change(nameInput, { target: { value: 'A'.repeat(51) } })
       
       const joinButton = screen.getByRole('button', { name: /join session/i })
       fireEvent.click(joinButton)
       
       await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith('Name must be less than 20 characters')
+        expect(toast.error).toHaveBeenCalledWith('Name must be less than 50 characters')
       })
     })
 

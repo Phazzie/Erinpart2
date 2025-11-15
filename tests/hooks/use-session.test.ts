@@ -202,7 +202,7 @@ describe('useSession', () => {
       })
     })
 
-    it('should fall back to session userName if Clerk name is not available', async () => {
+    it('should use default User name if Clerk name is not available', async () => {
       mockUseUser.mockReturnValue({
         user: {
           id: 'user_clerk789',
@@ -224,9 +224,10 @@ describe('useSession', () => {
         expect(result.current.loading).toBe(false)
       })
 
+      // After fix #7, authenticated users use only Clerk data, not localStorage session data
       expect(result.current.user).toEqual({
         id: 'user_clerk789',
-        name: 'Session User',
+        name: 'User',
       })
     })
 
