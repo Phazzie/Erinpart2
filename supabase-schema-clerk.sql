@@ -22,6 +22,27 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 -- Clerk sets the 'sub' claim to the user ID (e.g., "user_2xxx...")
 -- In development/testing, you can manually set the user ID:
 --   SET request.jwt.claims = '{"sub": "user_2xxxTestID"}';
+--
+-- ⚠️ SECURITY WARNING: SECURITY DEFINER FUNCTION ⚠️
+-- This function is marked as SECURITY DEFINER, which means it runs with the
+-- privileges of the function creator (typically a superuser). This is REQUIRED
+-- to access request.jwt.claims, which is not accessible to normal users.
+--
+-- CRITICAL SECURITY REQUIREMENTS:
+-- 1. This function MUST ONLY perform read operations
+-- 2. This function MUST NOT access or expose any sensitive data beyond the user ID
+-- 3. DO NOT modify this function to perform INSERT, UPDATE, DELETE, or other write operations
+-- 4. DO NOT add any logic that could leak privileged information
+-- 5. Always ensure Row Level Security (RLS) policies are properly configured on tables
+--    that use this function - RLS is the primary security mechanism
+--
+-- If you need to modify this function:
+-- - Review the change with a security expert
+-- - Test that RLS policies still function correctly
+-- - Verify no privileged information is exposed
+-- - Document the reason for the change
+--
+-- See PostgreSQL SECURITY DEFINER documentation and Supabase RLS best practices
 -- ============================================================================
 CREATE OR REPLACE FUNCTION public.current_user_id()
 RETURNS text
@@ -33,7 +54,11 @@ AS $$
 $$;
 
 COMMENT ON FUNCTION public.current_user_id() IS
-'Returns the current Clerk user ID from JWT claims. Replaces auth.uid() for Clerk integration.';
+'Returns the current Clerk user ID from JWT claims. Replaces auth.uid() for Clerk integration.
+
+⚠️ SECURITY DEFINER: This function runs with elevated privileges to access JWT claims.
+Only performs read operations. Must not be modified to access/expose sensitive data.
+RLS policies on tables using this function are the primary security mechanism.';
 
 -- ============================================================================
 -- USERS TABLE (Profile)

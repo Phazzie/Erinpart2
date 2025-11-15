@@ -23,6 +23,10 @@ export async function createTask(sessionId: string, taskData: any, userName?: st
     clerkUserId = authResult.userId
   } catch (error) {
     // No auth is fine - animal code sessions don't require authentication
+    // Log in development to help distinguish between 'no auth' and 'auth service error'
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[createTask] Auth check failed (this is OK for guest sessions):', error)
+    }
   }
 
   const taskWithUser = {
@@ -48,6 +52,10 @@ export async function updateTask(taskId: string, updates: any, userName?: string
     clerkUserId = authResult.userId
   } catch (error) {
     // No auth is fine - animal code sessions don't require authentication
+    // Log in development to help distinguish between 'no auth' and 'auth service error'
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[updateTask] Auth check failed (this is OK for guest sessions):', error)
+    }
   }
 
   const updatesWithUser = {

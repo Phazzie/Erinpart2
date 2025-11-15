@@ -65,8 +65,25 @@ export default function SessionBoard() {
     if (a) {
       try {
         const decoded = JSON.parse(decodeURIComponent(atob(a)))
-        // Validate the decoded structure to prevent XSS
+        // Validate the decoded structure to prevent XSS and DoS attacks
         if (decoded && typeof decoded === 'object' && !Array.isArray(decoded)) {
+          const keys = Object.keys(decoded)
+          
+          // Validate key count to prevent DoS attacks
+          if (keys.length > 1000) {
+            console.warn('[SessionBoard] Invalid answers parameter - too many keys (max 1000)')
+            return
+          }
+          
+          // Validate that all keys are valid UUIDs (task IDs)
+          const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+          const allKeysValid = keys.every(key => uuidRegex.test(key))
+          
+          if (!allKeysValid) {
+            console.warn('[SessionBoard] Invalid answers parameter - keys must be valid UUIDs')
+            return
+          }
+          
           // Validate that all values are safe choice strings
           const isValid = Object.values(decoded).every(
             val => val === 'yes' || val === 'no' || val === 'maybe' || val === ''
@@ -99,11 +116,16 @@ export default function SessionBoard() {
   /**
    * Reorders tasks within the current day's list after a drag-and-drop action.
    * @param reorderedTasks The newly ordered array of tasks for the current day.
+   * 
+   * Note: This performs N individual update operations in parallel. For better
+   * performance with many tasks, consider implementing a batch update RPC function
+   * in Supabase that updates all task orders in a single database round trip.
    */
   const handleReorderTasks = async (reorderedTasks: Task[]) => {
     // Batch update to database - save all order_index changes at once
     try {
       // Use updateTask from the hook for each order change
+      // These execute in parallel via Promise.all to minimize latency
       const updates = reorderedTasks.map((task, index) =>
         updateTask(task.id, { order_index: index })
       )

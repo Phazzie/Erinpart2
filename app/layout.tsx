@@ -41,7 +41,7 @@ export default function RootLayout({
           <div className="fixed top-4 right-4 z-50">
             <SignedOut>
               <SignInButton mode="modal">
-                <button className="px-4 py-2 bg-cyan-500/20 border border-cyan-500 text-cyan-400 rounded hover:bg-cyan-500/30 transition-colors shadow-lg shadow-cyan-500/20">
+                <button type="button" className="px-4 py-2 bg-cyan-500/20 border border-cyan-500 text-cyan-400 rounded hover:bg-cyan-500/30 transition-colors shadow-lg shadow-cyan-500/20">
                   Sign In
                 </button>
               </SignInButton>

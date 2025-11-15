@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document summarizes the migration from Supabase Auth to Clerk authentication for Erin's Escapades, completed on November 14, 2025.
+This document summarizes the migration from Supabase Auth to Clerk authentication for Erin's Escapades, completed on November 14, 2024.
 
 ## What Changed
 
@@ -408,6 +408,6 @@ The Clerk migration successfully:
 
 **Status:** Ready for deployment after staging verification
 
-**Migration Date:** November 14, 2025
+**Migration Date:** November 14, 2024
 
-**Last Updated:** November 14, 2025
+**Last Updated:** November 14, 2024

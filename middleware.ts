@@ -38,8 +38,14 @@ const isPublicRoute = createRouteMatcher([
 ])
 
 export default clerkMiddleware(async (auth, request) => {
-  // Protect all routes except public ones
-  if (!isPublicRoute(request)) {
+  // Allow guest access to routes with session parameter (animal code sessions)
+  const url = new URL(request.url)
+  const hasSessionParam = url.searchParams.has('session')
+  
+  // Protect all routes except:
+  // 1. Public routes (sign-in, sign-up, homepage without session)
+  // 2. Routes with session parameter (animal code guest access)
+  if (!isPublicRoute(request) && !hasSessionParam) {
     await auth.protect()
   }
 
