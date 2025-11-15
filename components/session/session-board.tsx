@@ -69,16 +69,29 @@ export default function SessionBoard() {
         if (decoded && typeof decoded === 'object' && !Array.isArray(decoded)) {
           const keys = Object.keys(decoded)
 
-          // Limit number of keys to prevent DoS (max 1000 tasks per session is generous)
+          // DoS Prevention: Limit number of keys to prevent resource exhaustion
+          // Max 1000 tasks per session is generous for legitimate use cases
           if (keys.length > 1000) {
+            toast.error('Session link is invalid (too many tasks)')
             console.warn('[SessionBoard] Invalid answers parameter - too many keys (DoS prevention)')
             return
           }
 
-          // Validate each key is a valid UUID (task IDs are UUIDs)
-          const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-          const allKeysValid = keys.every(key => uuidRegex.test(key))
+          // RFC 4122 UUID Validation: Validate each key is a valid UUID (task IDs are UUIDs)
+          // Format: 8-4-4-4-12 hex digits with proper version (1-5) and variant (10xx) bits
+          // Length check first to prevent ReDoS attacks on extremely long strings
+          const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+          const allKeysValid = keys.every(key => {
+            // Validate length first (UUID is always 36 characters: 32 hex + 4 hyphens)
+            if (typeof key !== 'string' || key.length !== 36) {
+              return false
+            }
+            // Then validate format with regex
+            return uuidRegex.test(key)
+          })
+
           if (!allKeysValid) {
+            toast.error('Session link contains invalid task identifiers')
             console.warn('[SessionBoard] Invalid answers parameter - keys must be valid UUIDs')
             return
           }
@@ -92,12 +105,15 @@ export default function SessionBoard() {
             setGuestAnswers(decoded as Record<string, 'yes' | 'no' | 'maybe' | ''>)
             setAnswersEncoded(a)
           } else {
+            toast.error('Session link contains invalid choice values')
             console.warn('[SessionBoard] Invalid answers parameter - invalid choice values')
           }
         } else {
+          toast.error('Session link is malformed')
           console.warn('[SessionBoard] Invalid answers parameter - not a valid object')
         }
       } catch (error) {
+        toast.error('Unable to load session from link')
         console.error('[SessionBoard] Failed to decode answers:', error)
         // Don't set invalid data
       }
@@ -119,33 +135,74 @@ export default function SessionBoard() {
   /**
    * Reorders tasks within the current day's list after a drag-and-drop action.
    *
-   * Performance Note: This currently sends N parallel requests (one per task).
-   * Promise.all batches them in parallel, which is better than sequential,
-   * but still creates multiple HTTP round trips.
+   * Performance Optimization: Uses batch update API endpoint to update all task
+   * orders in a single request instead of N parallel requests.
    *
-   * Optimization Options:
-   * 1. Create a batch update API endpoint: POST /api/tasks/batch-update
-   * 2. Create a Supabase stored procedure for batch updates
-   * 3. Use Supabase's upsert with multiple records
-   *
-   * Current approach is acceptable for typical use cases (<100 tasks),
-   * but should be optimized if sessions regularly have >50 tasks.
+   * Benefits:
+   * - Single HTTP round trip instead of N requests
+   * - Reduced network overhead and latency
+   * - Better handling of concurrent updates
+   * - Improved performance for large task lists
    *
    * @param reorderedTasks The newly ordered array of tasks for the current day.
    */
   const handleReorderTasks = async (reorderedTasks: Task[]) => {
-    // TODO: Optimize with batch update endpoint for large task lists (>50 tasks)
-    // Current: N parallel requests via Promise.all (acceptable for most cases)
-    // Ideal: Single batch update API call
-    try {
-      // Use updateTask from the hook for each order change
-      const updates = reorderedTasks.map((task, index) =>
-        updateTask(task.id, { order_index: index })
-      )
+    // Validation: Ensure we have tasks to update
+    if (!reorderedTasks || reorderedTasks.length === 0) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[SessionBoard] No tasks to reorder')
+      }
+      return
+    }
 
-      await Promise.all(updates)
+    // Validation: Check batch size limit (API enforces max 100)
+    if (reorderedTasks.length > 100) {
+      toast.error('Cannot reorder more than 100 tasks at once')
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[SessionBoard] Batch size exceeds limit:', reorderedTasks.length)
+      }
+      return
+    }
+
+    try {
+      // Prepare batch update payload
+      const updates = reorderedTasks.map((task, index) => ({
+        id: task.id,
+        order_index: index
+      }))
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[SessionBoard] Sending batch update for', updates.length, 'tasks')
+      }
+
+      // Call batch update API endpoint
+      const response = await fetch('/api/tasks/batch-update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          updates,
+          session_id: sessionId // Include for additional validation
+        })
+      })
+
+      // Handle non-OK responses
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        const errorMessage = errorData.message || `Server error: ${response.status}`
+        throw new Error(errorMessage)
+      }
+
+      const result = await response.json()
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[SessionBoard] Batch update successful:', result)
+      }
 
       // Success - updates are persisted, realtime will sync the state
+      // No need to manually update local state as Supabase realtime handles it
+
     } catch (error: any) {
       toast.error('Failed to save task order')
       if (process.env.NODE_ENV === 'development') {

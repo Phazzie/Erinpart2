@@ -100,18 +100,21 @@ describe('useSession', () => {
     })
 
     it('should handle URL session parameter for guest access', async () => {
-      // Mock window.location.href with query parameter
-      const originalLocation = window.location
+      // Spy on URL constructor to mock window.location.href
+      const mockURL = jest.spyOn(global, 'URL').mockImplementation((url: string | URL) => {
+        // If called with window.location.href, return our mocked URL
+        if (url === window.location.href || url === 'http://localhost/') {
+          return {
+            searchParams: {
+              get: (key: string) => (key === 'session' ? 'elephant-giraffe' : null),
+            },
+          } as URL
+        }
+        // Otherwise, use the real URL constructor
+        return new (mockURL.getMockImplementation() as any).original(url)
+      })
 
-      // @ts-ignore
-      delete window.location
-      window.location = {
-        ...originalLocation,
-        href: 'http://localhost?session=elephant-giraffe',
-        search: '?session=elephant-giraffe',
-      } as any
-
-      const { result } = renderHook(() => useSession())
+      const { result, unmount } = renderHook(() => useSession())
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
@@ -123,9 +126,9 @@ describe('useSession', () => {
         name: 'Guest',
       })
 
-      // Restore original location
-      // @ts-ignore
-      window.location = originalLocation
+      // Cleanup: unmount hook and restore URL constructor
+      unmount()
+      mockURL.mockRestore()
     })
   })
 

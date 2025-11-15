@@ -14,6 +14,19 @@ function assertSupabaseConfigured() {
   }
 }
 
+/**
+ * Creates a new task in the database.
+ *
+ * Error Handling Strategy:
+ * - Clerk auth errors are logged but don't fail the operation (guest sessions are supported)
+ * - Database errors are logged with structured data and returned to the client
+ * - All errors include sanitized context for debugging without exposing sensitive data
+ *
+ * @param sessionId - The session ID to associate with the task
+ * @param taskData - The task data to insert
+ * @param userName - Optional username (defaults to 'Anonymous')
+ * @returns Success response with task ID, or error response
+ */
 export async function createTask(sessionId: string, taskData: any, userName?: string) {
   assertSupabaseConfigured()
 
@@ -25,10 +38,14 @@ export async function createTask(sessionId: string, taskData: any, userName?: st
     clerkUserId = authResult.userId
   } catch (error) {
     // No auth is fine - animal code sessions don't require authentication
-    // Log in development to help debug auth service issues
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('[createTask] Failed to get Clerk auth (this is OK for guest sessions):', error)
-    }
+    // Log with structured data for production debugging (no sensitive info)
+    console.warn('[createTask] Clerk auth unavailable (expected for guest sessions):', {
+      sessionId,
+      userName: userName || 'Anonymous',
+      errorType: error instanceof Error ? error.constructor.name : typeof error,
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString(),
+    })
   }
 
   const taskWithUser = {
@@ -39,11 +56,36 @@ export async function createTask(sessionId: string, taskData: any, userName?: st
   }
 
   const { data, error } = await supabaseServer.from('tasks').insert(taskWithUser).select().single()
-  if (error) return { success: false, error: error.message }
+  if (error) {
+    // Log database errors with structured data for production debugging
+    console.error('[createTask] Database error:', {
+      sessionId,
+      userName: userName || 'Anonymous',
+      errorCode: error.code,
+      errorMessage: error.message,
+      errorDetails: error.details,
+      hint: error.hint,
+      timestamp: new Date().toISOString(),
+    })
+    return { success: false, error: error.message }
+  }
   revalidatePath('/')
   return { success: true, id: data?.id }
 }
 
+/**
+ * Updates an existing task in the database.
+ *
+ * Error Handling Strategy:
+ * - Clerk auth errors are logged but don't fail the operation (guest sessions are supported)
+ * - Database errors are logged with structured data and returned to the client
+ * - All errors include sanitized context for debugging without exposing sensitive data
+ *
+ * @param taskId - The ID of the task to update
+ * @param updates - The updates to apply to the task
+ * @param userName - Optional username to track who made the update
+ * @returns Success response, or error response
+ */
 export async function updateTask(taskId: string, updates: any, userName?: string) {
   assertSupabaseConfigured()
 
@@ -54,10 +96,14 @@ export async function updateTask(taskId: string, updates: any, userName?: string
     clerkUserId = authResult.userId
   } catch (error) {
     // No auth is fine - animal code sessions don't require authentication
-    // Log in development to help debug auth service issues
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('[updateTask] Failed to get Clerk auth (this is OK for guest sessions):', error)
-    }
+    // Log with structured data for production debugging (no sensitive info)
+    console.warn('[updateTask] Clerk auth unavailable (expected for guest sessions):', {
+      taskId,
+      userName: userName || 'Unknown',
+      errorType: error instanceof Error ? error.constructor.name : typeof error,
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString(),
+    })
   }
 
   const updatesWithUser = {
@@ -67,7 +113,19 @@ export async function updateTask(taskId: string, updates: any, userName?: string
   }
 
   const { error } = await supabaseServer.from('tasks').update(updatesWithUser).eq('id', taskId)
-  if (error) return { success: false, error: error.message }
+  if (error) {
+    // Log database errors with structured data for production debugging
+    console.error('[updateTask] Database error:', {
+      taskId,
+      userName: userName || 'Unknown',
+      errorCode: error.code,
+      errorMessage: error.message,
+      errorDetails: error.details,
+      hint: error.hint,
+      timestamp: new Date().toISOString(),
+    })
+    return { success: false, error: error.message }
+  }
   revalidatePath('/')
   return { success: true }
 }
