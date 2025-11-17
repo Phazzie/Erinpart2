@@ -39,22 +39,20 @@ npm install
 
 ### 2. Environment Setup
 
-Create `.env.local` in the root directory:
+Copy the example environment file and fill in your keys:
 
-```env
-# Clerk Authentication
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_YOUR_KEY_HERE
-CLERK_SECRET_KEY=sk_test_YOUR_SECRET_HERE
-
-# Supabase Database
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+```bash
+cp .env.example .env.local
 ```
 
+Then edit `.env.local` with your actual keys:
+
 **Get Your Keys:**
+
 - **Clerk**: [dashboard.clerk.com](https://dashboard.clerk.com) → API Keys
 - **Supabase**: Your project → Settings → API
+
+The `.env.local` file is git-ignored and safe for local development.
 
 ### 3. Database Setup
 

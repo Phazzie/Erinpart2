@@ -10,7 +10,7 @@ interface AnimatedBackgroundProps {
 
 export default function AnimatedBackground({
   variant = 'particles',
-  intensity = 'medium'
+  intensity = 'medium',
 }: AnimatedBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -37,7 +37,7 @@ export default function AnimatedBackground({
           vy: (Math.random() - 0.5) * 2,
           size: Math.random() * 3 + 1,
           color: ['#00ffff', '#ff4fd8', '#a26bff'][Math.floor(Math.random() * 3)],
-          opacity: Math.random() * 0.5 + 0.2
+          opacity: Math.random() * 0.5 + 0.2,
         })
       }
 
@@ -73,7 +73,7 @@ export default function AnimatedBackground({
               ctx.moveTo(particle.x, particle.y)
               ctx.lineTo(otherParticle.x, otherParticle.y)
               ctx.strokeStyle = particle.color
-              ctx.globalAlpha = (100 - distance) / 100 * 0.2
+              ctx.globalAlpha = ((100 - distance) / 100) * 0.2
               ctx.lineWidth = 1
               ctx.stroke()
             }
@@ -122,7 +122,7 @@ export default function AnimatedBackground({
             }}
           >
             {Array.from({ length: 20 }, () =>
-              String.fromCharCode(0x30A0 + Math.random() * 96)
+              String.fromCharCode(0x30a0 + Math.random() * 96)
             ).join('')}
           </motion.div>
         ))}

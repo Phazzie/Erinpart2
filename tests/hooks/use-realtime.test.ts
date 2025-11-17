@@ -9,7 +9,7 @@ jest.mock('@/lib/supabase/client', () => {
   return {
     isSupabaseConfigured: true,
     supabase: { channel: jest.fn(() => channel), removeChannel },
-    __mock: { on, subscribe, removeChannel }
+    __mock: { on, subscribe, removeChannel },
   }
 })
 
@@ -20,7 +20,9 @@ describe('useRealtime', () => {
 
   it('subscribes and cleans up when channelName is provided', () => {
     const { __mock } = jest.requireMock('@/lib/supabase/client') as any
-    const { unmount } = renderHook(() => useRealtime({ channelName: 'test-channel', table: 'tasks', callback: () => {} }))
+    const { unmount } = renderHook(() =>
+      useRealtime({ channelName: 'test-channel', table: 'tasks', callback: () => {} })
+    )
     expect(__mock.subscribe).toHaveBeenCalled()
     unmount()
     expect(__mock.removeChannel).toHaveBeenCalled()

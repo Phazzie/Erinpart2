@@ -6,14 +6,14 @@ import { Textarea } from '../ui/textarea' // I need to create this component
 import { Bot, Edit, MessageSquare } from 'lucide-react'
 
 interface Task {
-  id: string;
-  text: string;
-  comments: string;
+  id: string
+  text: string
+  comments: string
 }
 
 interface SessionDetailsProps {
   selectedTask: Task | null
-  onUpdateTask: (taskId: string, updates: Partial<Task>) => void;
+  onUpdateTask: (taskId: string, updates: Partial<Task>) => void
 }
 
 export default function SessionDetails({ selectedTask, onUpdateTask }: SessionDetailsProps) {
@@ -43,13 +43,13 @@ export default function SessionDetails({ selectedTask, onUpdateTask }: SessionDe
                   </label>
                   <Textarea
                     value={selectedTask.comments}
-                    onChange={(e) => onUpdateTask(selectedTask.id, { comments: e.target.value })}
+                    onChange={e => onUpdateTask(selectedTask.id, { comments: e.target.value })}
                     placeholder="Add your devious notes here..."
                     className="input-neon min-h-[100px]"
                   />
                 </div>
                 <div>
-                   <label className="text-sm font-semibold text-green-400 flex items-center gap-2 mb-2">
+                  <label className="text-sm font-semibold text-green-400 flex items-center gap-2 mb-2">
                     <Bot className="h-4 w-4" />
                     AI Suggestions
                   </label>

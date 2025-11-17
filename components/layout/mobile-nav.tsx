@@ -1,8 +1,8 @@
 'use client'
 
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"; // I will need to create sheet
-import { Button } from "../ui/button";
-import { Menu } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet' // I will need to create sheet
+import { Button } from '../ui/button'
+import { Menu } from 'lucide-react'
 
 export default function MobileNav() {
   return (

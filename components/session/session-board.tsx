@@ -21,11 +21,11 @@ import LoadingSpinner from '@/components/common/loading-spinner'
 export default function SessionBoard() {
   const { user, sessionId: defaultSessionId, loading: sessionLoading } = useSession()
   const userName = user?.name
-  
+
   // Parse URL params for session and answers
   const [urlSessionId, setUrlSessionId] = useState<string>('')
   const [answersEncoded, setAnswersEncoded] = useState<string | undefined>(undefined)
-  const [guestAnswers, setGuestAnswers] = useState<Record<string, 'yes'|'no'|'maybe'|''>>({})
+  const [guestAnswers, setGuestAnswers] = useState<Record<string, 'yes' | 'no' | 'maybe' | ''>>({})
 
   // Use URL session if present, otherwise use default from useSession
   const sessionId = urlSessionId || defaultSessionId
@@ -48,12 +48,12 @@ export default function SessionBoard() {
    * The CSS file contains styles that apply different themes based on this attribute.
    */
   useEffect(() => {
-    document.body.dataset.theme = currentVibe;
+    document.body.dataset.theme = currentVibe
     // Cleanup function to remove the attribute when the component unmounts
     return () => {
-      delete document.body.dataset.theme;
+      delete document.body.dataset.theme
     }
-  }, [currentVibe]);
+  }, [currentVibe])
 
   // On mount, parse URL params to set session and optional answers
   useEffect(() => {
@@ -85,19 +85,23 @@ export default function SessionBoard() {
           }
           
           // Validate that all values are safe choice strings
-          const isValid = Object.values(decoded).every(
+          const allValuesValid = Object.values(decoded).every(
             val => val === 'yes' || val === 'no' || val === 'maybe' || val === ''
           )
-          if (isValid) {
-            setGuestAnswers(decoded as Record<string, 'yes'|'no'|'maybe'|''>)
+
+          if (allValuesValid) {
+            setGuestAnswers(decoded as Record<string, 'yes' | 'no' | 'maybe' | ''>)
             setAnswersEncoded(a)
           } else {
+            toast.error('Session link contains invalid choice values')
             console.warn('[SessionBoard] Invalid answers parameter - invalid choice values')
           }
         } else {
+          toast.error('Session link is malformed')
           console.warn('[SessionBoard] Invalid answers parameter - not a valid object')
         }
       } catch (error) {
+        toast.error('Unable to load session from link')
         console.error('[SessionBoard] Failed to decode answers:', error)
         // Don't set invalid data
       }
@@ -109,12 +113,25 @@ export default function SessionBoard() {
    * @param taskId The ID of the task to update.
    * @param updates An object with the properties of the task to update.
    */
-  const handleUpdateTask = useCallback((taskId: string, updates: Partial<Task>) => {
-    updateTask(taskId, updates)
-  }, [updateTask])
+  const handleUpdateTask = useCallback(
+    (taskId: string, updates: Partial<Task>) => {
+      updateTask(taskId, updates)
+    },
+    [updateTask]
+  )
 
   /**
    * Reorders tasks within the current day's list after a drag-and-drop action.
+   *
+   * Performance Optimization: Uses batch update API endpoint to update all task
+   * orders in a single request instead of N parallel requests.
+   *
+   * Benefits:
+   * - Single HTTP round trip instead of N requests
+   * - Reduced network overhead and latency
+   * - Better handling of concurrent updates
+   * - Improved performance for large task lists
+   *
    * @param reorderedTasks The newly ordered array of tasks for the current day.
    * 
    * Note: This performs N individual update operations in parallel. For better
@@ -122,17 +139,54 @@ export default function SessionBoard() {
    * in Supabase that updates all task orders in a single database round trip.
    */
   const handleReorderTasks = async (reorderedTasks: Task[]) => {
-    // Batch update to database - save all order_index changes at once
-    try {
-      // Use updateTask from the hook for each order change
-      // These execute in parallel via Promise.all to minimize latency
-      const updates = reorderedTasks.map((task, index) =>
-        updateTask(task.id, { order_index: index })
-      )
+    // Validation: Check batch size limit (API enforces max 100)
+    if (reorderedTasks.length > 100) {
+      toast.error('Cannot reorder more than 100 tasks at once')
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[SessionBoard] Batch size exceeds limit:', reorderedTasks.length)
+      }
+      return
+    }
 
-      await Promise.all(updates)
+    try {
+      // Prepare batch update payload
+      const updates = reorderedTasks.map((task, index) => ({
+        id: task.id,
+        order_index: index
+      }))
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[SessionBoard] Sending batch update for', updates.length, 'tasks')
+      }
+
+      // Call batch update API endpoint
+      const response = await fetch('/api/tasks/batch-update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          updates,
+          session_id: sessionId // Include for additional validation
+        })
+      })
+
+      // Handle non-OK responses
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        const errorMessage = errorData.message || `Server error: ${response.status}`
+        throw new Error(errorMessage)
+      }
+
+      const result = await response.json()
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[SessionBoard] Batch update successful:', result)
+      }
 
       // Success - updates are persisted, realtime will sync the state
+      // No need to manually update local state as Supabase realtime handles it
+
     } catch (error: any) {
       toast.error('Failed to save task order')
       if (process.env.NODE_ENV === 'development') {
@@ -148,35 +202,43 @@ export default function SessionBoard() {
    * @param text The text content of the new task.
    * @param isSecret A boolean indicating if the task is secret.
    */
-  const handleAddTask = useCallback((text: string, isSecret: boolean) => {
-    addTask(text, isSecret)
-  }, [addTask])
+  const handleAddTask = useCallback(
+    (text: string, isSecret: boolean) => {
+      addTask(text, isSecret)
+    },
+    [addTask]
+  )
 
   /**
    * Handles a user's vote to reveal a secret task.
    * @param taskId The ID of the secret task to vote on.
    */
-  const handleVoteToReveal = useCallback((taskId: string) => {
-    const uid = user?.id || 'user-1'
-    // Find the task from current state using a snapshot
-    const target = tasks.find(t => t.id === taskId)
-    if (!target) return
-    if (target.votes.includes(uid)) return
+  const handleVoteToReveal = useCallback(
+    (taskId: string) => {
+      const uid = user?.id || 'user-1'
+      // Find the task from current state using a snapshot
+      const target = tasks.find(t => t.id === taskId)
+      if (!target) return
+      if (target.votes.includes(uid)) return
 
-    const newVotes = [...target.votes, uid]
-    const updates: Partial<Task> = { votes: newVotes }
-    // Reveal task if threshold met (client heuristic only for now)
-    const thresholdMet = newVotes.length >= 2
-    if (thresholdMet) updates.is_secret = false
-    updateTask(taskId, updates)
-  }, [user?.id, tasks, updateTask])
+      const newVotes = [...target.votes, uid]
+      const updates: Partial<Task> = { votes: newVotes }
+      // Reveal task if threshold met (client heuristic only for now)
+      const thresholdMet = newVotes.length >= 2
+      if (thresholdMet) updates.is_secret = false
+      updateTask(taskId, updates)
+    },
+    [user?.id, tasks, updateTask]
+  )
 
   const filteredTasks = tasks.filter(task => task.day === currentDay)
 
   // Encode only the choices for a minimal "answers" payload in URL
   const answersPayload = useMemo(() => {
-    const map: Record<string, 'yes'|'no'|'maybe'|''> = {}
-    tasks.forEach(t => { if (t.choice) map[t.id] = t.choice })
+    const map: Record<string, 'yes' | 'no' | 'maybe' | ''> = {}
+    tasks.forEach(t => {
+      if (t.choice) map[t.id] = t.choice
+    })
     return map
   }, [tasks])
 
@@ -184,7 +246,9 @@ export default function SessionBoard() {
     try {
       const json = JSON.stringify(answersPayload)
       return btoa(encodeURIComponent(json))
-    } catch { return undefined }
+    } catch {
+      return undefined
+    }
   }, [answersPayload])
 
   // Show loading spinner while session is initializing
@@ -195,9 +259,9 @@ export default function SessionBoard() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <SessionHeader 
-        name="Erin's Escapades" 
-        sessionId={sessionId} 
+      <SessionHeader
+        name="Erin's Escapades"
+        sessionId={sessionId}
         answersEncoded={answersParam}
         vibes={vibes}
         currentVibe={currentVibe}

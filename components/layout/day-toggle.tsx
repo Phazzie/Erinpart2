@@ -73,13 +73,13 @@ export default function DayToggle({ currentDay, onDayChange }: DayToggleProps) {
                     x: '50%',
                     y: '50%',
                     scale: 0,
-                    opacity: 1
+                    opacity: 1,
                   }}
                   animate={{
                     x: `${50 + (Math.random() - 0.5) * 100}%`,
                     y: `${50 + (Math.random() - 0.5) * 100}%`,
                     scale: [0, 1, 0],
-                    opacity: [1, 1, 0]
+                    opacity: [1, 1, 0],
                   }}
                   transition={{
                     duration: 2,
@@ -126,13 +126,13 @@ export default function DayToggle({ currentDay, onDayChange }: DayToggleProps) {
                     x: '50%',
                     y: '50%',
                     scale: 0,
-                    opacity: 1
+                    opacity: 1,
                   }}
                   animate={{
                     x: `${50 + (Math.random() - 0.5) * 100}%`,
                     y: `${50 + (Math.random() - 0.5) * 100}%`,
                     scale: [0, 1, 0],
-                    opacity: [1, 1, 0]
+                    opacity: [1, 1, 0],
                   }}
                   transition={{
                     duration: 2,

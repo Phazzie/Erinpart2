@@ -1,35 +1,36 @@
-import type { Metadata } from "next";
-import { Toaster } from "react-hot-toast";
-import "./globals.css";
-import AnimatedBackground from "@/components/common/animated-background";
-import { ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
-import { WebVitals } from './web-vitals';
+import type { Metadata } from 'next'
+import { Toaster } from 'react-hot-toast'
+import './globals.css'
+import AnimatedBackground from '@/components/common/animated-background'
+import { ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+import { WebVitals } from './web-vitals'
 
 export const metadata: Metadata = {
   title: "Erin's Escapades - Collaborative Task Management",
-  description: "A collaborative task management app with neon cyberpunk styling and real-time updates.",
+  description:
+    'A collaborative task management app with neon cyberpunk styling and real-time updates.',
   openGraph: {
     title: "Erin's Escapades",
-    description: "Collaborative task management with real-time updates",
+    description: 'Collaborative task management with real-time updates',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
     title: "Erin's Escapades",
-    description: "Collaborative task management with real-time updates",
+    description: 'Collaborative task management with real-time updates',
   },
-};
+}
 
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
-};
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <ClerkProvider>
@@ -41,7 +42,10 @@ export default function RootLayout({
           <div className="fixed top-4 right-4 z-50">
             <SignedOut>
               <SignInButton mode="modal">
-                <button type="button" className="px-4 py-2 bg-cyan-500/20 border border-cyan-500 text-cyan-400 rounded hover:bg-cyan-500/30 transition-colors shadow-lg shadow-cyan-500/20">
+                <button
+                  type="button"
+                  className="px-4 py-2 bg-cyan-500/20 border border-cyan-500 text-cyan-400 rounded hover:bg-cyan-500/30 transition-colors shadow-lg shadow-cyan-500/20"
+                >
                   Sign In
                 </button>
               </SignInButton>
@@ -50,8 +54,8 @@ export default function RootLayout({
               <UserButton
                 appearance={{
                   elements: {
-                    avatarBox: "w-10 h-10 border-2 border-cyan-500 shadow-lg shadow-cyan-500/50"
-                  }
+                    avatarBox: 'w-10 h-10 border-2 border-cyan-500 shadow-lg shadow-cyan-500/50',
+                  },
                 }}
               />
             </SignedIn>
@@ -63,5 +67,5 @@ export default function RootLayout({
         </body>
       </html>
     </ClerkProvider>
-  );
+  )
 }

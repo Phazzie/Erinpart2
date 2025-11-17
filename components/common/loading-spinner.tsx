@@ -10,16 +10,16 @@ interface LoadingSpinnerProps {
 }
 
 const cosmicPhrases = [
-  "Consulting the cosmic vibes...",
-  "Wrangling digital chaos...",
-  "Summoning productivity spirits...",
-  "Aligning the task stars...",
-  "Bending reality to your will...",
-  "Channeling focus energy...",
-  "Manifesting your session...",
-  "Tuning into your frequency...",
-  "Weaving the task fabric...",
-  "Activating hyperfocus mode...",
+  'Consulting the cosmic vibes...',
+  'Wrangling digital chaos...',
+  'Summoning productivity spirits...',
+  'Aligning the task stars...',
+  'Bending reality to your will...',
+  'Channeling focus energy...',
+  'Manifesting your session...',
+  'Tuning into your frequency...',
+  'Weaving the task fabric...',
+  'Activating hyperfocus mode...',
 ]
 
 const emojis = ['✨', '🌙', '⚡', '🔮', '💫', '🌟', '🎨', '🎭', '🎪', '🎯']
@@ -27,7 +27,7 @@ const emojis = ['✨', '🌙', '⚡', '🔮', '💫', '🌟', '🎨', '🎭', '�
 export default function LoadingSpinner({
   size = 'md',
   text = 'Loading...',
-  variant = 'neon'
+  variant = 'neon',
 }: LoadingSpinnerProps) {
   const [phrase, setPhrase] = useState(cosmicPhrases[0])
   const [currentEmoji, setCurrentEmoji] = useState(0)
@@ -37,9 +37,9 @@ export default function LoadingSpinner({
       const phraseInterval = setInterval(() => {
         setPhrase(cosmicPhrases[Math.floor(Math.random() * cosmicPhrases.length)])
       }, 2500)
-      
+
       const emojiInterval = setInterval(() => {
-        setCurrentEmoji((prev) => (prev + 1) % emojis.length)
+        setCurrentEmoji(prev => (prev + 1) % emojis.length)
       }, 400)
 
       return () => {
@@ -52,7 +52,7 @@ export default function LoadingSpinner({
   const sizeClasses = {
     sm: 'w-6 h-6',
     md: 'w-12 h-12',
-    lg: 'w-24 h-24'
+    lg: 'w-24 h-24',
   }
 
   if (variant === 'cosmic') {
@@ -71,11 +71,11 @@ export default function LoadingSpinner({
               animate={{
                 x: [
                   Math.cos((i * 2 * Math.PI) / emojis.length) * 80,
-                  Math.cos(((i * 2 * Math.PI) / emojis.length) + Math.PI * 2) * 80,
+                  Math.cos((i * 2 * Math.PI) / emojis.length + Math.PI * 2) * 80,
                 ],
                 y: [
                   Math.sin((i * 2 * Math.PI) / emojis.length) * 80,
-                  Math.sin(((i * 2 * Math.PI) / emojis.length) + Math.PI * 2) * 80,
+                  Math.sin((i * 2 * Math.PI) / emojis.length + Math.PI * 2) * 80,
                 ],
                 rotate: [0, 360],
                 scale: i === currentEmoji ? [1, 1.5, 1] : 1,
@@ -88,7 +88,7 @@ export default function LoadingSpinner({
                   duration: 0.4,
                   repeat: Infinity,
                   repeatDelay: 3.6,
-                }
+                },
               }}
             >
               {emoji}
@@ -99,7 +99,8 @@ export default function LoadingSpinner({
           <motion.div
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full"
             style={{
-              background: 'radial-gradient(circle, rgba(236,72,153,0.8) 0%, rgba(59,130,246,0.6) 50%, rgba(168,85,247,0.4) 100%)',
+              background:
+                'radial-gradient(circle, rgba(236,72,153,0.8) 0%, rgba(59,130,246,0.6) 50%, rgba(168,85,247,0.4) 100%)',
               filter: 'blur(8px)',
             }}
             animate={{
@@ -242,9 +243,7 @@ export default function LoadingSpinner({
         animate={{ rotate: 360 }}
         transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
       />
-      {text && (
-        <p className="mt-4 text-gray-400 text-sm">{text}</p>
-      )}
+      {text && <p className="mt-4 text-gray-400 text-sm">{text}</p>}
     </div>
   )
 }

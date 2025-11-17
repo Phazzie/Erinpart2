@@ -32,7 +32,7 @@ export const useSessionManagement = (sessionId: string, userId?: string, userNam
     sessionInfo: null,
     isParticipant: false,
     isFull: false,
-    loading: true
+    loading: true,
   })
 
   const fetchSessionInfo = useCallback(async () => {
@@ -66,19 +66,20 @@ export const useSessionManagement = (sessionId: string, userId?: string, userNam
 
       const sessionInfo: SessionInfo = {
         ...session,
-        participants: participants || []
+        participants: participants || [],
       }
 
-      const isParticipant = userId ? participants?.some((p: any) => p.user_id === userId) ?? false : false
+      const isParticipant = userId
+        ? (participants?.some((p: any) => p.user_id === userId) ?? false)
+        : false
       const isFull = (participants?.length ?? 0) >= session.participant_limit
 
       setState({
         sessionInfo,
         isParticipant,
         isFull,
-        loading: false
+        loading: false,
       })
-
     } catch (error: any) {
       console.error('Error fetching session info:', error)
       setState(prev => ({ ...prev, loading: false }))
@@ -90,51 +91,56 @@ export const useSessionManagement = (sessionId: string, userId?: string, userNam
   }, [fetchSessionInfo])
 
   // Listen for realtime updates to participants
-  const handleParticipantUpdate = useCallback((payload: any) => {
-    if (payload.eventType === 'INSERT' && payload.new.session_id === sessionId) {
-      setState(prev => {
-        if (!prev.sessionInfo) return prev
-        const newParticipants = [...prev.sessionInfo.participants, payload.new]
-        return {
-          ...prev,
-          sessionInfo: {
-            ...prev.sessionInfo,
-            participants: newParticipants
-          },
-          isFull: newParticipants.length >= prev.sessionInfo.participant_limit,
-          isParticipant: prev.isParticipant || !!(userId && payload.new.user_id === userId)
-        }
-      })
-    } else if (payload.eventType === 'DELETE' && payload.old.session_id === sessionId) {
-      setState(prev => {
-        if (!prev.sessionInfo) return prev
-        const newParticipants = prev.sessionInfo.participants.filter(p => p.user_id !== payload.old.user_id)
-        return {
-          ...prev,
-          sessionInfo: {
-            ...prev.sessionInfo,
-            participants: newParticipants
-          },
-          isFull: newParticipants.length >= prev.sessionInfo.participant_limit,
-          isParticipant: prev.isParticipant && (userId !== payload.old.user_id)
-        }
-      })
-    } else if (payload.eventType === 'UPDATE' && payload.new.session_id === sessionId) {
-      setState(prev => {
-        if (!prev.sessionInfo) return prev
-        const newParticipants = prev.sessionInfo.participants.map(p => 
-          p.user_id === payload.new.user_id ? payload.new : p
-        )
-        return {
-          ...prev,
-          sessionInfo: {
-            ...prev.sessionInfo,
-            participants: newParticipants
+  const handleParticipantUpdate = useCallback(
+    (payload: any) => {
+      if (payload.eventType === 'INSERT' && payload.new.session_id === sessionId) {
+        setState(prev => {
+          if (!prev.sessionInfo) return prev
+          const newParticipants = [...prev.sessionInfo.participants, payload.new]
+          return {
+            ...prev,
+            sessionInfo: {
+              ...prev.sessionInfo,
+              participants: newParticipants,
+            },
+            isFull: newParticipants.length >= prev.sessionInfo.participant_limit,
+            isParticipant: prev.isParticipant || !!(userId && payload.new.user_id === userId),
           }
-        }
-      })
-    }
-  }, [sessionId, userId])
+        })
+      } else if (payload.eventType === 'DELETE' && payload.old.session_id === sessionId) {
+        setState(prev => {
+          if (!prev.sessionInfo) return prev
+          const newParticipants = prev.sessionInfo.participants.filter(
+            p => p.user_id !== payload.old.user_id
+          )
+          return {
+            ...prev,
+            sessionInfo: {
+              ...prev.sessionInfo,
+              participants: newParticipants,
+            },
+            isFull: newParticipants.length >= prev.sessionInfo.participant_limit,
+            isParticipant: prev.isParticipant && userId !== payload.old.user_id,
+          }
+        })
+      } else if (payload.eventType === 'UPDATE' && payload.new.session_id === sessionId) {
+        setState(prev => {
+          if (!prev.sessionInfo) return prev
+          const newParticipants = prev.sessionInfo.participants.map(p =>
+            p.user_id === payload.new.user_id ? payload.new : p
+          )
+          return {
+            ...prev,
+            sessionInfo: {
+              ...prev.sessionInfo,
+              participants: newParticipants,
+            },
+          }
+        })
+      }
+    },
+    [sessionId, userId]
+  )
 
   useRealtime({
     channelName: `session-participants-${sessionId}`,
@@ -148,24 +154,20 @@ export const useSessionManagement = (sessionId: string, userId?: string, userNam
 
     try {
       // Create session
-      const { error: sessionError } = await supabase
-        .from('sessions')
-        .insert({
-          id: sessionId,
-          created_by: userId,
-          participant_limit: 4
-        })
+      const { error: sessionError } = await supabase.from('sessions').insert({
+        id: sessionId,
+        created_by: userId,
+        participant_limit: 4,
+      })
 
       if (sessionError) throw sessionError
 
       // Join as creator
-      const { error: participantError } = await supabase
-        .from('session_participants')
-        .insert({
-          session_id: sessionId,
-          user_id: userId,
-          user_name: userName
-        })
+      const { error: participantError } = await supabase.from('session_participants').insert({
+        session_id: sessionId,
+        user_id: userId,
+        user_name: userName,
+      })
 
       if (participantError) throw participantError
 
@@ -187,7 +189,7 @@ export const useSessionManagement = (sessionId: string, userId?: string, userNam
       const { data, error } = await supabase.rpc('join_session', {
         session_id_param: sessionId,
         user_id_param: userId,
-        user_name_param: userName
+        user_name_param: userName,
       })
 
       if (error) throw error
@@ -257,6 +259,6 @@ export const useSessionManagement = (sessionId: string, userId?: string, userNam
     createSession,
     joinSession,
     leaveSession,
-    refetch: fetchSessionInfo
+    refetch: fetchSessionInfo,
   }
 }

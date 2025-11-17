@@ -38,12 +38,12 @@ const nextConfig = {
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.clerk.accounts.dev https://*.clerk.com",
               "frame-src 'self' https://*.clerk.accounts.dev",
               "frame-ancestors 'self'",
-            ].join('; ')
+            ].join('; '),
           },
         ],
       },
     ]
   },
-};
+}
 
-export default nextConfig;
+export default nextConfig

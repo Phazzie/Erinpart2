@@ -1,40 +1,40 @@
 'use client'
 
-import SessionBoard from "@/components/session/session-board";
-import AnimalCodeForm from "@/components/auth/animal-code-form";
-import { ErrorBoundary } from "@/components/common/error-boundary";
-import { useEffect, useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ListsPage from "./lists/page";
-import { CheckSquare, List } from "lucide-react";
+import SessionBoard from '@/components/session/session-board'
+import AnimalCodeForm from '@/components/auth/animal-code-form'
+import { ErrorBoundary } from '@/components/common/error-boundary'
+import { useEffect, useState } from 'react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import ListsPage from './lists/page'
+import { CheckSquare, List } from 'lucide-react'
 
 export default function HomePage() {
-  const [sessionData, setSessionData] = useState<string | null>(null);
-  const [hasUrlSession, setHasUrlSession] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<string>("tasks");
+  const [sessionData, setSessionData] = useState<string | null>(null)
+  const [hasUrlSession, setHasUrlSession] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState<string>('tasks')
 
   useEffect(() => {
     // Check for session in URL params first
     if (typeof window !== 'undefined') {
-      const url = new URL(window.location.href);
-      const urlSessionParam = url.searchParams.get('session');
-      setHasUrlSession(!!urlSessionParam);
+      const url = new URL(window.location.href)
+      const urlSessionParam = url.searchParams.get('session')
+      setHasUrlSession(!!urlSessionParam)
     }
-    
+
     // Check for session data in localStorage
-    const data = localStorage.getItem('sessionData');
-    setSessionData(data);
-    setIsLoading(false);
-  }, []);
+    const data = localStorage.getItem('sessionData')
+    setSessionData(data)
+    setIsLoading(false)
+  }, [])
 
   // Don't render anything during initial load to prevent flash
   if (isLoading) {
-    return null;
+    return null
   }
 
   // Show SessionBoard if user has session data OR if there's a session in URL
-  const shouldShowBoard = sessionData || hasUrlSession;
+  const shouldShowBoard = sessionData || hasUrlSession
 
   return (
     <div className="container mx-auto p-4 md:p-8">
@@ -55,11 +55,11 @@ export default function HomePage() {
                 Collaborative Lists
               </TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="tasks">
               <SessionBoard />
             </TabsContent>
-            
+
             <TabsContent value="lists">
               <ListsPage />
             </TabsContent>
@@ -67,5 +67,5 @@ export default function HomePage() {
         </ErrorBoundary>
       )}
     </div>
-  );
+  )
 }

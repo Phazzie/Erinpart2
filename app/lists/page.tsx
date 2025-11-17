@@ -11,12 +11,12 @@ import { Users, TrendingUp } from 'lucide-react'
 export default function ListsPage() {
   const { user, sessionId, loading: sessionLoading } = useSession()
   const [mounted, setMounted] = useState(false)
-  
-  const { lists, loading: listsLoading, deleteList } = useCollaborativeLists(
-    sessionId,
-    user?.id,
-    user?.name
-  )
+
+  const {
+    lists,
+    loading: listsLoading,
+    deleteList,
+  } = useCollaborativeLists(sessionId, user?.id, user?.name)
 
   useEffect(() => {
     setMounted(true)
@@ -53,9 +53,12 @@ export default function ListsPage() {
           <div className="flex items-start gap-3">
             <Users className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
             <div>
-              <h3 className="font-semibold text-blue-900 dark:text-blue-100">Multi-User Collaboration</h3>
+              <h3 className="font-semibold text-blue-900 dark:text-blue-100">
+                Multi-User Collaboration
+              </h3>
               <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                One person creates the list, and others verify each item with green (accurate) or red (needs correction).
+                One person creates the list, and others verify each item with green (accurate) or
+                red (needs correction).
               </p>
             </div>
           </div>
@@ -65,7 +68,9 @@ export default function ListsPage() {
           <div className="flex items-start gap-3">
             <TrendingUp className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5" />
             <div>
-              <h3 className="font-semibold text-purple-900 dark:text-purple-100">Consensus Meter</h3>
+              <h3 className="font-semibold text-purple-900 dark:text-purple-100">
+                Consensus Meter
+              </h3>
               <p className="text-sm text-purple-700 dark:text-purple-300 mt-1">
                 See real-time agreement levels and team feedback on each item in the list.
               </p>
@@ -75,13 +80,7 @@ export default function ListsPage() {
       </div>
 
       {/* List Creator Form */}
-      {user && (
-        <ListCreatorForm
-          sessionId={sessionId}
-          userId={user.id}
-          userName={user.name}
-        />
-      )}
+      {user && <ListCreatorForm sessionId={sessionId} userId={user.id} userName={user.name} />}
 
       {/* Lists */}
       {listsLoading ? (
@@ -96,7 +95,7 @@ export default function ListsPage() {
         </div>
       ) : (
         <div>
-          {lists.map((list) => (
+          {lists.map(list => (
             <CollaborativeListComponent
               key={list.id}
               list={list}

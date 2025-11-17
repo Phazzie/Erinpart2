@@ -1,0 +1,215 @@
+name: PR Review Summary
+
+on:
+  pull_request_review:
+    types: [submitted]
+  pull_request_review_comment:
+    types: [created]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  collect-review-comments:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request != null
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Collect and organize review comments
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const pull_number = context.payload.pull_request.number;
+
+            // Fetch all review comments
+            const { data: reviews } = await github.rest.pulls.listReviews({
+              owner,
+              repo,
+              pull_number
+            });
+
+            // Fetch all review thread comments
+            const { data: comments } = await github.rest.pulls.listReviewComments({
+              owner,
+              repo,
+              pull_number
+            });
+
+            // Organize comments by category
+            const categories = {
+              'Critical Issues': [],
+              'Security Concerns': [],
+              'Bug Fixes Needed': [],
+              'Performance Improvements': [],
+              'Code Quality': [],
+              'Documentation': [],
+              'Suggestions': [],
+              'Questions': [],
+              'Other': []
+            };
+
+            // Helper function to categorize comments
+            function categorizeComment(body) {
+              const lowerBody = body.toLowerCase();
+
+              if (lowerBody.includes('critical') || lowerBody.includes('blocking') || lowerBody.includes('must fix')) {
+                return 'Critical Issues';
+              } else if (lowerBody.includes('security') || lowerBody.includes('vulnerability') || lowerBody.includes('xss') || lowerBody.includes('sql injection')) {
+                return 'Security Concerns';
+              } else if (lowerBody.includes('bug') || lowerBody.includes('error') || lowerBody.includes('fix')) {
+                return 'Bug Fixes Needed';
+              } else if (lowerBody.includes('performance') || lowerBody.includes('slow') || lowerBody.includes('optimize')) {
+                return 'Performance Improvements';
+              } else if (lowerBody.includes('refactor') || lowerBody.includes('clean up') || lowerBody.includes('code quality') || lowerBody.includes('best practice')) {
+                return 'Code Quality';
+              } else if (lowerBody.includes('document') || lowerBody.includes('comment') || lowerBody.includes('readme')) {
+                return 'Documentation';
+              } else if (lowerBody.includes('suggest') || lowerBody.includes('consider') || lowerBody.includes('might want to')) {
+                return 'Suggestions';
+              } else if (lowerBody.includes('?') || lowerBody.includes('why') || lowerBody.includes('how')) {
+                return 'Questions';
+              }
+
+              return 'Other';
+            }
+
+            // Process review comments (file-specific)
+            for (const comment of comments) {
+              const category = categorizeComment(comment.body);
+              categories[category].push({
+                type: 'Comment',
+                author: comment.user.login,
+                file: comment.path,
+                line: comment.line || comment.original_line,
+                body: comment.body,
+                url: comment.html_url,
+                created_at: comment.created_at
+              });
+            }
+
+            // Process general review comments
+            for (const review of reviews) {
+              if (review.body && review.body.trim().length > 0) {
+                const category = categorizeComment(review.body);
+                categories[category].push({
+                  type: 'Review',
+                  author: review.user.login,
+                  state: review.state,
+                  body: review.body,
+                  url: review.html_url,
+                  created_at: review.submitted_at
+                });
+              }
+            }
+
+            // Build markdown table
+            let summaryTable = '## 📋 Review Comments Summary\n\n';
+            summaryTable += '_Auto-generated summary of all review comments and suggestions_\n\n';
+
+            // Add summary counts
+            const totalComments = Object.values(categories).reduce((sum, cat) => sum + cat.length, 0);
+            summaryTable += `**Total Comments:** ${totalComments}\n\n`;
+
+            let hasCritical = false;
+
+            // Build detailed tables for each category
+            for (const [categoryName, items] of Object.entries(categories)) {
+              if (items.length === 0) continue;
+
+              if (categoryName === 'Critical Issues' || categoryName === 'Security Concerns') {
+                hasCritical = true;
+              }
+
+              const emoji = {
+                'Critical Issues': '🚨',
+                'Security Concerns': '🔒',
+                'Bug Fixes Needed': '🐛',
+                'Performance Improvements': '⚡',
+                'Code Quality': '✨',
+                'Documentation': '📝',
+                'Suggestions': '💡',
+                'Questions': '❓',
+                'Other': '💬'
+              };
+
+              summaryTable += `### ${emoji[categoryName]} ${categoryName} (${items.length})\n\n`;
+              summaryTable += '| Author | Location | Comment | Link |\n';
+              summaryTable += '|--------|----------|---------|------|\n';
+
+              for (const item of items) {
+                const author = item.author;
+                const location = item.file
+                  ? `\`${item.file}:${item.line || '?'}\``
+                  : `General Review (${item.state})`;
+
+                // Truncate comment to first 150 chars for table
+                let comment = item.body
+                  .replace(/\r\n/g, ' ')
+                  .replace(/\n/g, ' ')
+                  .replace(/\|/g, '\\|')
+                  .trim();
+
+                if (comment.length > 150) {
+                  comment = comment.substring(0, 147) + '...';
+                }
+
+                const link = `[View](${item.url})`;
+
+                summaryTable += `| @${author} | ${location} | ${comment} | ${link} |\n`;
+              }
+
+              summaryTable += '\n';
+            }
+
+            // Add helpful footer
+            summaryTable += '---\n\n';
+            summaryTable += '_This summary is automatically updated when new review comments are added._\n\n';
+
+            if (hasCritical) {
+              summaryTable += '> ⚠️ **Note:** This PR has critical issues or security concerns that should be addressed before merging.\n\n';
+            }
+
+            summaryTable += '<details>\n<summary>📊 View Review Statistics</summary>\n\n';
+            summaryTable += '```\n';
+            for (const [categoryName, items] of Object.entries(categories)) {
+              if (items.length > 0) {
+                summaryTable += `${categoryName.padEnd(30)} ${items.length}\n`;
+              }
+            }
+            summaryTable += '```\n</details>\n';
+
+            // Find existing comment from this bot
+            const { data: existingComments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number: pull_number
+            });
+
+            const botComment = existingComments.find(
+              comment => comment.user.type === 'Bot' && comment.body.includes('📋 Review Comments Summary')
+            );
+
+            // Update or create comment
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: botComment.id,
+                body: summaryTable
+              });
+              console.log('Updated existing review summary comment');
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: pull_number,
+                body: summaryTable
+              });
+              console.log('Created new review summary comment');
+            }

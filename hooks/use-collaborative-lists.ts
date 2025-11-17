@@ -36,17 +36,18 @@ export function useCollaborativeLists(sessionId: string, userId?: string, userNa
     fetchLists()
   }, [fetchLists])
 
-  const handleRealtimeUpdate = useCallback((payload: any) => {
-    if (payload.eventType === 'INSERT' && payload.new.session_id === sessionId) {
-      setLists(currentLists => [payload.new, ...currentLists])
-    } else if (payload.eventType === 'UPDATE' && payload.new.session_id === sessionId) {
-      setLists(currentLists =>
-        currentLists.map(l => (l.id === payload.new.id ? payload.new : l))
-      )
-    } else if (payload.eventType === 'DELETE' && payload.old.session_id === sessionId) {
-      setLists(currentLists => currentLists.filter(l => l.id !== payload.old.id))
-    }
-  }, [sessionId])
+  const handleRealtimeUpdate = useCallback(
+    (payload: any) => {
+      if (payload.eventType === 'INSERT' && payload.new.session_id === sessionId) {
+        setLists(currentLists => [payload.new, ...currentLists])
+      } else if (payload.eventType === 'UPDATE' && payload.new.session_id === sessionId) {
+        setLists(currentLists => currentLists.map(l => (l.id === payload.new.id ? payload.new : l)))
+      } else if (payload.eventType === 'DELETE' && payload.old.session_id === sessionId) {
+        setLists(currentLists => currentLists.filter(l => l.id !== payload.old.id))
+      }
+    },
+    [sessionId]
+  )
 
   useRealtime({
     channelName: `collaborative-lists-${sessionId}`,
@@ -55,38 +56,41 @@ export function useCollaborativeLists(sessionId: string, userId?: string, userNa
     callback: handleRealtimeUpdate,
   })
 
-  const createList = useCallback(async (title: string, listType: 'bullet' | 'numbered') => {
-    if (!title.trim() || !sessionId || !userId || !userName) {
-      toast.error('Missing required information')
-      return null
-    }
+  const createList = useCallback(
+    async (title: string, listType: 'bullet' | 'numbered') => {
+      if (!title.trim() || !sessionId || !userId || !userName) {
+        toast.error('Missing required information')
+        return null
+      }
 
-    if (!isSupabaseConfigured) {
-      toast.error('Database not configured')
-      return null
-    }
+      if (!isSupabaseConfigured) {
+        toast.error('Database not configured')
+        return null
+      }
 
-    try {
-      const { data, error } = await supabase
-        .from('collaborative_lists')
-        .insert({
-          session_id: sessionId,
-          title: title.trim(),
-          list_type: listType,
-          creator_id: userId,
-          creator_name: userName,
-        })
-        .select()
-        .single()
+      try {
+        const { data, error } = await supabase
+          .from('collaborative_lists')
+          .insert({
+            session_id: sessionId,
+            title: title.trim(),
+            list_type: listType,
+            creator_id: userId,
+            creator_name: userName,
+          })
+          .select()
+          .single()
 
-      if (error) throw error
-      toast.success('List created!')
-      return data
-    } catch (error: any) {
-      toast.error(error.message)
-      return null
-    }
-  }, [sessionId, userId, userName])
+        if (error) throw error
+        toast.success('List created!')
+        return data
+      } catch (error: any) {
+        toast.error(error.message)
+        return null
+      }
+    },
+    [sessionId, userId, userName]
+  )
 
   const deleteList = useCallback(async (listId: string) => {
     if (!isSupabaseConfigured) {
@@ -95,10 +99,7 @@ export function useCollaborativeLists(sessionId: string, userId?: string, userNa
     }
 
     try {
-      const { error } = await supabase
-        .from('collaborative_lists')
-        .delete()
-        .eq('id', listId)
+      const { error } = await supabase.from('collaborative_lists').delete().eq('id', listId)
 
       if (error) throw error
       toast.success('List deleted')
@@ -146,17 +147,22 @@ export function useListItems(listId: string) {
     fetchItems()
   }, [fetchItems])
 
-  const handleRealtimeUpdate = useCallback((payload: any) => {
-    if (payload.eventType === 'INSERT' && payload.new.list_id === listId) {
-      setItems(currentItems => [...currentItems, payload.new].sort((a, b) => a.order_index - b.order_index))
-    } else if (payload.eventType === 'UPDATE' && payload.new.list_id === listId) {
-      setItems(currentItems =>
-        currentItems.map(item => (item.id === payload.new.id ? payload.new : item))
-      )
-    } else if (payload.eventType === 'DELETE' && payload.old.list_id === listId) {
-      setItems(currentItems => currentItems.filter(item => item.id !== payload.old.id))
-    }
-  }, [listId])
+  const handleRealtimeUpdate = useCallback(
+    (payload: any) => {
+      if (payload.eventType === 'INSERT' && payload.new.list_id === listId) {
+        setItems(currentItems =>
+          [...currentItems, payload.new].sort((a, b) => a.order_index - b.order_index)
+        )
+      } else if (payload.eventType === 'UPDATE' && payload.new.list_id === listId) {
+        setItems(currentItems =>
+          currentItems.map(item => (item.id === payload.new.id ? payload.new : item))
+        )
+      } else if (payload.eventType === 'DELETE' && payload.old.list_id === listId) {
+        setItems(currentItems => currentItems.filter(item => item.id !== payload.old.id))
+      }
+    },
+    [listId]
+  )
 
   useRealtime({
     channelName: `list-items-${listId}`,
@@ -165,36 +171,39 @@ export function useListItems(listId: string) {
     callback: handleRealtimeUpdate,
   })
 
-  const addItem = useCallback(async (text: string) => {
-    if (!text.trim() || !listId) {
-      toast.error('Missing required information')
-      return null
-    }
+  const addItem = useCallback(
+    async (text: string) => {
+      if (!text.trim() || !listId) {
+        toast.error('Missing required information')
+        return null
+      }
 
-    if (!isSupabaseConfigured) {
-      toast.error('Database not configured')
-      return null
-    }
+      if (!isSupabaseConfigured) {
+        toast.error('Database not configured')
+        return null
+      }
 
-    try {
-      const orderIndex = items.length
-      const { data, error } = await supabase
-        .from('list_items')
-        .insert({
-          list_id: listId,
-          text: text.trim(),
-          order_index: orderIndex,
-        })
-        .select()
-        .single()
+      try {
+        const orderIndex = items.length
+        const { data, error } = await supabase
+          .from('list_items')
+          .insert({
+            list_id: listId,
+            text: text.trim(),
+            order_index: orderIndex,
+          })
+          .select()
+          .single()
 
-      if (error) throw error
-      return data
-    } catch (error: any) {
-      toast.error(error.message)
-      return null
-    }
-  }, [listId, items.length])
+        if (error) throw error
+        return data
+      } catch (error: any) {
+        toast.error(error.message)
+        return null
+      }
+    },
+    [listId, items.length]
+  )
 
   const updateItem = useCallback(async (itemId: string, text: string) => {
     if (!isSupabaseConfigured) {
@@ -221,10 +230,7 @@ export function useListItems(listId: string) {
     }
 
     try {
-      const { error } = await supabase
-        .from('list_items')
-        .delete()
-        .eq('id', itemId)
+      const { error } = await supabase.from('list_items').delete().eq('id', itemId)
 
       if (error) throw error
     } catch (error: any) {
@@ -271,17 +277,18 @@ export function useListItemVerifications(itemId: string, userId?: string, userNa
     fetchVerifications()
   }, [fetchVerifications])
 
-  const handleRealtimeUpdate = useCallback((payload: any) => {
-    if (payload.eventType === 'INSERT' && payload.new.item_id === itemId) {
-      setVerifications(current => [...current, payload.new])
-    } else if (payload.eventType === 'UPDATE' && payload.new.item_id === itemId) {
-      setVerifications(current =>
-        current.map(v => (v.id === payload.new.id ? payload.new : v))
-      )
-    } else if (payload.eventType === 'DELETE' && payload.old.item_id === itemId) {
-      setVerifications(current => current.filter(v => v.id !== payload.old.id))
-    }
-  }, [itemId])
+  const handleRealtimeUpdate = useCallback(
+    (payload: any) => {
+      if (payload.eventType === 'INSERT' && payload.new.item_id === itemId) {
+        setVerifications(current => [...current, payload.new])
+      } else if (payload.eventType === 'UPDATE' && payload.new.item_id === itemId) {
+        setVerifications(current => current.map(v => (v.id === payload.new.id ? payload.new : v)))
+      } else if (payload.eventType === 'DELETE' && payload.old.item_id === itemId) {
+        setVerifications(current => current.filter(v => v.id !== payload.old.id))
+      }
+    },
+    [itemId]
+  )
 
   useRealtime({
     channelName: `verifications-${itemId}`,
@@ -292,48 +299,49 @@ export function useListItemVerifications(itemId: string, userId?: string, userNa
 
   const myVerification = verifications.find(v => v.user_id === userId)
 
-  const submitVerification = useCallback(async (isAccurate: boolean, correctionText?: string) => {
-    if (!userId || !userName || !itemId) {
-      toast.error('Missing user information')
-      return
-    }
-
-    if (!isSupabaseConfigured) {
-      toast.error('Database not configured')
-      return
-    }
-
-    try {
-      const verificationData = {
-        item_id: itemId,
-        user_id: userId,
-        user_name: userName,
-        is_accurate: isAccurate,
-        correction_text: !isAccurate ? correctionText?.trim() : null,
+  const submitVerification = useCallback(
+    async (isAccurate: boolean, correctionText?: string) => {
+      if (!userId || !userName || !itemId) {
+        toast.error('Missing user information')
+        return
       }
 
-      if (myVerification) {
-        // Update existing verification
-        const { error } = await supabase
-          .from('list_item_verifications')
-          .update({ ...verificationData, updated_at: new Date().toISOString() })
-          .eq('id', myVerification.id)
-
-        if (error) throw error
-        toast.success('Verification updated')
-      } else {
-        // Insert new verification
-        const { error } = await supabase
-          .from('list_item_verifications')
-          .insert(verificationData)
-
-        if (error) throw error
-        toast.success('Verification submitted')
+      if (!isSupabaseConfigured) {
+        toast.error('Database not configured')
+        return
       }
-    } catch (error: any) {
-      toast.error(error.message)
-    }
-  }, [itemId, userId, userName, myVerification])
+
+      try {
+        const verificationData = {
+          item_id: itemId,
+          user_id: userId,
+          user_name: userName,
+          is_accurate: isAccurate,
+          correction_text: !isAccurate ? correctionText?.trim() : null,
+        }
+
+        if (myVerification) {
+          // Update existing verification
+          const { error } = await supabase
+            .from('list_item_verifications')
+            .update({ ...verificationData, updated_at: new Date().toISOString() })
+            .eq('id', myVerification.id)
+
+          if (error) throw error
+          toast.success('Verification updated')
+        } else {
+          // Insert new verification
+          const { error } = await supabase.from('list_item_verifications').insert(verificationData)
+
+          if (error) throw error
+          toast.success('Verification submitted')
+        }
+      } catch (error: any) {
+        toast.error(error.message)
+      }
+    },
+    [itemId, userId, userName, myVerification]
+  )
 
   return {
     verifications,

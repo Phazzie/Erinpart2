@@ -19,7 +19,7 @@ export default function SessionJoin({ onSessionReady }: SessionJoinProps) {
   const [sessionId, setSessionId] = useState('')
   const [userName, setUserName] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  
+
   // Parse URL for existing session
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -32,13 +32,13 @@ export default function SessionJoin({ onSessionReady }: SessionJoinProps) {
     }
   }, [])
 
-  const { 
-    sessionInfo, 
-    isParticipant, 
-    isFull, 
-    loading: sessionLoading, 
-    createSession, 
-    joinSession 
+  const {
+    sessionInfo,
+    isParticipant,
+    isFull,
+    loading: sessionLoading,
+    createSession,
+    joinSession,
   } = useSessionManagement(sessionId, user?.id, userName)
 
   // If user is already in the session, proceed to app
@@ -59,7 +59,7 @@ export default function SessionJoin({ onSessionReady }: SessionJoinProps) {
       // Generate a new session ID
       const newSessionId = generateSessionId()
       setSessionId(newSessionId)
-      
+
       // Wait a moment for the sessionId to be set and hook to initialize
       setTimeout(async () => {
         const success = await createSession()
@@ -109,9 +109,10 @@ export default function SessionJoin({ onSessionReady }: SessionJoinProps) {
         <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 shadow-2xl max-w-md w-full mx-4 text-center">
           <h1 className="text-3xl font-bold text-white mb-4">Session Full</h1>
           <p className="text-white/80 mb-6">
-            This session already has {sessionInfo.participant_limit} participants and cannot accept more people.
+            This session already has {sessionInfo.participant_limit} participants and cannot accept
+            more people.
           </p>
-          
+
           <div className="bg-white/5 rounded-lg p-4 mb-6">
             <h3 className="text-white font-medium mb-2">Current Participants:</h3>
             <div className="space-y-1">
@@ -122,7 +123,7 @@ export default function SessionJoin({ onSessionReady }: SessionJoinProps) {
               ))}
             </div>
           </div>
-          
+
           <Button
             onClick={() => {
               setMode('create')
@@ -146,7 +147,7 @@ export default function SessionJoin({ onSessionReady }: SessionJoinProps) {
           <p className="text-white/80 mb-6">
             The session &quot;{sessionId}&quot; doesn&apos;t exist or has expired.
           </p>
-          
+
           <div className="space-y-3">
             <Button
               onClick={() => {
@@ -157,7 +158,7 @@ export default function SessionJoin({ onSessionReady }: SessionJoinProps) {
             >
               Create New Session
             </Button>
-            
+
             <Button
               onClick={() => {
                 setMode('join')
@@ -177,23 +178,17 @@ export default function SessionJoin({ onSessionReady }: SessionJoinProps) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
       <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 shadow-2xl max-w-md w-full mx-4">
-        <h1 className="text-3xl font-bold text-white mb-2 text-center">
-          Erin&apos;s Escapades
-        </h1>
-        <p className="text-white/80 text-center mb-8">
-          Collaborative planning sessions
-        </p>
+        <h1 className="text-3xl font-bold text-white mb-2 text-center">Erin&apos;s Escapades</h1>
+        <p className="text-white/80 text-center mb-8">Collaborative planning sessions</p>
 
         <div className="space-y-6">
           {/* Name input */}
           <div>
-            <label className="block text-white/80 text-sm font-medium mb-2">
-              Your Name
-            </label>
+            <label className="block text-white/80 text-sm font-medium mb-2">Your Name</label>
             <Input
               type="text"
               value={userName}
-              onChange={(e) => setUserName(e.target.value)}
+              onChange={e => setUserName(e.target.value)}
               placeholder="Enter your name"
               className="w-full"
               autoFocus
@@ -205,9 +200,7 @@ export default function SessionJoin({ onSessionReady }: SessionJoinProps) {
             <button
               onClick={() => setMode('join')}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                mode === 'join'
-                  ? 'bg-white/20 text-white'
-                  : 'text-white/60 hover:text-white/80'
+                mode === 'join' ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white/80'
               }`}
             >
               Join Session
@@ -215,9 +208,7 @@ export default function SessionJoin({ onSessionReady }: SessionJoinProps) {
             <button
               onClick={() => setMode('create')}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                mode === 'create'
-                  ? 'bg-white/20 text-white'
-                  : 'text-white/60 hover:text-white/80'
+                mode === 'create' ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white/80'
               }`}
             >
               Create Session
@@ -227,13 +218,11 @@ export default function SessionJoin({ onSessionReady }: SessionJoinProps) {
           {/* Session ID input (only for join mode) */}
           {mode === 'join' && (
             <div>
-              <label className="block text-white/80 text-sm font-medium mb-2">
-                Session ID
-              </label>
+              <label className="block text-white/80 text-sm font-medium mb-2">Session ID</label>
               <Input
                 type="text"
                 value={sessionId}
-                onChange={(e) => setSessionId(e.target.value)}
+                onChange={e => setSessionId(e.target.value)}
                 placeholder="e.g. cat-dog-bird"
                 className="w-full"
               />
@@ -244,24 +233,21 @@ export default function SessionJoin({ onSessionReady }: SessionJoinProps) {
           <Button
             onClick={mode === 'create' ? handleCreateSession : handleJoinSession}
             className="w-full"
-            disabled={
-              !userName.trim() || 
-              (mode === 'join' && !sessionId.trim()) || 
-              isSubmitting
-            }
+            disabled={!userName.trim() || (mode === 'join' && !sessionId.trim()) || isSubmitting}
           >
-            {isSubmitting 
-              ? (mode === 'create' ? 'Creating...' : 'Joining...') 
-              : (mode === 'create' ? 'Create Session' : 'Join Session')
-            }
+            {isSubmitting
+              ? mode === 'create'
+                ? 'Creating...'
+                : 'Joining...'
+              : mode === 'create'
+                ? 'Create Session'
+                : 'Join Session'}
           </Button>
 
           {/* Session info */}
           {sessionInfo && !isFull && (
             <div className="bg-white/5 rounded-lg p-4">
-              <h3 className="text-white font-medium mb-2">
-                Session: {sessionInfo.id}
-              </h3>
+              <h3 className="text-white font-medium mb-2">Session: {sessionInfo.id}</h3>
               <p className="text-white/70 text-sm mb-2">
                 {sessionInfo.participants.length} of {sessionInfo.participant_limit} people
               </p>

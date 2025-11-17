@@ -1,6 +1,6 @@
 import { toast as hotToast } from 'react-hot-toast'
 import { motion } from 'framer-motion'
-import React from 'react';
+import React from 'react'
 
 interface ToastOptions {
   type?: 'success' | 'error' | 'info' | 'warning'
@@ -8,7 +8,15 @@ interface ToastOptions {
   position?: 'top-center' | 'top-right' | 'bottom-center' | 'bottom-right'
 }
 
-const ToastComponent = ({ t, message, type = 'info' }: { t: any, message: string; type: string }) => {
+const ToastComponent = ({
+  t,
+  message,
+  type = 'info',
+}: {
+  t: any
+  message: string
+  type: string
+}) => {
   const getToastStyles = () => {
     switch (type) {
       case 'success':
@@ -24,10 +32,14 @@ const ToastComponent = ({ t, message, type = 'info' }: { t: any, message: string
 
   const getIcon = () => {
     switch (type) {
-      case 'success': return '✅'
-      case 'error': return '❌'
-      case 'warning': return '⚠️'
-      default: return 'ℹ️'
+      case 'success':
+        return '✅'
+      case 'error':
+        return '❌'
+      case 'warning':
+        return '⚠️'
+      default:
+        return 'ℹ️'
     }
   }
 
@@ -69,42 +81,30 @@ const ToastComponent = ({ t, message, type = 'info' }: { t: any, message: string
 
 export const toast = {
   success: (message: string, options?: ToastOptions) => {
-    hotToast.custom(
-      (t) => <ToastComponent t={t} message={message} type="success" />,
-      {
-        duration: options?.duration || 4000,
-        position: options?.position || 'top-right',
-      }
-    )
+    hotToast.custom(t => <ToastComponent t={t} message={message} type="success" />, {
+      duration: options?.duration || 4000,
+      position: options?.position || 'top-right',
+    })
   },
 
   error: (message: string, options?: ToastOptions) => {
-    hotToast.custom(
-      (t) => <ToastComponent t={t} message={message} type="error" />,
-      {
-        duration: options?.duration || 5000,
-        position: options?.position || 'top-right',
-      }
-    )
+    hotToast.custom(t => <ToastComponent t={t} message={message} type="error" />, {
+      duration: options?.duration || 5000,
+      position: options?.position || 'top-right',
+    })
   },
 
   info: (message: string, options?: ToastOptions) => {
-    hotToast.custom(
-      (t) => <ToastComponent t={t} message={message} type="info" />,
-      {
-        duration: options?.duration || 3000,
-        position: options?.position || 'top-right',
-      }
-    )
+    hotToast.custom(t => <ToastComponent t={t} message={message} type="info" />, {
+      duration: options?.duration || 3000,
+      position: options?.position || 'top-right',
+    })
   },
 
   warning: (message: string, options?: ToastOptions) => {
-    hotToast.custom(
-      (t) => <ToastComponent t={t} message={message} type="warning" />,
-      {
-        duration: options?.duration || 4000,
-        position: options?.position || 'top-right',
-      }
-    )
-  }
+    hotToast.custom(t => <ToastComponent t={t} message={message} type="warning" />, {
+      duration: options?.duration || 4000,
+      position: options?.position || 'top-right',
+    })
+  },
 }

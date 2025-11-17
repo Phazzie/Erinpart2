@@ -16,15 +16,15 @@ describe('TaskList', () => {
   const mockOnSelectTask = jest.fn()
   const mockOnVote = jest.fn()
 
-  const tasksForSession = mockTasks.filter(t => t.session_id === 'session-1');
+  const tasksForSession = mockTasks.filter(t => t.session_id === 'session-1')
 
   it('should render a list of tasks when tasks are provided', () => {
     render(
       <TaskList
         tasks={tasksForSession}
         onUpdateTask={mockOnUpdateTask}
-  onSetChoice={jest.fn()}
-  myChoiceByTask={new Map()}
+        onSetChoice={jest.fn()}
+        myChoiceByTask={new Map()}
         onReorderTasks={mockOnReorderTasks}
         selectedTask={null}
         onSelectTask={mockOnSelectTask}
@@ -47,8 +47,8 @@ describe('TaskList', () => {
       <TaskList
         tasks={[]}
         onUpdateTask={mockOnUpdateTask}
-  onSetChoice={jest.fn()}
-  myChoiceByTask={new Map()}
+        onSetChoice={jest.fn()}
+        myChoiceByTask={new Map()}
         onReorderTasks={mockOnReorderTasks}
         selectedTask={null}
         onSelectTask={mockOnSelectTask}

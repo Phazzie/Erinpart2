@@ -24,9 +24,9 @@ export default function CollaborativeListComponent({
   const [isExpanded, setIsExpanded] = useState(true)
   const [newItemText, setNewItemText] = useState('')
   const [isAddingItem, setIsAddingItem] = useState(false)
-  
+
   const { items, addItem, updateItem, deleteItem } = useListItems(list.id)
-  
+
   const isCreator = list.creator_id === userId
 
   const handleAddItem = async () => {
@@ -50,22 +50,23 @@ export default function CollaborativeListComponent({
             onClick={() => setIsExpanded(!isExpanded)}
             className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
           >
-            {isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+            {isExpanded ? (
+              <ChevronDown className="w-5 h-5" />
+            ) : (
+              <ChevronRight className="w-5 h-5" />
+            )}
           </button>
           <div>
             <h3 className="text-xl font-bold">{list.title}</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Created by {list.creator_name} • {list.list_type === 'bullet' ? 'Bullet' : 'Numbered'} List
+              Created by {list.creator_name} • {list.list_type === 'bullet' ? 'Bullet' : 'Numbered'}{' '}
+              List
             </p>
           </div>
         </div>
-        
+
         {isCreator && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => onDeleteList(list.id)}
-          >
+          <Button size="sm" variant="outline" onClick={() => onDeleteList(list.id)}>
             <Trash2 className="w-4 h-4" />
           </Button>
         )}
@@ -77,7 +78,8 @@ export default function CollaborativeListComponent({
           {/* Items */}
           {items.length === 0 ? (
             <p className="text-gray-500 dark:text-gray-400 text-center py-8">
-              No items yet. {isCreator ? 'Add your first item below!' : 'Waiting for creator to add items.'}
+              No items yet.{' '}
+              {isCreator ? 'Add your first item below!' : 'Waiting for creator to add items.'}
             </p>
           ) : (
             <div className="space-y-3">
@@ -103,8 +105,8 @@ export default function CollaborativeListComponent({
               <Input
                 placeholder="Add new item..."
                 value={newItemText}
-                onChange={(e) => setNewItemText(e.target.value)}
-                onKeyDown={(e) => {
+                onChange={e => setNewItemText(e.target.value)}
+                onKeyDown={e => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault()
                     handleAddItem()
@@ -112,10 +114,7 @@ export default function CollaborativeListComponent({
                 }}
                 disabled={isAddingItem}
               />
-              <Button
-                onClick={handleAddItem}
-                disabled={!newItemText.trim() || isAddingItem}
-              >
+              <Button onClick={handleAddItem} disabled={!newItemText.trim() || isAddingItem}>
                 <Plus className="w-4 h-4" />
               </Button>
             </div>
