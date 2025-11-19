@@ -141,8 +141,8 @@ describe('AnimalCodeForm', () => {
 
       fireEvent.change(animal1Select, { target: { value: 'Dragon' } })
       fireEvent.change(animal2Select, { target: { value: 'Phoenix' } })
-      fireEvent.change(nameInput, { target: { value: 'A'.repeat(51) } })
-      
+      fireEvent.change(nameInput, { target: { value: 'A'.repeat(21) } })
+
       const joinButton = screen.getByRole('button', { name: /join session/i })
       fireEvent.click(joinButton)
 

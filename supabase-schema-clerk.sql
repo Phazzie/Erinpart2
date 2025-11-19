@@ -23,26 +23,36 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 -- In development/testing, you can manually set the user ID:
 --   SET request.jwt.claims = '{"sub": "user_2xxxTestID"}';
 --
--- ⚠️ SECURITY WARNING: SECURITY DEFINER FUNCTION ⚠️
--- This function is marked as SECURITY DEFINER, which means it runs with the
--- privileges of the function creator (typically a superuser). This is REQUIRED
--- to access request.jwt.claims, which is not accessible to normal users.
+-- ⚠️  SECURITY DEFINER USAGE WARNING ⚠️
+-- This function uses SECURITY DEFINER, which runs with the privileges of the
+-- function creator (typically a superuser or database owner).
 --
--- CRITICAL SECURITY REQUIREMENTS:
--- 1. This function MUST ONLY perform read operations
--- 2. This function MUST NOT access or expose any sensitive data beyond the user ID
--- 3. DO NOT modify this function to perform INSERT, UPDATE, DELETE, or other write operations
--- 4. DO NOT add any logic that could leak privileged information
--- 5. Always ensure Row Level Security (RLS) policies are properly configured on tables
---    that use this function - RLS is the primary security mechanism
+-- WHY SECURITY DEFINER IS REQUIRED:
+-- - Accessing request.jwt.claims requires elevated privileges
+-- - Row-Level Security (RLS) policies need to read JWT claims
+-- - Standard users don't have permission to read current_setting() for JWT data
 --
--- If you need to modify this function:
--- - Review the change with a security expert
--- - Test that RLS policies still function correctly
--- - Verify no privileged information is exposed
--- - Document the reason for the change
+-- SECURITY CONSIDERATIONS:
+-- - This function ONLY performs READ operations (no INSERT/UPDATE/DELETE)
+-- - It ONLY accesses JWT claims data (no sensitive database data)
+-- - The function is STABLE (cannot modify database state)
+-- - RLS policies using this function still properly restrict access
+-- - The returned user ID is used for authorization, not authentication
 --
--- See PostgreSQL SECURITY DEFINER documentation and Supabase RLS best practices
+-- ⚠️  CRITICAL: DO NOT MODIFY THIS FUNCTION ⚠️
+-- - Do NOT add write operations (INSERT/UPDATE/DELETE)
+-- - Do NOT add logic that bypasses RLS policies
+-- - Do NOT expose sensitive data beyond the user ID
+-- - Verify any changes with a security review
+-- - Test thoroughly with RLS policies enabled
+--
+-- SAFE PATTERN:
+--   CREATE POLICY "name" ON table USING (current_user_id() = user_column);
+--
+-- UNSAFE PATTERNS (DO NOT DO THIS):
+--   - Using SECURITY DEFINER to bypass RLS checks
+--   - Reading/writing sensitive data in this function
+--   - Adding business logic that should be in policies
 -- ============================================================================
 CREATE OR REPLACE FUNCTION public.current_user_id()
 RETURNS text
@@ -54,11 +64,7 @@ AS $$
 $$;
 
 COMMENT ON FUNCTION public.current_user_id() IS
-'Returns the current Clerk user ID from JWT claims. Replaces auth.uid() for Clerk integration.
-
-⚠️ SECURITY DEFINER: This function runs with elevated privileges to access JWT claims.
-Only performs read operations. Must not be modified to access/expose sensitive data.
-RLS policies on tables using this function are the primary security mechanism.';
+'Returns the current Clerk user ID from JWT claims. Replaces auth.uid() for Clerk integration. Uses SECURITY DEFINER to access JWT data - see schema file for security warnings.';
 
 -- ============================================================================
 -- USERS TABLE (Profile)

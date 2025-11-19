@@ -124,11 +124,10 @@ export const useSession = (): SessionHook => {
   let usernameSource = 'default' // Track source for debugging
 
   if (clerkUser) {
-    // Authenticated with Clerk - use Clerk user ID
+    // Authenticated with Clerk - use Clerk user ID and name
+    // Only use Clerk data to avoid confusion from previous guest sessions
     userId = clerkUser.id
-    // Use only Clerk data for authenticated users to avoid confusion
-    // Don't fall back to guest session names from localStorage
-    userName = clerkUser.firstName || clerkUser.username || 'User'
+    userName = clerkUser.firstName || clerkUser.username || clerkUser.emailAddresses[0]?.emailAddress || 'User'
 
     if (process.env.NODE_ENV === 'development') {
       console.log('[useSession] Clerk user authenticated:', {

@@ -122,22 +122,7 @@ export default function AnimalCodeForm() {
     const sessionData = {
       sessionId,
       userName: name,
-      joinedAt: new Date().toISOString()
-    }
-
-    // Sanitize to prevent XSS - remove potentially dangerous characters
-    // Note: React escapes text content by default, but we store this in localStorage
-    // and it might be used in various contexts, so we sanitize defensively
-    const sanitizedData = {
-      ...sessionData,
-      userName: sessionData.userName
-        .replace(/[<>]/g, '') // Remove HTML tags
-        .replace(/['"]/g, '') // Remove quotes to prevent attribute injection
-        .replace(/[\\]/g, '') // Remove backslashes
-        .replace(/javascript:/gi, '') // Remove javascript: protocol
-        .replace(/on\w+=/gi, '') // Remove event handlers like onclick=
-        .trim()
-        .slice(0, 100) // Limit length to prevent DoS
+      joinedAt: new Date().toISOString(),
     }
 
     // Store session info in localStorage

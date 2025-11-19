@@ -49,8 +49,7 @@ export default function RootLayout({
                   Sign In
                 </button>
               </SignInButton>
-            </SignedOut>
-            <SignedIn>
+            </SignedOut>            <SignedIn>
               <UserButton
                 appearance={{
                   elements: {

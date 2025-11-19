@@ -99,18 +99,7 @@ describe('useSession', () => {
       })
     })
 
-    // TODO: Fix URL session parameter test
-    // This test is skipped because mocking window.location in Jest is unreliable
-    // and causes issues with the test environment. The functionality works correctly
-    // in the browser - users can share URLs like /?session=cat-dog and guests can join.
-    // 
-    // To properly test this, we should:
-    // 1. Use a more robust URL mocking approach (e.g., jsdom-url-search-params-polyfill)
-    // 2. Or create an E2E test using Playwright that tests the full flow
-    // 3. Or extract URL parsing logic into a separate testable function
-    //
-    // Related: CODE_REVIEW_COMMENTS.md #8
-    it.skip('should handle URL session parameter for guest access', async () => {
+    it('should handle URL session parameter for guest access', async () => {
       // Mock window.location.href with query parameter
       const originalLocation = window.location
 
