@@ -10,6 +10,10 @@ jest.mock('next/navigation', () => ({
   redirect: jest.fn(),
 }))
 
+jest.mock('@clerk/nextjs/server', () => ({
+  auth: jest.fn(() => Promise.resolve({ userId: null })),
+}))
+
 describe('server actions validation', () => {
   const OLD_ENV = process.env
   beforeEach(() => {

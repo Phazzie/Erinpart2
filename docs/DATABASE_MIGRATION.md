@@ -548,6 +548,6 @@ If you encounter issues:
 
 ---
 
-**Migration Created:** 2025-11-14
+**Migration Created:** 2024-11-14
 **Schema Version:** Clerk v1.0
-**Last Updated:** 2025-11-14
+**Last Updated:** 2024-11-14

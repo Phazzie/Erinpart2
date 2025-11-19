@@ -92,12 +92,15 @@ export default function SessionBoard() {
             setGuestAnswers(decoded as Record<string, 'yes' | 'no' | 'maybe' | ''>)
             setAnswersEncoded(a)
           } else {
+            toast.error('Session link contains invalid choice values')
             console.warn('[SessionBoard] Invalid answers parameter - invalid choice values')
           }
         } else {
+          toast.error('Session link is malformed')
           console.warn('[SessionBoard] Invalid answers parameter - not a valid object')
         }
       } catch (error) {
+        toast.error('Unable to load session from link')
         console.error('[SessionBoard] Failed to decode answers:', error)
         // Don't set invalid data
       }
@@ -132,20 +135,54 @@ export default function SessionBoard() {
    * but should be optimized if sessions regularly have >50 tasks.
    *
    * @param reorderedTasks The newly ordered array of tasks for the current day.
+   * 
+   * Note: This performs N individual update operations in parallel. For better
+   * performance with many tasks, consider implementing a batch update RPC function
+   * in Supabase that updates all task orders in a single database round trip.
    */
   const handleReorderTasks = async (reorderedTasks: Task[]) => {
     // TODO: Optimize with batch update endpoint for large task lists (>50 tasks)
     // Current: N parallel requests via Promise.all (acceptable for most cases)
     // Ideal: Single batch update API call
     try {
-      // Use updateTask from the hook for each order change
-      const updates = reorderedTasks.map((task, index) =>
-        updateTask(task.id, { order_index: index })
-      )
+      // Prepare batch update payload
+      const updates = reorderedTasks.map((task, index) => ({
+        id: task.id,
+        order_index: index
+      }))
 
-      await Promise.all(updates)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[SessionBoard] Sending batch update for', updates.length, 'tasks')
+      }
+
+      // Call batch update API endpoint
+      const response = await fetch('/api/tasks/batch-update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          updates,
+          session_id: sessionId // Include for additional validation
+        })
+      })
+
+      // Handle non-OK responses
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        const errorMessage = errorData.message || `Server error: ${response.status}`
+        throw new Error(errorMessage)
+      }
+
+      const result = await response.json()
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[SessionBoard] Batch update successful:', result)
+      }
 
       // Success - updates are persisted, realtime will sync the state
+      // No need to manually update local state as Supabase realtime handles it
+
     } catch (error: any) {
       toast.error('Failed to save task order')
       if (process.env.NODE_ENV === 'development') {
