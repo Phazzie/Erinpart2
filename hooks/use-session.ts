@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useUser } from '@clerk/nextjs'
 
 type SessionData = {
   sessionId: string
@@ -17,7 +16,6 @@ type SessionHook = {
 }
 
 export const useSession = (): SessionHook => {
-  const { user: clerkUser, isLoaded: clerkLoaded } = useUser()
   const [sessionData, setSessionData] = useState<SessionData | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
 
@@ -101,66 +99,16 @@ export const useSession = (): SessionHook => {
     return () => window.removeEventListener('storage', handleStorageChange)
   }, [])
 
-  /**
-   * Determine user ID and name based on authentication state and session data.
-   *
-   * Username Fallback Strategy:
-   * 1. For authenticated users (Clerk):
-   *    - Try clerkUser.firstName
-   *    - Fall back to clerkUser.username
-   *    - Fall back to clerkUser.emailAddresses[0]?.emailAddress
-   *    - Fall back to sessionData.userName (if available)
-   *    - Fall back to 'Anonymous'
-   *
-   * 2. For guest users (no Clerk auth):
-   *    - Use sessionData.userName
-   *    - Fall back to 'Anonymous'
-   *
-   * This fallback chain ensures users always have a display name while
-   * preferring authenticated identity over session data.
-   */
+  // Guest-only mode: use session data from localStorage
   let userId: string | null = null
   let userName = 'Anonymous'
-  let usernameSource = 'default' // Track source for debugging
 
-  if (clerkUser) {
-    // Authenticated with Clerk - use Clerk user ID
-    userId = clerkUser.id
-
-    // Apply username fallback chain for Clerk users
-    if (clerkUser.firstName) {
-      userName = clerkUser.firstName
-      usernameSource = 'clerk.firstName'
-    } else if (clerkUser.username) {
-      userName = clerkUser.username
-      usernameSource = 'clerk.username'
-    } else if (clerkUser.emailAddresses?.[0]?.emailAddress) {
-      userName = clerkUser.emailAddresses[0].emailAddress
-      usernameSource = 'clerk.email'
-    } else if (sessionData?.userName) {
-      userName = sessionData.userName
-      usernameSource = 'session.userName'
-    }
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[useSession] Clerk user authenticated:', {
-        userId,
-        userName,
-        source: usernameSource
-      })
-    }
-  } else if (sessionData) {
-    // Guest with animal code session - create guest ID
+  if (sessionData) {
     userId = `guest-${sessionData.sessionId}`
     userName = sessionData.userName
-    usernameSource = 'session.userName'
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('[useSession] Guest user with session:', {
-        userId,
-        userName,
-        source: usernameSource
-      })
+      console.log('[useSession] Guest user with session:', { userId, userName })
     }
   }
 
@@ -168,8 +116,8 @@ export const useSession = (): SessionHook => {
 
   return {
     sessionId: sessionData?.sessionId || '',
-    isOwner: true, // For now, everyone is an owner
+    isOwner: true,
     user,
-    loading: loading || !clerkLoaded,
+    loading,
   }
 }
