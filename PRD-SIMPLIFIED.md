@@ -1,16 +1,16 @@
-# PRD: Erin's Escapades - 30-Minute Build
+# PRD: Erin's Escapades - Magic Word Edition
 
 ## What We're Building
 
-A shared task list where people join via animal codes and vote yes/no/maybe on tasks.
+A shared task list where people join rooms via a "magic word" and vote yes/no/maybe on tasks.
 
-**Build time: 30 minutes**
+**Core insight:** Same word = same room. No codes, no accounts. Just share a word.
 
 ---
 
 ## The Only 3 Things It Does
 
-1. **Join with animal code** - Type "cat-dog" → you're in that room
+1. **Join with a magic word** - Type "tacos" → you're in the "tacos" room
 2. **Add tasks** - Type task, hit enter
 3. **Vote on tasks** - Click Yes / No / Maybe
 
@@ -18,96 +18,151 @@ That's it.
 
 ---
 
-## What We're NOT Building
+## Why Magic Word > Animal Codes
 
-- ❌ No user accounts / auth
-- ❌ No real-time sync (just refresh)
-- ❌ No drag-drop reordering
-- ❌ No themes/vibes
-- ❌ No presence indicators
-- ❌ No delete (add only)
+| Aspect | Magic Word | Animal Pairs |
+|--------|------------|--------------|
+| Inputs | 1 text field | 2 dropdowns |
+| Memorable | You pick it | Random combo |
+| Speakable | "Join tacos" | "Join cat-dolphin" |
+| Code | ~100 lines | ~250 lines |
 
 ---
 
-## Single Page UI
+## The UX
 
+### Join Screen
 ```
 ┌─────────────────────────────────────────┐
-│  Animal Code: [cat-dog    ] [Join]      │
-│  Your Name:   [Sarah      ]             │
+│                                         │
+│       ✨ Erin's Escapades ✨            │
+│      Collaborate with a magic word      │
+│                                         │
+│   Magic Word: [ tacos        ] [Random] │
+│                                         │
+│   Your Name:  [ Sarah        ]          │
+│                                         │
+│           [ ✨ Enter Room ]             │
+│                                         │
+│   Tell your friends: "Join tacos"       │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+### Task Board
+```
+┌─────────────────────────────────────────┐
+│  ✨ tacos                    [Leave]    │
 ├─────────────────────────────────────────┤
-│  + [Type a task...           ] [Add]    │
+│  + [Type a task...              ] [Add] │
 ├─────────────────────────────────────────┤
 │                                         │
-│  □ Get pizza                            │
-│    ✓2  ✗1  ?0   [Yes] [No] [Maybe]     │
+│  Get pizza                      - Sarah │
+│  ✓ 2   ✗ 1   ? 0                       │
+│  [Yes] [No] [Maybe]                     │
 │                                         │
-│  □ Watch movie                          │
-│    ✓3  ✗0  ?0   [Yes] [No] [Maybe]     │
-│                                         │
-│  □ Clean apartment                      │
-│    ✓0  ✗2  ?1   [Yes] [No] [Maybe]     │
+│  Watch movie                    - Mike  │
+│  ✓ 3   ✗ 0   ? 0                       │
+│  [Yes] [No] [Maybe]                     │
 │                                         │
 └─────────────────────────────────────────┘
 ```
 
 ---
 
-## Database (2 Tables)
+## Database Schema (3 tables, no RLS)
 
-Already exists in Supabase - just use what's there:
+```sql
+-- Rooms: created when someone enters a magic word
+CREATE TABLE rooms (
+  id uuid PRIMARY KEY,
+  word text UNIQUE NOT NULL,
+  created_at timestamptz,
+  last_activity timestamptz
+);
 
-**Use existing `tasks` table:**
-- id, session_id, text, created_at
+-- Tasks: belong to a room
+CREATE TABLE tasks (
+  id uuid PRIMARY KEY,
+  room_id uuid REFERENCES rooms(id),
+  text text NOT NULL,
+  creator_name text NOT NULL,
+  created_at timestamptz
+);
 
-**Use existing `task_choices` table:**
-- id, task_id, user_name, choice (yes/no/maybe)
+-- Votes: one per user per task
+CREATE TABLE votes (
+  id uuid PRIMARY KEY,
+  task_id uuid REFERENCES tasks(id),
+  voter_name text NOT NULL,
+  choice text CHECK (choice IN ('yes', 'no', 'maybe')),
+  UNIQUE(task_id, voter_name)
+);
+```
 
-No new tables needed. Reuse existing schema.
+**Zero tech debt:** Clean schema, no auth cruft, no RLS policies referencing dead code.
 
 ---
 
-## Build Steps (30 min)
+## What's NOT Included
 
-### 1. Simplify Homepage (10 min)
-- Strip down `animal-code-form.tsx` to just: animal code input + name input + join button
-- Remove all the fancy stuff
-
-### 2. Simplify Task Board (15 min)
-- Strip down `session-board.tsx` to just show tasks
-- Keep task input + add button
-- Keep vote buttons (yes/no/maybe)
-- Remove: drag-drop, day toggle, secret tasks, vibes
-
-### 3. Test It (5 min)
-- Enter animal code
-- Add a task
-- Vote on it
-- Open in another tab, same code, see the task
+- ❌ User accounts / authentication
+- ❌ Real-time sync (refresh to see updates)
+- ❌ Drag-drop reordering
+- ❌ Themes/vibes
+- ❌ Presence indicators ("3 people online")
+- ❌ Task deletion (add only for MVP)
 
 ---
 
-## Files to Modify
+## Files Changed
 
 | File | Change |
 |------|--------|
-| `app/page.tsx` | Simplify to just the form + task list |
-| `components/auth/animal-code-form.tsx` | Strip to basics |
-| `components/tasks/task-list.tsx` | Remove drag-drop |
-| `components/tasks/task-item.tsx` | Keep only vote buttons |
+| `components/auth/magic-word-form.tsx` | NEW - single word input |
+| `app/page.tsx` | Simplified, uses MagicWordForm |
+| `hooks/use-session.ts` | Updated for ?room= param |
+| `supabase-schema-simple.sql` | NEW - clean 3-table schema |
 
 ---
 
-## What Success Looks Like
+## To Deploy
 
-1. I type "fox-bear" and my name
-2. I click Join
-3. I see a task list
-4. I add "Get tacos"
-5. I click "Yes" on it
-6. My friend types "fox-bear" in another browser
-7. They see "Get tacos" with 1 yes vote
+1. **Run the new schema** in Supabase SQL Editor:
+   - Open `supabase-schema-simple.sql`
+   - Execute in Supabase Dashboard → SQL Editor
+
+2. **Set environment variables**:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=your-url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-key
+   ```
+
+3. **Deploy to Vercel** (or run locally with `npm run dev`)
+
+---
+
+## Success Criteria
+
+1. I type "tacos" and "Sarah"
+2. I click Enter Room
+3. I see the task board for "tacos"
+4. I add "Get pizza"
+5. I click "Yes"
+6. My friend types "tacos" in another browser
+7. They see "Get pizza" with 1 yes vote
 8. They click "No"
 9. I refresh, see 1 yes + 1 no
 
-**Done. Ship it.**
+**Done.**
+
+---
+
+## Future Enhancements (Post-MVP)
+
+If this works well:
+- Real-time updates via Supabase subscriptions
+- "Copy link" button for easy sharing
+- Task deletion
+- Presence indicator ("2 people here")
+- Room expiration (auto-cleanup after 7 days)

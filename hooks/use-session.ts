@@ -67,11 +67,11 @@ export const useSession = (): SessionHook => {
       }
     }
 
-    // Get URL params to check for session parameter
+    // Get URL params to check for room/session parameter
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href)
-      const urlSessionId = url.searchParams.get('session')
-      initSession(urlSessionId || undefined)
+      const urlRoom = url.searchParams.get('room') || url.searchParams.get('session')
+      initSession(urlRoom || undefined)
     } else {
       initSession()
     }
