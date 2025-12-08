@@ -19,19 +19,19 @@ import LoadingSpinner from '@/components/common/loading-spinner'
  * It manages the state for tasks, vibes, and UI selections.
  */
 export default function SessionBoard() {
-  const { user, sessionId: defaultSessionId, loading: sessionLoading } = useSession()
+  const { user, sessionId, roomId, loading: sessionLoading } = useSession()
   const userName = user?.name
 
-  // Parse URL params for session and answers
-  const [urlSessionId, setUrlSessionId] = useState<string>('')
+  // Parse URL params for answers (room is handled by useSession via ?room= param)
   const [answersEncoded, setAnswersEncoded] = useState<string | undefined>(undefined)
   const [guestAnswers, setGuestAnswers] = useState<Record<string, 'yes' | 'no' | 'maybe' | ''>>({})
 
-  // Use URL session if present, otherwise use default from useSession
-  const sessionId = urlSessionId || defaultSessionId
+  // Use roomId (UUID) for database queries, sessionId (magic word) for display
+  const { tasks, addTask, updateTask, refetchTasks } = useTasks(roomId, user?.name)
 
-  const { tasks, addTask, updateTask, refetchTasks } = useTasks(sessionId, user?.id)
-  const { myChoiceByTask, setMyChoice } = useTaskChoices(sessionId, user?.id)
+  // Extract task IDs for useTaskChoices (needs array of IDs, not session ID)
+  const taskIds = useMemo(() => tasks.map(t => t.id), [tasks])
+  const { myChoiceByTask, setMyChoice } = useTaskChoices(taskIds, user?.name)
   // State for the list of vibes (still local for now).
   const [vibes] = useState<Vibe[]>(mockVibes)
   // State to track the currently selected day ('today' or 'tomorrow').
@@ -55,13 +55,11 @@ export default function SessionBoard() {
     }
   }, [currentVibe])
 
-  // On mount, parse URL params to set session and optional answers
+  // On mount, parse URL params for optional answers
   useEffect(() => {
     if (typeof window === 'undefined') return
     const url = new URL(window.location.href)
-    const s = url.searchParams.get('session')
     const a = url.searchParams.get('answers')
-    if (s) setUrlSessionId(s)
     if (a) {
       try {
         const decoded = JSON.parse(decodeURIComponent(atob(a)))
@@ -183,7 +181,7 @@ export default function SessionBoard() {
         },
         body: JSON.stringify({
           updates,
-          session_id: sessionId // Include for additional validation
+          room_id: roomId // Include for additional validation
         })
       })
 
@@ -216,38 +214,27 @@ export default function SessionBoard() {
   /**
    * Adds a new task to the list.
    * @param text The text content of the new task.
-   * @param isSecret A boolean indicating if the task is secret.
    */
   const handleAddTask = useCallback(
-    (text: string, isSecret: boolean) => {
-      addTask(text, isSecret)
+    (text: string) => {
+      addTask(text)
     },
     [addTask]
   )
 
   /**
    * Handles a user's vote to reveal a secret task.
-   * @param taskId The ID of the secret task to vote on.
+   * NOTE: Secret tasks not supported in simplified schema - this is a no-op.
    */
   const handleVoteToReveal = useCallback(
-    (taskId: string) => {
-      const uid = user?.id || 'user-1'
-      // Find the task from current state using a snapshot
-      const target = tasks.find(t => t.id === taskId)
-      if (!target) return
-      if (target.votes.includes(uid)) return
-
-      const newVotes = [...target.votes, uid]
-      const updates: Partial<Task> = { votes: newVotes }
-      // Reveal task if threshold met (client heuristic only for now)
-      const thresholdMet = newVotes.length >= 2
-      if (thresholdMet) updates.is_secret = false
-      updateTask(taskId, updates)
+    (_taskId: string) => {
+      // Secret tasks not supported in simplified schema
     },
-    [user?.id, tasks, updateTask]
+    []
   )
 
-  const filteredTasks = tasks.filter(task => task.day === currentDay)
+  // Simplified schema doesn't have day field - show all tasks
+  const filteredTasks = tasks
 
   // Encode only the choices for a minimal "answers" payload in URL
   const answersPayload = useMemo(() => {
@@ -269,7 +256,7 @@ export default function SessionBoard() {
 
   // Show loading spinner while session is initializing
   // Allow guests to view shared sessions even without login
-  if (sessionLoading && !sessionId) {
+  if (sessionLoading && !roomId) {
     return <LoadingSpinner variant="cosmic" />
   }
 

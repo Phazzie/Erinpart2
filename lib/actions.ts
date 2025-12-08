@@ -3,7 +3,6 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { supabaseServer, isSupabaseConfigured } from '@/lib/supabase/server'
-import { auth } from '@clerk/nextjs/server'
 
 // Helper to ensure Supabase is configured for server actions
 function assertSupabaseConfigured() {
@@ -18,7 +17,6 @@ function assertSupabaseConfigured() {
  * Creates a new task in the database.
  *
  * Error Handling Strategy:
- * - Clerk auth errors are logged but don't fail the operation (guest sessions are supported)
  * - Database errors are logged with structured data and returned to the client
  * - All errors include sanitized context for debugging without exposing sensitive data
  *
@@ -30,29 +28,10 @@ function assertSupabaseConfigured() {
 export async function createTask(sessionId: string, taskData: any, userName?: string) {
   assertSupabaseConfigured()
 
-  // Optionally get authenticated user ID from Clerk
-  // This supports both authenticated users and anonymous animal code sessions
-  let clerkUserId: string | null = null
-  try {
-    const authResult = await auth()
-    clerkUserId = authResult.userId
-  } catch (error) {
-    // No auth is fine - animal code sessions don't require authentication
-    // Log with structured data for production debugging (no sensitive info)
-    console.warn('[createTask] Clerk auth unavailable (expected for guest sessions):', {
-      sessionId,
-      userName: userName || 'Anonymous',
-      errorType: error instanceof Error ? error.constructor.name : typeof error,
-      errorMessage: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString(),
-    })
-  }
-
   const taskWithUser = {
     ...taskData,
     session_id: sessionId,
     user_name: userName || 'Anonymous',
-    ...(clerkUserId && { created_by: clerkUserId }),
   }
 
   const { data, error } = await supabaseServer.from('tasks').insert(taskWithUser).select().single()
@@ -77,7 +56,6 @@ export async function createTask(sessionId: string, taskData: any, userName?: st
  * Updates an existing task in the database.
  *
  * Error Handling Strategy:
- * - Clerk auth errors are logged but don't fail the operation (guest sessions are supported)
  * - Database errors are logged with structured data and returned to the client
  * - All errors include sanitized context for debugging without exposing sensitive data
  *
@@ -89,27 +67,9 @@ export async function createTask(sessionId: string, taskData: any, userName?: st
 export async function updateTask(taskId: string, updates: any, userName?: string) {
   assertSupabaseConfigured()
 
-  // Optionally get authenticated user ID from Clerk
-  let clerkUserId: string | null = null
-  try {
-    const authResult = await auth()
-    clerkUserId = authResult.userId
-  } catch (error) {
-    // No auth is fine - animal code sessions don't require authentication
-    // Log with structured data for production debugging (no sensitive info)
-    console.warn('[updateTask] Clerk auth unavailable (expected for guest sessions):', {
-      taskId,
-      userName: userName || 'Unknown',
-      errorType: error instanceof Error ? error.constructor.name : typeof error,
-      errorMessage: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString(),
-    })
-  }
-
   const updatesWithUser = {
     ...updates,
     ...(userName && { user_name: userName }),
-    ...(clerkUserId && { updated_by: clerkUserId }),
   }
 
   const { error } = await supabaseServer.from('tasks').update(updatesWithUser).eq('id', taskId)
@@ -155,7 +115,6 @@ export async function createShareableSession(sessionId: string) {
 }
 
 /**
- * Authentication is now handled by Clerk.
- * The signIn function has been removed - users should use Clerk's sign-in UI instead.
- * See: /app/sign-in/[[...sign-in]]/page.tsx
+ * Authentication is handled via guest sessions only.
+ * No traditional sign-in required - users identified by Magic Word sessions.
  */

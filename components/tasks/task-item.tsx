@@ -47,9 +47,9 @@ export function SortableTaskItem({
     opacity: isDragging ? 0.5 : 1,
   }
 
-  const hasVoted = task.votes.includes(currentUserId)
+  const hasVoted = task.votes?.includes(currentUserId) || false
 
-  // Render the secret task view if the task is secret
+  // Render the secret task view if the task is secret (not supported in simplified schema)
   if (task.is_secret) {
     return (
       <div
@@ -84,7 +84,7 @@ export function SortableTaskItem({
             onClick={() => onVote(task.id)}
             disabled={hasVoted}
           >
-            {hasVoted ? `Voted (${task.votes.length})` : `Vote to Reveal (${task.votes.length})`}
+            {hasVoted ? `Voted (${task.votes?.length || 0})` : `Vote to Reveal (${task.votes?.length || 0})`}
           </Button>
         </div>
       </div>

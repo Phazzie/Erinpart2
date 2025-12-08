@@ -1,28 +1,26 @@
 /**
- * Represents a single task item within a session.
+ * Represents a single task item within a room.
+ * Simplified schema: just id, room_id, text, creator_name, created_at
  */
 export interface Task {
   id: string
-  session_id: string
+  room_id?: string       // New schema uses room_id
+  session_id?: string    // Legacy - kept for compatibility
   text: string
-  is_complete: boolean
-  /**
-   * Deprecated: Per-user choices moved to task_choices table. This field is no longer used by UI logic.
-   */
-  choice: 'yes' | 'no' | 'maybe' | ''
-  day: 'today' | 'tomorrow'
-  order_index: number
-  comments: string
+  creator_name?: string  // New schema uses creator_name
   created_at: string
-  updated_at: string
-  created_by: string
 
-  // New fields for the Secret Task feature
-  is_secret: boolean // If true, the task text is hidden until revealed
-  votes: string[] // Array of user IDs who have voted to reveal the task
-
-  // User identification for logging
-  user_name?: string // The display name of the user who created/modified this task
+  // Legacy fields - optional for backwards compatibility
+  is_complete?: boolean
+  choice?: 'yes' | 'no' | 'maybe' | ''
+  day?: 'today' | 'tomorrow'
+  order_index?: number
+  comments?: string
+  updated_at?: string
+  created_by?: string
+  is_secret?: boolean
+  votes?: string[]
+  user_name?: string
 }
 
 /**
@@ -55,10 +53,10 @@ export type Choice = 'yes' | 'no' | 'maybe' | ''
 export interface TaskChoice {
   id: string
   task_id: string
-  user_id: string
+  user_id: string  // Maps to voter_name in new schema
   choice: Exclude<Choice, ''>
   created_at: string
-  updated_at: string
+  updated_at?: string  // Optional - not in simplified schema
 }
 
 /**
