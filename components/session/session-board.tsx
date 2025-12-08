@@ -19,18 +19,15 @@ import LoadingSpinner from '@/components/common/loading-spinner'
  * It manages the state for tasks, vibes, and UI selections.
  */
 export default function SessionBoard() {
-  const { user, sessionId: defaultSessionId, loading: sessionLoading } = useSession()
+  const { user, sessionId, roomId, loading: sessionLoading } = useSession()
   const userName = user?.name
 
-  // Parse URL params for session and answers
-  const [urlSessionId, setUrlSessionId] = useState<string>('')
+  // Parse URL params for answers (room is handled by useSession via ?room= param)
   const [answersEncoded, setAnswersEncoded] = useState<string | undefined>(undefined)
   const [guestAnswers, setGuestAnswers] = useState<Record<string, 'yes' | 'no' | 'maybe' | ''>>({})
 
-  // Use URL session if present, otherwise use default from useSession
-  const sessionId = urlSessionId || defaultSessionId
-
-  const { tasks, addTask, updateTask, refetchTasks } = useTasks(sessionId, user?.name)
+  // Use roomId (UUID) for database queries, sessionId (magic word) for display
+  const { tasks, addTask, updateTask, refetchTasks } = useTasks(roomId, user?.name)
 
   // Extract task IDs for useTaskChoices (needs array of IDs, not session ID)
   const taskIds = useMemo(() => tasks.map(t => t.id), [tasks])
@@ -58,13 +55,11 @@ export default function SessionBoard() {
     }
   }, [currentVibe])
 
-  // On mount, parse URL params to set session and optional answers
+  // On mount, parse URL params for optional answers
   useEffect(() => {
     if (typeof window === 'undefined') return
     const url = new URL(window.location.href)
-    const s = url.searchParams.get('session')
     const a = url.searchParams.get('answers')
-    if (s) setUrlSessionId(s)
     if (a) {
       try {
         const decoded = JSON.parse(decodeURIComponent(atob(a)))
@@ -186,7 +181,7 @@ export default function SessionBoard() {
         },
         body: JSON.stringify({
           updates,
-          session_id: sessionId // Include for additional validation
+          room_id: roomId // Include for additional validation
         })
       })
 
@@ -238,7 +233,8 @@ export default function SessionBoard() {
     []
   )
 
-  const filteredTasks = tasks.filter(task => task.day === currentDay)
+  // Simplified schema doesn't have day field - show all tasks
+  const filteredTasks = tasks
 
   // Encode only the choices for a minimal "answers" payload in URL
   const answersPayload = useMemo(() => {
@@ -260,7 +256,7 @@ export default function SessionBoard() {
 
   // Show loading spinner while session is initializing
   // Allow guests to view shared sessions even without login
-  if (sessionLoading && !sessionId) {
+  if (sessionLoading && !roomId) {
     return <LoadingSpinner variant="cosmic" />
   }
 

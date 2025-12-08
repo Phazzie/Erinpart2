@@ -38,12 +38,17 @@ export function useTasks(roomId: string, userName?: string) {
 
   const handleRealtimeUpdate = useCallback(
     (payload: any) => {
-      if (payload.eventType === 'INSERT' && payload.new.room_id === roomId) {
+      if (payload.eventType === 'INSERT' && payload.new?.room_id === roomId) {
         setTasks(currentTasks => [...currentTasks, payload.new])
-      } else if (payload.eventType === 'UPDATE' && payload.new.room_id === roomId) {
+      } else if (payload.eventType === 'UPDATE' && payload.new?.room_id === roomId) {
         setTasks(currentTasks => currentTasks.map(t => (t.id === payload.new.id ? payload.new : t)))
-      } else if (payload.eventType === 'DELETE' && payload.old.room_id === roomId) {
-        setTasks(currentTasks => currentTasks.filter(t => t.id !== payload.old.id))
+      } else if (payload.eventType === 'DELETE') {
+        // DELETE payload may only have id (replica identity), not room_id
+        // Filter by id only - the subscription filter already limits to our room
+        const deletedId = payload.old?.id
+        if (deletedId) {
+          setTasks(currentTasks => currentTasks.filter(t => t.id !== deletedId))
+        }
       }
     },
     [roomId]

@@ -41,7 +41,7 @@ interface TaskUpdate {
 
 interface BatchUpdateRequest {
   updates: TaskUpdate[]
-  session_id?: string // Optional: for additional validation
+  room_id?: string // Optional: for additional validation
 }
 
 interface BatchUpdateResponse {
@@ -129,10 +129,10 @@ function validateBatchRequest(body: any): { valid: boolean; errors: string[] } {
     return { valid: false, errors }
   }
 
-  // Validate session_id if provided
-  if (body.session_id !== undefined && body.session_id !== null) {
-    if (typeof body.session_id !== 'string' || !UUID_REGEX.test(body.session_id)) {
-      errors.push('Invalid session_id format (must be a valid UUID)')
+  // Validate room_id if provided
+  if (body.room_id !== undefined && body.room_id !== null) {
+    if (typeof body.room_id !== 'string' || !UUID_REGEX.test(body.room_id)) {
+      errors.push('Invalid room_id format (must be a valid UUID)')
       return { valid: false, errors }
     }
   }
@@ -185,7 +185,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { updates, session_id } = body as BatchUpdateRequest
+    const { updates, room_id } = body as BatchUpdateRequest
 
     // Log batch operation in development
     if (process.env.NODE_ENV === 'development') {
@@ -201,8 +201,8 @@ export async function POST(request: NextRequest) {
         .from('tasks')
         .update({ order_index: update.order_index })
         .eq('id', update.id)
-        // Add session_id filter if provided for additional security
-        .match(session_id ? { session_id } : {})
+        // Add room_id filter if provided for additional security
+        .match(room_id ? { room_id } : {})
 
       if (error) {
         throw new Error(`Failed to update task ${update.id}: ${error.message}`)

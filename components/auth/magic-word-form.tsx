@@ -71,18 +71,25 @@ export default function MagicWordForm() {
 
     setIsJoining(true)
 
-    // Store session
-    const sessionData = {
-      sessionId: cleanWord,
-      userName: cleanName,
-      joinedAt: new Date().toISOString(),
+    try {
+      // Store session
+      const sessionData = {
+        sessionId: cleanWord,
+        userName: cleanName,
+        joinedAt: new Date().toISOString(),
+      }
+      localStorage.setItem('sessionData', JSON.stringify(sessionData))
+
+      toast.success(`Welcome to "${cleanWord}", ${cleanName}! ✨`)
+
+      // Navigate with URL param for sharing
+      router.push(`/?room=${encodeURIComponent(cleanWord)}`)
+    } catch (error) {
+      // Reset state if something goes wrong
+      setIsJoining(false)
+      toast.error('Failed to join room. Please try again.')
+      console.error('[MagicWordForm] Join error:', error)
     }
-    localStorage.setItem('sessionData', JSON.stringify(sessionData))
-
-    toast.success(`Welcome to "${cleanWord}", ${cleanName}! ✨`)
-
-    // Navigate with URL param for sharing
-    router.push(`/?room=${encodeURIComponent(cleanWord)}`)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
