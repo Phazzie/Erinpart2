@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 
 // Simple pass-through middleware - no auth required
-// All routes are public for guest access via animal codes
+// All routes are public for guest access via magic word rooms
 export function middleware() {
   return NextResponse.next()
 }

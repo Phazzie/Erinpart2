@@ -1,32 +1,21 @@
-# 🎭 Erin's Escapades
+# Erin's Escapades
 
-A collaborative task management application with unique animal code sessions and real-time synchronization.
+A collaborative task management app where people join rooms via a "magic word" and vote yes/no/maybe on tasks.
 
-## ✨ Features
+**Core insight:** Same word = same room. No accounts needed. Just share a word.
 
-- **Animal Code Sessions**: Create unique collaborative spaces using fun animal combinations (e.g., "cat-dog-bird")
-- **Real-time Collaboration**: See updates instantly as team members add and vote on tasks
-- **Clerk Authentication**: Secure user authentication with support for guest sessions
-- **Task Management**: Drag-and-drop task reordering, secret tasks with vote-to-reveal
-- **Dynamic Vibe Themes**: Customize your workspace with different visual themes
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
+## Features
 
-## 🔐 Authentication
+- **Magic Word Rooms**: Type a word like "tacos" and you're in the "tacos" room
+- **Real-time Collaboration**: See updates instantly via Supabase subscriptions
+- **Task Voting**: Vote Yes / No / Maybe on any task
+- **Guest Mode**: No accounts required - just enter a word and your name
 
-Erin's Escapades uses **Clerk** for user authentication while supporting flexible collaboration:
-
-- **Authenticated Users**: Sign in with Clerk for cross-device session persistence
-- **Guest Users**: Join sessions without authentication using animal codes
-- **Animal Code Sessions**: Unique session identifiers independent of user authentication
-
-See [docs/CLERK_SETUP.md](/docs/CLERK_SETUP.md) for detailed setup instructions.
-
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
-- Node.js 18+ installed
-- A Clerk account (free at [clerk.com](https://clerk.com))
+- Node.js 18+
 - A Supabase project (free at [supabase.com](https://supabase.com))
 
 ### 1. Clone and Install
@@ -39,31 +28,21 @@ npm install
 
 ### 2. Environment Setup
 
-Copy the example environment file and fill in your keys:
+Create `.env.local` with your Supabase credentials:
 
-```bash
-cp .env.example .env.local
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 ```
-
-Then edit `.env.local` with your actual keys:
-
-**Get Your Keys:**
-
-- **Clerk**: [dashboard.clerk.com](https://dashboard.clerk.com) → API Keys
-- **Supabase**: Your project → Settings → API
-
-The `.env.local` file is git-ignored and safe for local development.
 
 ### 3. Database Setup
 
 Apply the schema to your Supabase project:
 
-1. Go to Supabase Dashboard → SQL Editor
-2. Copy contents from `supabase-schema-clerk.sql`
+1. Go to Supabase Dashboard > SQL Editor
+2. Copy contents from `supabase-schema-simple.sql`
 3. Run the script
-4. Verify tables created successfully
-
-See [docs/DATABASE_MIGRATION.md](/docs/DATABASE_MIGRATION.md) for detailed instructions.
+4. Verify tables created: `rooms`, `tasks`, `votes`
 
 ### 4. Run Development Server
 
@@ -71,132 +50,100 @@ See [docs/DATABASE_MIGRATION.md](/docs/DATABASE_MIGRATION.md) for detailed instr
 npm run dev
 ```
 
-Visit [http://localhost:3000](http://localhost:3000) to see the app!
+Visit [http://localhost:3000](http://localhost:3000)
 
-## 📖 Documentation
+## How It Works
 
-- **[CLERK_SETUP.md](/docs/CLERK_SETUP.md)** - Complete Clerk authentication setup guide
-- **[ANIMAL_CODE_SESSIONS.md](/docs/ANIMAL_CODE_SESSIONS.md)** - How animal code sessions work
-- **[DATABASE_MIGRATION.md](/docs/DATABASE_MIGRATION.md)** - Database schema and migration guide
-- **[CLERK_MIGRATION_SUMMARY.md](/docs/CLERK_MIGRATION_SUMMARY.md)** - Migration overview and checklist
-- **[DEPLOYMENT_CHECKLIST.md](/docs/DEPLOYMENT_CHECKLIST.md)** - Pre-deployment verification steps
+1. **Enter a magic word** - Type any word like "tacos", "friday", "adventure"
+2. **Enter your name** - Just for display, no account needed
+3. **Share the word** - Tell friends "Join tacos" to collaborate
+4. **Add tasks** - Type a task and hit Enter
+5. **Vote** - Click Yes / No / Maybe on any task
 
-## 🎯 How It Works
+Everyone with the same word sees the same room in real-time.
 
-### Animal Code Sessions
-
-Sessions are created using two animal names (e.g., "dolphin-unicorn"):
-
-1. Pick two animals from the list
-2. Enter your name
-3. Share the animal code with collaborators
-4. Everyone with the same code joins the same session
-
-### User Authentication
-
-- **Guest Users**: Temporary ID based on session (e.g., `guest-cat-dog-bird`)
-- **Authenticated Users**: Persistent Clerk ID (e.g., `user_2xxxClerkID123`)
-- **Upgrading**: Sign in anytime to upgrade from guest to authenticated
-
-### Real-time Collaboration
-
-- Tasks sync instantly across all users
-- Vote on secret tasks to reveal them
-- See who created each task
-- Drag-and-drop reordering persists for everyone
-
-## 🏗️ Tech Stack
+## Tech Stack
 
 - **Framework**: Next.js 14 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
-- **Authentication**: Clerk
 - **Database**: Supabase (PostgreSQL)
 - **Real-time**: Supabase Realtime
-- **UI Components**: shadcn/ui
+- **UI Components**: shadcn/ui + Radix
 - **Animations**: Framer Motion
 - **Drag & Drop**: dnd-kit
 
-## 🚢 Deployment
+## Deployment
 
 ### Vercel (Recommended)
 
 1. Push code to GitHub
 2. Import project in Vercel
-3. Add environment variables from `.env.local`
+3. Add environment variables:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL
+   NEXT_PUBLIC_SUPABASE_ANON_KEY
+   ```
 4. Deploy!
 
-See [docs/DEPLOYMENT_CHECKLIST.md](/docs/DEPLOYMENT_CHECKLIST.md) for complete deployment steps.
+## Database Schema
 
-### Environment Variables Required
+Three simple tables, no auth complexity:
 
-```env
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_xxxxx
-CLERK_SECRET_KEY=sk_live_xxxxx
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+```sql
+-- Rooms: created when someone enters a magic word
+CREATE TABLE rooms (
+  id uuid PRIMARY KEY,
+  word text UNIQUE NOT NULL,
+  created_at timestamptz
+);
+
+-- Tasks: belong to a room
+CREATE TABLE tasks (
+  id uuid PRIMARY KEY,
+  room_id uuid REFERENCES rooms(id),
+  text text NOT NULL,
+  creator_name text NOT NULL,
+  created_at timestamptz
+);
+
+-- Votes: one per user per task
+CREATE TABLE votes (
+  id uuid PRIMARY KEY,
+  task_id uuid REFERENCES tasks(id),
+  voter_name text NOT NULL,
+  choice text CHECK (choice IN ('yes', 'no', 'maybe')),
+  UNIQUE(task_id, voter_name)
+);
 ```
 
-## 🧪 Testing
+## Project Structure
+
+```
+/app                    # Next.js app directory
+/components             # React components
+  /auth                 # Magic word form
+  /session              # Session management
+  /tasks                # Task components
+/hooks                  # Custom React hooks
+/lib                    # Utility functions
+  /supabase             # Supabase client setup
+```
+
+## Testing
 
 ```bash
 # Run unit tests
 npm test
 
-# Run E2E tests
-npm run test:e2e
-
-# Build for production (verify no errors)
+# Build for production
 npm run build
 ```
 
-## 📋 Project Structure
-
-```
-/app                    # Next.js app directory
-/components             # React components
-  /auth                 # Authentication components
-  /session              # Session management
-  /tasks                # Task components
-/docs                   # Documentation
-/hooks                  # Custom React hooks
-/lib                    # Utility functions
-  /clerk                # Clerk authentication utilities
-  /supabase             # Supabase client setup
-/middleware.ts          # Clerk middleware
-```
-
-## 🤝 Contributing
-
-Contributions welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## 📜 License
+## License
 
 [Add your license here]
 
-## 🙏 Acknowledgments
-
-- Built with [Next.js](https://nextjs.org/)
-- Authentication by [Clerk](https://clerk.com)
-- Database by [Supabase](https://supabase.com)
-- UI components from [shadcn/ui](https://ui.shadcn.com)
-
-## 📞 Support
-
-For issues or questions:
-
-1. Check the `/docs` folder for detailed guides
-2. Review [Clerk documentation](https://clerk.com/docs)
-3. Review [Supabase documentation](https://supabase.com/docs)
-4. Open an issue on GitHub
-
 ---
 
-Built with ❤️ for collaborative chaos and organized adventures!
+Built for collaborative chaos and organized adventures!
