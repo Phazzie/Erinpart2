@@ -30,8 +30,11 @@ export default function SessionBoard() {
   // Use URL session if present, otherwise use default from useSession
   const sessionId = urlSessionId || defaultSessionId
 
-  const { tasks, addTask, updateTask, refetchTasks } = useTasks(sessionId, user?.id)
-  const { myChoiceByTask, setMyChoice } = useTaskChoices(sessionId, user?.id)
+  const { tasks, addTask, updateTask, refetchTasks } = useTasks(sessionId, user?.name)
+
+  // Extract task IDs for useTaskChoices (needs array of IDs, not session ID)
+  const taskIds = useMemo(() => tasks.map(t => t.id), [tasks])
+  const { myChoiceByTask, setMyChoice } = useTaskChoices(taskIds, user?.name)
   // State for the list of vibes (still local for now).
   const [vibes] = useState<Vibe[]>(mockVibes)
   // State to track the currently selected day ('today' or 'tomorrow').
@@ -216,35 +219,23 @@ export default function SessionBoard() {
   /**
    * Adds a new task to the list.
    * @param text The text content of the new task.
-   * @param isSecret A boolean indicating if the task is secret.
    */
   const handleAddTask = useCallback(
-    (text: string, isSecret: boolean) => {
-      addTask(text, isSecret)
+    (text: string) => {
+      addTask(text)
     },
     [addTask]
   )
 
   /**
    * Handles a user's vote to reveal a secret task.
-   * @param taskId The ID of the secret task to vote on.
+   * NOTE: Secret tasks not supported in simplified schema - this is a no-op.
    */
   const handleVoteToReveal = useCallback(
-    (taskId: string) => {
-      const uid = user?.id || 'user-1'
-      // Find the task from current state using a snapshot
-      const target = tasks.find(t => t.id === taskId)
-      if (!target) return
-      if (target.votes.includes(uid)) return
-
-      const newVotes = [...target.votes, uid]
-      const updates: Partial<Task> = { votes: newVotes }
-      // Reveal task if threshold met (client heuristic only for now)
-      const thresholdMet = newVotes.length >= 2
-      if (thresholdMet) updates.is_secret = false
-      updateTask(taskId, updates)
+    (_taskId: string) => {
+      // Secret tasks not supported in simplified schema
     },
-    [user?.id, tasks, updateTask]
+    []
   )
 
   const filteredTasks = tasks.filter(task => task.day === currentDay)

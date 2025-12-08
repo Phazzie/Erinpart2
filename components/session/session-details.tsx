@@ -8,7 +8,7 @@ import { Bot, Edit, MessageSquare } from 'lucide-react'
 interface Task {
   id: string
   text: string
-  comments: string
+  comments?: string  // Optional in simplified schema
 }
 
 interface SessionDetailsProps {
@@ -42,7 +42,7 @@ export default function SessionDetails({ selectedTask, onUpdateTask }: SessionDe
                     Comments
                   </label>
                   <Textarea
-                    value={selectedTask.comments}
+                    value={selectedTask.comments || ''}
                     onChange={e => onUpdateTask(selectedTask.id, { comments: e.target.value })}
                     placeholder="Add your devious notes here..."
                     className="input-neon min-h-[100px]"

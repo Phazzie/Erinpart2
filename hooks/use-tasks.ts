@@ -6,12 +6,12 @@ import { useRealtime } from '@/hooks/use-realtime'
 import { type Task } from '@/lib/types'
 import { toast } from '@/lib/toast'
 
-export function useTasks(sessionId: string, userId?: string) {
+export function useTasks(roomId: string, userName?: string) {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
 
   const fetchTasks = useCallback(async () => {
-    if (!isSupabaseConfigured || !sessionId) {
+    if (!isSupabaseConfigured || !roomId) {
       setLoading(false)
       return
     }
@@ -20,8 +20,8 @@ export function useTasks(sessionId: string, userId?: string) {
       const { data, error } = await supabase
         .from('tasks')
         .select('*')
-        .eq('session_id', sessionId)
-        .order('order_index', { ascending: true })
+        .eq('room_id', roomId)
+        .order('created_at', { ascending: true })
 
       if (error) throw error
       setTasks(data || [])
@@ -30,7 +30,7 @@ export function useTasks(sessionId: string, userId?: string) {
     } finally {
       setLoading(false)
     }
-  }, [sessionId])
+  }, [roomId])
 
   useEffect(() => {
     fetchTasks()
@@ -38,59 +38,47 @@ export function useTasks(sessionId: string, userId?: string) {
 
   const handleRealtimeUpdate = useCallback(
     (payload: any) => {
-      if (payload.eventType === 'INSERT' && payload.new.session_id === sessionId) {
+      if (payload.eventType === 'INSERT' && payload.new.room_id === roomId) {
         setTasks(currentTasks => [...currentTasks, payload.new])
-      } else if (payload.eventType === 'UPDATE' && payload.new.session_id === sessionId) {
+      } else if (payload.eventType === 'UPDATE' && payload.new.room_id === roomId) {
         setTasks(currentTasks => currentTasks.map(t => (t.id === payload.new.id ? payload.new : t)))
-      } else if (payload.eventType === 'DELETE' && payload.old.session_id === sessionId) {
+      } else if (payload.eventType === 'DELETE' && payload.old.room_id === roomId) {
         setTasks(currentTasks => currentTasks.filter(t => t.id !== payload.old.id))
       }
     },
-    [sessionId]
+    [roomId]
   )
 
   useRealtime({
-    channelName: `tasks-for-session-${sessionId}`,
+    channelName: `tasks-for-room-${roomId}`,
     table: 'tasks',
-    filter: `session_id=eq.${sessionId}`,
+    filter: `room_id=eq.${roomId}`,
     callback: handleRealtimeUpdate,
   })
 
   const addTask = useCallback(
-    async (text: string, is_secret = false) => {
-      if (!text.trim() || !sessionId) {
+    async (text: string) => {
+      if (!text.trim() || !roomId) {
         if (process.env.NODE_ENV === 'development') {
-          console.error('[useTasks] Cannot add task:', { text: text.trim(), sessionId })
+          console.error('[useTasks] Cannot add task:', { text: text.trim(), roomId })
         }
-        toast.error('Missing task text or session ID')
+        toast.error('Missing task text or room ID')
         return
       }
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('[useTasks] Adding task:', { text, is_secret, sessionId, isSupabaseConfigured })
+        console.log('[useTasks] Adding task:', { text, roomId, isSupabaseConfigured })
       }
 
       const optimisticId = `optimistic-${Date.now()}`
 
-      // Use functional update to get current tasks length
-      let currentLength = 0
       setTasks(current => {
-        currentLength = current.length
         const newTask: Task = {
           id: optimisticId,
-          session_id: sessionId,
+          room_id: roomId,
           created_at: new Date().toISOString(),
           text,
-          is_complete: false,
-          day: 'today', // default value
-          order_index: currentLength,
-          is_secret,
-          votes: [],
-          // Add missing properties to satisfy the Task type
-          choice: '',
-          comments: '',
-          updated_at: new Date().toISOString(),
-          created_by: userId || '', // Use current user ID
+          creator_name: userName || 'Anonymous',
         }
         return [...current, newTask]
       })
@@ -103,18 +91,6 @@ export function useTasks(sessionId: string, userId?: string) {
         return
       }
 
-      // CRITICAL: userId is REQUIRED for RLS policy
-      if (!userId) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error(
-            '[useTasks] Cannot add task without userId - RLS policy requires created_by'
-          )
-        }
-        toast.error('User not authenticated. Please refresh the page.')
-        setTasks(current => current.filter(t => t.id !== optimisticId))
-        return
-      }
-
       try {
         if (process.env.NODE_ENV === 'development') {
           console.log('[useTasks] Inserting task into Supabase...')
@@ -122,10 +98,8 @@ export function useTasks(sessionId: string, userId?: string) {
 
         const insertData: any = {
           text,
-          is_secret,
-          session_id: sessionId,
-          order_index: currentLength,
-          created_by: userId, // REQUIRED by RLS policy
+          room_id: roomId,
+          creator_name: userName || 'Anonymous',
         }
 
         const { data, error } = await supabase.from('tasks').insert(insertData).select().single()
@@ -150,7 +124,7 @@ export function useTasks(sessionId: string, userId?: string) {
         setTasks(current => current.filter(t => t.id !== optimisticId))
       }
     },
-    [sessionId, userId]
+    [roomId, userName]
   )
 
   const updateTask = useCallback(async (id: string, updates: Partial<Task>) => {

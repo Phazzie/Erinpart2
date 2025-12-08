@@ -3,16 +3,16 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase/client'
 import type { Choice, TaskChoice } from '@/lib/types'
 
 /**
- * Hook to manage per-user yes/no/maybe choices for tasks in a session.
- * - Stores choices in public.task_choices with RLS enforcing per-user rows.
- * - Provides a map for quick lookup and a setter to upsert the current user's choice.
+ * Hook to manage per-voter yes/no/maybe choices for tasks.
+ * - Stores votes in public.votes table.
+ * - Provides a map for quick lookup and a setter to upsert the current voter's choice.
  */
-export function useTaskChoices(sessionId: string, userId: string | undefined) {
+export function useTaskChoices(taskIds: string[], voterName: string | undefined) {
   const [choices, setChoices] = useState<TaskChoice[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
 
-  // initial load for session
+  // initial load for tasks
   useEffect(() => {
     let cancelled = false
     const load = async () => {
@@ -20,13 +20,16 @@ export function useTaskChoices(sessionId: string, userId: string | undefined) {
         setError(new Error('Supabase not configured'))
         return
       }
-      if (!sessionId) return
+      if (!taskIds || taskIds.length === 0) {
+        setChoices([])
+        return
+      }
       setLoading(true)
-      // Join via tasks to scope to session
+      // Fetch votes for the given task IDs
       const { data, error } = await supabase
-        .from('task_choices')
-        .select('id, task_id, user_id, choice, created_at, updated_at, tasks!inner(session_id)')
-        .eq('tasks.session_id', sessionId)
+        .from('votes')
+        .select('id, task_id, voter_name, choice, created_at')
+        .in('task_id', taskIds)
       if (cancelled) return
       if (error) setError(new Error(error.message))
       else
@@ -34,10 +37,9 @@ export function useTaskChoices(sessionId: string, userId: string | undefined) {
           (data || []).map((row: any) => ({
             id: row.id,
             task_id: row.task_id,
-            user_id: row.user_id,
+            user_id: row.voter_name, // Map voter_name to user_id for compatibility
             choice: row.choice,
             created_at: row.created_at,
-            updated_at: row.updated_at,
           }))
         )
       setLoading(false)
@@ -46,33 +48,45 @@ export function useTaskChoices(sessionId: string, userId: string | undefined) {
     return () => {
       cancelled = true
     }
-  }, [sessionId])
+  }, [taskIds.join(',')])
 
-  // realtime subscription scoped to task_choices joined by tasks for this session
+  // realtime subscription for votes table
   useEffect(() => {
     if (!isSupabaseConfigured) return
-    if (!sessionId) return
+    if (!taskIds || taskIds.length === 0) return
 
     const channel = supabase
-      .channel(`task_choices:${sessionId}`)
+      .channel(`votes:${taskIds.join(',')}`)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'task_choices' },
+        { event: '*', schema: 'public', table: 'votes' },
         (payload: any) => {
           const evt = payload.eventType || payload.event || payload.type
           const rowNew = payload.new
           const rowOld = payload.old
-          // If we have the tasks relation in payload, filter by session, otherwise accept and let UI filter by task.
-          // For safety, we'll update but UI maps by task ids present.
+
+          // Filter by task IDs to only handle votes for our tasks
           setChoices(curr => {
             switch (evt) {
               case 'INSERT':
-                if (!rowNew) return curr
+                if (!rowNew || !taskIds.includes(rowNew.task_id)) return curr
                 if (curr.some(c => c.id === rowNew.id)) return curr
-                return [...curr, rowNew as TaskChoice]
+                return [...curr, {
+                  id: rowNew.id,
+                  task_id: rowNew.task_id,
+                  user_id: rowNew.voter_name,
+                  choice: rowNew.choice,
+                  created_at: rowNew.created_at,
+                } as TaskChoice]
               case 'UPDATE':
-                if (!rowNew) return curr
-                return curr.map(c => (c.id === rowNew.id ? { ...c, ...(rowNew as TaskChoice) } : c))
+                if (!rowNew || !taskIds.includes(rowNew.task_id)) return curr
+                return curr.map(c => (c.id === rowNew.id ? {
+                  id: rowNew.id,
+                  task_id: rowNew.task_id,
+                  user_id: rowNew.voter_name,
+                  choice: rowNew.choice,
+                  created_at: rowNew.created_at,
+                } : c))
               case 'DELETE':
                 if (!rowOld) return curr
                 return curr.filter(c => c.id !== rowOld.id)
@@ -89,7 +103,7 @@ export function useTaskChoices(sessionId: string, userId: string | undefined) {
         supabase.removeChannel(channel as any)
       } catch {}
     }
-  }, [sessionId])
+  }, [taskIds.join(',')])
 
   const byTask = useMemo(() => {
     const map = new Map<string, TaskChoice[]>()
@@ -103,17 +117,17 @@ export function useTaskChoices(sessionId: string, userId: string | undefined) {
 
   const myChoiceByTask = useMemo(() => {
     const map = new Map<string, TaskChoice | undefined>()
-    if (!userId) return map
+    if (!voterName) return map
     for (const c of choices) {
-      if (c.user_id === userId) map.set(c.task_id, c)
+      if (c.user_id === voterName) map.set(c.task_id, c)
     }
     return map
-  }, [choices, userId])
+  }, [choices, voterName])
 
   const setMyChoice = useCallback(
     async (taskId: string, choice: Exclude<Choice, ''>) => {
-      if (!userId) {
-        setError(new Error('Not authenticated'))
+      if (!voterName) {
+        setError(new Error('Voter name required'))
         return
       }
       if (!isSupabaseConfigured) {
@@ -123,7 +137,7 @@ export function useTaskChoices(sessionId: string, userId: string | undefined) {
       const existing = myChoiceByTask.get(taskId)
       if (existing) {
         const { error } = await supabase
-          .from('task_choices')
+          .from('votes')
           .update({ choice })
           .eq('id', existing.id)
         if (error) {
@@ -132,16 +146,22 @@ export function useTaskChoices(sessionId: string, userId: string | undefined) {
         }
         setChoices(curr => curr.map(c => (c.id === existing.id ? { ...c, choice } : c)))
       } else {
-        const insert = { task_id: taskId, user_id: userId, choice }
-        const { data, error } = await supabase.from('task_choices').insert(insert).select().single()
+        const insert = { task_id: taskId, voter_name: voterName, choice }
+        const { data, error } = await supabase.from('votes').insert(insert).select().single()
         if (error) {
           setError(new Error(error.message))
           return
         }
-        setChoices(curr => [...curr, data as unknown as TaskChoice])
+        setChoices(curr => [...curr, {
+          id: data.id,
+          task_id: data.task_id,
+          user_id: data.voter_name,
+          choice: data.choice,
+          created_at: data.created_at,
+        } as TaskChoice])
       }
     },
-    [userId, myChoiceByTask]
+    [voterName, myChoiceByTask]
   )
 
   return { choices, byTask, myChoiceByTask, setMyChoice, loading, error }
